@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>PasteKitLab</title>
+    <link href="/src/index.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 500px;
+            min-height: 500px;
+            height: auto;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+        
+        html {
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+        
+        #root {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        /* Chrome扩展特殊处理 */
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* 明确的滚动条样式 */
+        .tool-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .tool-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .tool-scroll-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .tool-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+<div id="root">
+
+</div>
+<script type="module" src="/src/pastekit/popup/main.jsx"></script>
+</body>
+</html>

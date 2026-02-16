@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Overlap Fix Test - 侧边栏重叠修复测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --sidebar-width: 16rem;
+            --sidebar-width-icon: 3rem;
+            --safe-zone: 1rem;
+        }
+        
+        .test-layout {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        
+        /* Sidebar相关样式 */
+        .sidebar-container {
+            position: relative;
+            display: block;
+            width: fit-content;
+        }
+        
+        .sidebar-gap {
+            position: relative;
+            width: var(--sidebar-width);
+            background: transparent;
+            transition: width 0.3s ease;
+        }
+        
+        .sidebar-gap.collapsed {
+            width: var(--sidebar-width-icon);
+        }
+        
+        .sidebar-content {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-right: 2px solid #1e40af;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .sidebar-content.active {
+            display: flex;
+        }
+        
+        .sidebar-content.collapsed {
+            width: var(--sidebar-width-icon);
+        }
+        
+        /* 主内容区域 - 严格按照SidebarInset规范 */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 1.5rem;
+            transition: margin-left 0.3s ease;
+            position: relative;
+        }
+        
+        .main-content.collapsed {
+            margin-left: var(--sidebar-width-icon);
+        }
+        
+        /* 修复后的SidebarInset样式模拟 */
+        .sidebar-inset-fix {
+            margin-left: var(--sidebar-width);
+            padding-left: 1rem; /* md:pl-1 */
+            position: relative;
+        }
+        
+        .sidebar-inset-fix.collapsed {
+            margin-left: var(--sidebar-width-icon);
+        }
+        
+        .sidebar-inset-fix::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            pointer-events: none;
+        }
+        
+        .sidebar-inset-fix.collapsed::before {
+            width: var(--sidebar-width-icon);
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 20;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            width: 280px;
+        }
+        
+        /* 状态显示器 */
+        .status-display {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            z-index: 20;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            font-family: monospace;
+            min-width: 240px;
+        }
+        
+        /* 重叠检测器 */
+        .overlap-detector {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 2px solid #fecaca;
+            font-weight: 600;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+        
+        .overlap-detector.show {
+            display: block;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.02); }
+        }
+        
+        /* 内容卡片 */
+        .content-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            position: relative;
+        }
+        
+        /* 边界指示器 */
+        .boundary-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+        
+        .boundary-marker.left {
+            left: 0;
+        }
+        
+        .boundary-marker.right {
+            right: 0;
+        }
+        
+        .boundary-marker.warning {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 重叠检测器 -->
+    <div class="overlap-detector" id="overlapDetector">
+        ⚠️ 检测到Sidebar与内容重叠！
+    </div>
+    
+    <div class="test-layout">
+        <!-- Sidebar Container -->
+        <div class="sidebar-container" id="sidebarContainer">
+            <!-- Sidebar Gap (handles layout spacing) -->
+            <div class="sidebar-gap" id="sidebarGap"></div>
+            
+            <!-- Actual Sidebar Content -->
+            <div class="sidebar-content active" id="sidebarContent">
+                <div class="p-6 flex flex-col h-full">
+                    <h2 class="text-xl font-bold text-white mb-6">📋 测试菜单</h2>
+                    <nav class="space-y-3 flex-1">
+                        <div class="p-3 bg-white/20 backdrop-blur-sm rounded-lg cursor-pointer hover:bg-white/30 transition-all">
+                            <div class="text-white font-medium">🏠 首页</div>
+                        </div>
+                        <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg cursor-pointer hover:bg-white/20 transition-all">
+                            <div class="text-white font-medium">📊 数据</div>
+                        </div>
+                        <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg cursor-pointer hover:bg-white/20 transition-all">
+                            <div class="text-white font-medium">⚙️ 设置</div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content - 使用修复后的SidebarInset样式 -->
+        <div class="main-content sidebar-inset-fix" id="mainContent">
+            <div class="max-w-6xl mx-auto">
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">🎯 Sidebar重叠修复测试</h1>
+                
+                <div class="content-card">
+                    <div class="boundary-marker left"></div>
+                    <div class="boundary-marker right"></div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">📊 实时状态监控</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="text-sm text-gray-600 mb-1">Sidebar宽度</div>
+                            <div class="text-2xl font-bold text-blue-600" id="sidebarWidth">16rem</div>
+                            <div class="text-xs text-gray-500" id="sidebarWidthPx">256px</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="text-sm text-gray-600 mb-1">内容左边距</div>
+                            <div class="text-2xl font-bold text-green-600" id="contentMargin">16rem</div>
+                            <div class="text-xs text-gray-500" id="contentMarginPx">256px</div>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                            <div class="text-sm text-gray-600 mb-1">安全状态</div>
+                            <div class="text-2xl font-bold text-purple-600" id="safetyStatus">✓ 安全</div>
+                            <div class="text-xs text-gray-500">无重叠风险</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-card">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">🔧 修复测试控制</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-3">状态切换</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors" onclick="toggleState()">
+                                    切换展开/收起
+                                </button>
+                                <button class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors" onclick="resetLayout()">
+                                    重置布局
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-3">宽度测试</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="px-3 py-1 bg-indigo-500 text-white rounded text-sm hover:bg-indigo-600" onclick="setWidth('12rem')">
+                                    窄 (12rem)
+                                </button>
+                                <button class="px-3 py-1 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700" onclick="setWidth('16rem')">
+                                    标准 (16rem)
+                                </button>
+                                <button class="px-3 py-1 bg-indigo-700 text-white rounded text-sm hover:bg-indigo-800" onclick="setWidth('20rem')">
+                                    宽 (20rem)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <p class="text-yellow-700">
+                            <strong>测试说明：</strong> 此页面模拟了修复后的SidebarInset组件行为。
+                            当布局正确时，绿色边界线应该与Sidebar右侧对齐，内容区域不应该被遮挡。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="content-card">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">📋 修复验证清单</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1" id="check1">✓</span>
+                            <span><strong>基础左边距：</strong> md:ml-[--sidebar-width] 确保标准宽度间距</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1" id="check2">✓</span>
+                            <span><strong>收起状态：</strong> md:peer-data-[state=collapsed]:md:ml-[--sidebar-width-icon] 处理收起情况</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1" id="check3">✓</span>
+                            <span><strong>安全边距：</strong> md:pl-1 添加额外保护防止像素级重叠</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1" id="check4">✓</span>
+                            <span><strong>伪元素防护：</strong> ::before 伪元素提供额外的布局保护</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-3 mt-1" id="check5">✓</span>
+                            <span><strong>状态覆盖：</strong> peer-data 状态选择器确保所有情况都被处理</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">📝 测试内容区域</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-white border rounded-lg">
+                            <h4 class="font-medium text-gray-700 mb-2">长文本测试</h4>
+                            <p class="text-gray-600 text-sm">
+                                这是一段很长的测试文本，用来验证Sidebar和内容区域之间是否有重叠。
+                                如果布局正确，这段文字应该完全可见，不会被左侧的Sidebar遮挡任何部分。
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            </p>
+                        </div>
+                        
+                        <div class="p-4 bg-white border rounded-lg">
+                            <h4 class="font-medium text-gray-700 mb-2">表格数据测试</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="text-left py-2 px-3 font-medium text-gray-700">项目</th>
+                                            <th class="text-left py-2 px-3 font-medium text-gray-700">状态</th>
+                                            <th class="text-left py-2 px-3 font-medium text-gray-700">进度</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b border-gray-200">
+                                            <td class="py-2 px-3">功能开发</td>
+                                            <td class="py-2 px-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">完成</span></td>
+                                            <td class="py-2 px-3">100%</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-200">
+                                            <td class="py-2 px-3">测试验证</td>
+                                            <td class="py-2 px-3"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">进行中</span></td>
+                                            <td class="py-2 px-3">75%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <h3 class="font-semibold text-gray-800 mb-3">实时控制</h3>
+        <div class="space-y-3">
+            <button class="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors" onclick="startContinuousTest()">
+                开始连续检测
+            </button>
+            <button class="w-full px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors" onclick="forceOverlapCheck()">
+                强制重叠检测
+            </button>
+            <div class="text-xs text-gray-500 text-center" id="lastCheck">
+                等待检测...
+            </div>
+        </div>
+    </div>
+    
+    <!-- 状态显示器 -->
+    <div class="status-display">
+        <div class="text-sm font-medium text-gray-700 mb-2">布局参数</div>
+        <div class="space-y-1 text-xs">
+            <div>状态: <span id="currentState" class="font-medium">展开</span></div>
+            <div>宽度: <span id="currentWidth" class="font-medium">16rem</span></div>
+            <div>左边距: <span id="currentMargin" class="font-medium">16rem</span></div>
+            <div>安全间隙: <span id="currentGap" class="font-medium text-green-600">安全</span></div>
+        </div>
+    </div>
+    
+    <script>
+        let isCollapsed = false;
+        let currentWidth = '16rem';
+        let testInterval = null;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+            checkOverlap();
+        });
+        
+        function toggleState() {
+            isCollapsed = !isCollapsed;
+            const gap = document.getElementById('sidebarGap');
+            const content = document.getElementById('sidebarContent');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (isCollapsed) {
+                gap.classList.add('collapsed');
+                content.classList.add('collapsed');
+                mainContent.classList.add('collapsed');
+            } else {
+                gap.classList.remove('collapsed');
+                content.classList.remove('collapsed');
+                mainContent.classList.remove('collapsed');
+            }
+            
+            updateDisplay();
+            setTimeout(checkOverlap, 300);
+        }
+        
+        function setWidth(width) {
+            document.documentElement.style.setProperty('--sidebar-width', width);
+            currentWidth = width;
+            updateDisplay();
+            setTimeout(checkOverlap, 100);
+        }
+        
+        function resetLayout() {
+            document.documentElement.style.setProperty('--sidebar-width', '16rem');
+            currentWidth = '16rem';
+            isCollapsed = false;
+            
+            const gap = document.getElementById('sidebarGap');
+            const content = document.getElementById('sidebarContent');
+            const mainContent = document.getElementById('mainContent');
+            
+            gap.classList.remove('collapsed');
+            content.classList.remove('collapsed');
+            mainContent.classList.remove('collapsed');
+            
+            updateDisplay();
+            checkOverlap();
+        }
+        
+        function updateDisplay() {
+            const widthRem = parseFloat(currentWidth);
+            const widthPx = Math.round(widthRem * 16);
+            const iconWidthPx = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-icon')) * 16);
+            
+            document.getElementById('sidebarWidth').textContent = currentWidth;
+            document.getElementById('sidebarWidthPx').textContent = `${widthPx}px`;
+            
+            if (isCollapsed) {
+                document.getElementById('contentMargin').textContent = '3rem';
+                document.getElementById('contentMarginPx').textContent = `${iconWidthPx}px`;
+                document.getElementById('currentState').textContent = '收起';
+            } else {
+                document.getElementById('contentMargin').textContent = currentWidth;
+                document.getElementById('contentMarginPx').textContent = `${widthPx}px`;
+                document.getElementById('currentState').textContent = '展开';
+            }
+            
+            document.getElementById('currentWidth').textContent = currentWidth;
+            document.getElementById('currentMargin').textContent = isCollapsed ? '3rem' : currentWidth;
+        }
+        
+        function checkOverlap() {
+            const detector = document.getElementById('overlapDetector');
+            const mainContent = document.getElementById('mainContent');
+            const safetyStatus = document.getElementById('safetyStatus');
+            const currentGap = document.getElementById('currentGap');
+            const checks = document.querySelectorAll('[id^="check"]');
+            
+            const mainRect = mainContent.getBoundingClientRect();
+            const computedStyle = getComputedStyle(mainContent);
+            const marginLeft = parseFloat(computedStyle.marginLeft);
+            const paddingLeft = parseFloat(computedStyle.paddingLeft);
+            const totalOffset = marginLeft + paddingLeft;
+            
+            const expectedOffset = isCollapsed ? 
+                (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-icon')) * 16) :
+                (parseFloat(currentWidth) * 16);
+            
+            // 允许少量误差（5px）
+            const isSafe = Math.abs(totalOffset - expectedOffset) <= 5;
+            
+            if (isSafe) {
+                detector.classList.remove('show');
+                safetyStatus.textContent = '✓ 安全';
+                safetyStatus.className = 'text-2xl font-bold text-purple-600';
+                currentGap.textContent = '安全';
+                currentGap.className = 'font-medium text-green-600';
+                
+                // 更新检查清单
+                checks.forEach(check => {
+                    check.textContent = '✓';
+                    check.className = 'text-green-500 mr-3 mt-1';
+                });
+            } else {
+                detector.classList.add('show');
+                safetyStatus.textContent = '✗ 重叠';
+                safetyStatus.className = 'text-2xl font-bold text-red-600';
+                currentGap.textContent = '危险';
+                currentGap.className = 'font-medium text-red-600';
+                
+                // 标记有问题的检查项
+                checks[0].textContent = Math.abs(totalOffset - expectedOffset) > 5 ? '✗' : '✓';
+                checks[0].className = Math.abs(totalOffset - expectedOffset) > 5 ? 'text-red-500 mr-3 mt-1' : 'text-green-500 mr-3 mt-1';
+            }
+            
+            document.getElementById('lastCheck').textContent = `最后检测: ${new Date().toLocaleTimeString()}`;
+            return isSafe;
+        }
+        
+        function forceOverlapCheck() {
+            checkOverlap();
+            if (!checkOverlap()) {
+                navigator.vibrate && navigator.vibrate([100, 50, 100]);
+            }
+        }
+        
+        function startContinuousTest() {
+            const button = event.target;
+            
+            if (testInterval) {
+                clearInterval(testInterval);
+                testInterval = null;
+                button.textContent = '开始连续检测';
+                button.className = button.className.replace('bg-red-600', 'bg-red-500');
+            } else {
+                testInterval = setInterval(() => {
+                    checkOverlap();
+                    // 随机切换状态进行压力测试
+                    if (Math.random() > 0.7) {
+                        toggleState();
+                    }
+                }, 800);
+                button.textContent = '停止检测';
+                button.className = button.className.replace('bg-red-500', 'bg-red-600');
+            }
+        }
+        
+        // 窗口大小改变时重新检查
+        window.addEventListener('resize', () => {
+            setTimeout(checkOverlap, 100);
+        });
+    </script>
+</body>
+</html>

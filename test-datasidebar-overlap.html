@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataSidebar Overlap Test - 数据侧边栏重叠测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --sidebar-width: 16rem;
+            --sidebar-width-icon: 3rem;
+            --transition-duration: 0.3s;
+        }
+        
+        .data-sidebar {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-right: 2px solid #1e40af;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .data-content {
+            margin-left: var(--sidebar-width);
+            padding: 1.5rem;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            transition: margin-left var(--transition-duration) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .data-content.collapsed {
+            margin-left: var(--sidebar-width-icon);
+        }
+        
+        .control-panel {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 60;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            z-index: 55;
+            background: #ef4444;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+            transition: all var(--transition-duration);
+        }
+        
+        .status-indicator.safe {
+            background: #10b981;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .overlap-detector {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 2px solid #fecaca;
+            font-weight: 600;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .overlap-detector.show {
+            display: block;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.02); }
+        }
+        
+        .debug-grid {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 40;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: none;
+        }
+        
+        .debug-grid.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 重叠检测器 -->
+    <div class="overlap-detector" id="overlapDetector">
+        ⚠️ 检测到DataSidebar与内容重叠！
+    </div>
+    
+    <!-- 网格调试器 -->
+    <div class="debug-grid" id="debugGrid"></div>
+    
+    <!-- 状态指示器 -->
+    <div class="status-indicator" id="statusIndicator">
+        展开状态 - 安全距离
+    </div>
+    
+    <!-- DataSidebar模拟 -->
+    <div class="data-sidebar" id="dataSidebar">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-white mb-6">📊 Data Sidebar</h2>
+            <nav class="space-y-3">
+                <div class="p-3 bg-white/20 backdrop-blur-sm rounded-lg cursor-pointer hover:bg-white/30 transition-all">
+                    <div class="text-white font-medium">📈 数据概览</div>
+                    <div class="text-white/80 text-sm mt-1">查看统计数据</div>
+                </div>
+                <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg cursor-pointer hover:bg-white/20 transition-all">
+                    <div class="text-white font-medium">🔍 数据查询</div>
+                    <div class="text-white/80 text-sm mt-1">搜索和过滤数据</div>
+                </div>
+                <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg cursor-pointer hover:bg-white/20 transition-all">
+                    <div class="text-white font-medium">📊 图表分析</div>
+                    <div class="text-white/80 text-sm mt-1">可视化数据分析</div>
+                </div>
+                <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg cursor-pointer hover:bg-white/20 transition-all">
+                    <div class="text-white font-medium">⚙️ 设置</div>
+                    <div class="text-white/80 text-sm mt-1">配置选项</div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- 内容区域 -->
+    <div class="data-content" id="dataContent">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-800 mb-8">🎯 DataSidebar 重叠测试</h1>
+            
+            <div class="content-card">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">📊 实时状态监控</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <div class="text-sm text-gray-600 mb-1">侧边栏宽度</div>
+                        <div class="text-2xl font-bold text-blue-600" id="sidebarWidth">16rem</div>
+                        <div class="text-xs text-gray-500" id="sidebarWidthPx">256px</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <div class="text-sm text-gray-600 mb-1">内容左边距</div>
+                        <div class="text-2xl font-bold text-green-600" id="contentMargin">16rem</div>
+                        <div class="text-xs text-gray-500" id="contentMarginPx">256px</div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                        <div class="text-sm text-gray-600 mb-1">安全间隙</div>
+                        <div class="text-2xl font-bold text-purple-600" id="safeGap">✓ 安全</div>
+                        <div class="text-xs text-gray-500">无重叠风险</div>
+                    </div>
+                </div>
+                
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <p class="text-yellow-700">
+                        <strong>测试说明：</strong> 此页面模拟DataSidebar组件的行为，用于检测侧边栏与内容区域是否发生重叠。
+                        当布局正确时，内容应该始终保持在侧边栏右侧，两者之间有明确的分界线。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">🔧 控制面板</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">侧边栏控制</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm" onclick="toggleSidebar()">
+                                切换展开/收起
+                            </button>
+                            <button class="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm" onclick="resetLayout()">
+                                重置布局
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">调试选项</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm" onclick="toggleDebugGrid()">
+                                网格辅助线
+                            </button>
+                            <button class="px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm" onclick="forceCheckOverlap()">
+                                强制检测
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-700 mb-2">宽度调节</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="px-3 py-1 bg-indigo-500 text-white rounded text-sm hover:bg-indigo-600" onclick="setSidebarWidth('12rem')">
+                            窄 (12rem)
+                        </button>
+                        <button class="px-3 py-1 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700" onclick="setSidebarWidth('16rem')">
+                            标准 (16rem)
+                        </button>
+                        <button class="px-3 py-1 bg-indigo-700 text-white rounded text-sm hover:bg-indigo-800" onclick="setSidebarWidth('20rem')">
+                            宽 (20rem)
+                        </button>
+                        <button class="px-3 py-1 bg-indigo-800 text-white rounded text-sm hover:bg-indigo-900" onclick="setSidebarWidth('24rem')">
+                            超宽 (24rem)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">📋 测试数据区域</h3>
+                <div class="space-y-4">
+                    <div class="p-4 bg-white border rounded-lg">
+                        <h4 class="font-medium text-gray-700 mb-2">数据表格示例</h4>
+                        <p class="text-gray-600 text-sm">
+                            这里应该显示数据表格内容。如果布局正确，整个表格都应该完全可见，
+                            不会被左侧的DataSidebar遮挡任何部分。
+                        </p>
+                    </div>
+                    
+                    <div class="p-4 bg-white border rounded-lg">
+                        <h4 class="font-medium text-gray-700 mb-2">图表区域</h4>
+                        <p class="text-gray-600 text-sm">
+                            图表和可视化组件应该在此区域内完整显示。注意检查左右边界是否都被正确计算。
+                        </p>
+                    </div>
+                    
+                    <div class="p-4 bg-white border rounded-lg">
+                        <h4 class="font-medium text-gray-700 mb-2">操作面板</h4>
+                        <p class="text-gray-600 text-sm">
+                            各种操作按钮和控制元素应该完全可见，用户可以无障碍地访问所有功能。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">✅ 布局规范检查清单</h3>
+                <ul class="space-y-3 text-gray-600">
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span><strong>基础间距：</strong> 内容区域左边距等于侧边栏宽度</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span><strong>收起状态：</strong> 侧边栏收起时，内容左边距调整为图标宽度(3rem)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span><strong>响应式适配：</strong> 在不同屏幕尺寸下保持正确的间距关系</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span><strong>过渡动画：</strong> 展开/收起过程中平滑过渡，无跳动</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span><strong>内容完整性：</strong> 任何状态下内容都不被遮挡或截断</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <div class="text-center mb-3">
+            <div class="text-sm font-medium text-gray-700">实时检测</div>
+            <div class="text-xs text-gray-500" id="lastCheck">等待检测...</div>
+        </div>
+        <button class="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm" onclick="continuousMonitor()">
+            开始连续监测
+        </button>
+    </div>
+    
+    <script>
+        let isCollapsed = false;
+        let currentWidth = '16rem';
+        let monitorInterval = null;
+        let debugGridVisible = false;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplayValues();
+            checkOverlap();
+        });
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('dataSidebar');
+            const content = document.getElementById('dataContent');
+            const indicator = document.getElementById('statusIndicator');
+            
+            isCollapsed = !isCollapsed;
+            
+            if (isCollapsed) {
+                sidebar.style.width = 'var(--sidebar-width-icon)';
+                content.classList.add('collapsed');
+                indicator.textContent = '收起状态 - 安全距离';
+                indicator.classList.add('safe');
+            } else {
+                sidebar.style.width = 'var(--sidebar-width)';
+                content.classList.remove('collapsed');
+                indicator.textContent = '展开状态 - 安全距离';
+                indicator.classList.add('safe');
+            }
+            
+            updateDisplayValues();
+            setTimeout(checkOverlap, 300); // 动画完成后检查
+        }
+        
+        function setSidebarWidth(width) {
+            document.documentElement.style.setProperty('--sidebar-width', width);
+            currentWidth = width;
+            updateDisplayValues();
+            setTimeout(checkOverlap, 100);
+        }
+        
+        function resetLayout() {
+            document.documentElement.style.setProperty('--sidebar-width', '16rem');
+            currentWidth = '16rem';
+            isCollapsed = false;
+            
+            const sidebar = document.getElementById('dataSidebar');
+            const content = document.getElementById('dataContent');
+            const indicator = document.getElementById('statusIndicator');
+            
+            sidebar.style.width = 'var(--sidebar-width)';
+            content.classList.remove('collapsed');
+            indicator.textContent = '展开状态 - 安全距离';
+            indicator.classList.add('safe');
+            
+            updateDisplayValues();
+            checkOverlap();
+        }
+        
+        function updateDisplayValues() {
+            const sidebarWidthEl = document.getElementById('sidebarWidth');
+            const sidebarWidthPxEl = document.getElementById('sidebarWidthPx');
+            const contentMarginEl = document.getElementById('contentMargin');
+            const contentMarginPxEl = document.getElementById('contentMarginPx');
+            
+            const widthRem = parseFloat(currentWidth);
+            const widthPx = Math.round(widthRem * 16);
+            const iconWidthPx = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-icon')) * 16);
+            
+            sidebarWidthEl.textContent = currentWidth;
+            sidebarWidthPxEl.textContent = `${widthPx}px`;
+            
+            if (isCollapsed) {
+                contentMarginEl.textContent = '3rem';
+                contentMarginPxEl.textContent = `${iconWidthPx}px`;
+            } else {
+                contentMarginEl.textContent = currentWidth;
+                contentMarginPxEl.textContent = `${widthPx}px`;
+            }
+        }
+        
+        function checkOverlap() {
+            const detector = document.getElementById('overlapDetector');
+            const content = document.getElementById('dataContent');
+            const sidebar = document.getElementById('dataSidebar');
+            const safeGapEl = document.getElementById('safeGap');
+            const indicator = document.getElementById('statusIndicator');
+            
+            const contentRect = content.getBoundingClientRect();
+            const sidebarRect = sidebar.getBoundingClientRect();
+            
+            // 计算实际间隙
+            const actualGap = contentRect.left - sidebarRect.right;
+            const isSafe = actualGap >= -2; // 允许2px的误差范围
+            
+            if (isSafe) {
+                detector.classList.remove('show');
+                safeGapEl.textContent = '✓ 安全';
+                safeGapEl.className = 'text-2xl font-bold text-green-600';
+                indicator.classList.add('safe');
+                if (!isCollapsed) {
+                    indicator.textContent = '展开状态 - 安全距离';
+                } else {
+                    indicator.textContent = '收起状态 - 安全距离';
+                }
+            } else {
+                detector.classList.add('show');
+                safeGapEl.textContent = '✗ 重叠';
+                safeGapEl.className = 'text-2xl font-bold text-red-600';
+                indicator.classList.remove('safe');
+                indicator.textContent = '⚠️ 检测到重叠';
+                indicator.style.background = '#ef4444';
+            }
+            
+            document.getElementById('lastCheck').textContent = `最后检测: ${new Date().toLocaleTimeString()}`;
+            return isSafe;
+        }
+        
+        function forceCheckOverlap() {
+            checkOverlap();
+            // 震动提醒
+            if (!checkOverlap()) {
+                navigator.vibrate && navigator.vibrate([100, 50, 100]);
+            }
+        }
+        
+        function continuousMonitor() {
+            const button = event.target;
+            
+            if (monitorInterval) {
+                clearInterval(monitorInterval);
+                monitorInterval = null;
+                button.textContent = '开始连续监测';
+                button.className = button.className.replace('bg-red-600', 'bg-red-500');
+            } else {
+                monitorInterval = setInterval(checkOverlap, 500);
+                button.textContent = '停止监测';
+                button.className = button.className.replace('bg-red-500', 'bg-red-600');
+            }
+        }
+        
+        function toggleDebugGrid() {
+            const grid = document.getElementById('debugGrid');
+            debugGridVisible = !debugGridVisible;
+            
+            if (debugGridVisible) {
+                grid.classList.add('show');
+                event.target.textContent = '隐藏网格';
+            } else {
+                grid.classList.remove('show');
+                event.target.textContent = '网格辅助线';
+            }
+        }
+        
+        // 窗口大小改变时重新检查
+        window.addEventListener('resize', () => {
+            setTimeout(checkOverlap, 100);
+        });
+        
+        // 滚动时检查（某些情况下可能影响布局）
+        window.addEventListener('scroll', () => {
+            setTimeout(checkOverlap, 50);
+        });
+    </script>
+</body>
+</html>

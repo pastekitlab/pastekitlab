@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "PasteKit Lab",
+  "version": "1.0.1",
+  "description": "Paste anything. Watch the magic happen.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PasteKit Lab"
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "PasteKitLab_16.png",
+    "32": "PasteKitLab_32.png",
+    "64": "PasteKitLab_64.png",
+    "128": "PasteKitLab_128.png"
+  },
+  "permissions": [
+    "commands"
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+A"
+      },
+      "description": "Open PasteKitLab popup"
+    }
+  },
+  "host_permissions": [
+    "https://free.freeipapi.com/",
+    "https://dns.alidns.com/"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
