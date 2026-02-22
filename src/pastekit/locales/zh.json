@@ -304,8 +304,10 @@
       "messages": {
         "select_valid_config": "请选择有效的配置",
         "enter_test_text": "请输入测试文本",
+        "enter_ciphertext": "请输入密文",
         "execute_encrypt_first": "请先执行加密操作或输入密文",
         "encrypt_success": "加密成功",
+        "decrypt_success": "解密成功",
         "decrypt_success_match": "✅ 解密成功且结果与原文一致",
         "decrypt_success_mismatch": "⚠️ 解密成功但结果与原文不一致",
         "full_test_pass": "✅ 完整测试通过！加密解密结果一致",
@@ -314,7 +316,9 @@
         "unsupported_mode": "不支持的{{type}}模式: {{mode}}。支持的模式: {{modes}}",
         "encrypt_failed": "加密失败: {{error}}",
         "decrypt_failed": "解密失败: {{error}}",
-        "test_failed": "测试失败: {{error}}"
+        "test_failed": "测试失败: {{error}}",
+        "encryption_result": "🔒 加密结果",
+        "decryption_result": "🔓 解密结果"
       },
       "decrypt_result_validation": "解密结果验证",
       "strict_comparison_result": "严格比较结果",

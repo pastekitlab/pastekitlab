@@ -166,7 +166,7 @@ const AutoCipherTool = ({ content = '' }) => {
   const successfulResults = decryptionResults.filter(r => r.success);
 
   return (
-    <div className="w-full border rounded p-4 space-y-4">
+    <div className="w-full border rounded p-4 space-y-4 h-full">
       <h3 className="text-lg font-bold">🔍 Automatic Decryption Tool</h3>
       
       <div className="space-y-4">
@@ -180,12 +180,12 @@ const AutoCipherTool = ({ content = '' }) => {
 
       {/* 只显示成功解密的结果 */}
       {successfulResults.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-4 flex-1">
           <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
             🔓 Decryption Success Results ({successfulResults.length} items)
           </div>
           
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-96 overflow-y-auto">
             {successfulResults.map((result, index) => (
               <div key={index} className="border rounded-lg p-4 bg-green-50 border-green-200">
                 <div className="flex items-center justify-between mb-2">
@@ -205,7 +205,7 @@ const AutoCipherTool = ({ content = '' }) => {
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-green-700">Decryption Successful</div>
                   <div className="bg-white border border-green-200 rounded p-3">
-                    <pre className="whitespace-pre-wrap break-words text-sm">
+                    <pre className="whitespace-pre-wrap break-words text-sm max-w-full overflow-hidden">
                       {result.plaintext}
                     </pre>
                   </div>

@@ -208,9 +208,8 @@ class OptionsManager {
                 case 'AES/CBC/PKCS5Padding':
                 case 'AES/ECB/PKCS5Padding':
                     const aesKeys = await this.getAESKeys();
-                    const algParts = algorithm.split('/');
                     config = {
-                        algorithm: `AES/${algParts[1]}/${algParts[2]}`,
+                        algorithm: algorithm,
                         key: { value: aesKeys.key, encoding: ['UTF8'] },
                         iv: aesKeys.iv ? { value: aesKeys.iv, encoding: ['UTF8'] } : undefined,
                         plainEncoding: ['UTF8'],
@@ -222,9 +221,8 @@ class OptionsManager {
                 case 'SM4/CBC':
                 case 'SM4/ECB':
                     const sm4Keys = await this.getAESKeys(); // SM4使用相同密钥格式
-                    const sm4Parts = algorithm.split('/');
                     config = {
-                        algorithm: `SM4/${sm4Parts[1]}`,
+                        algorithm: algorithm,
                         key: { value: sm4Keys.key, encoding: ['UTF8'] },
                         iv: sm4Keys.iv ? { value: sm4Keys.iv, encoding: ['UTF8'] } : undefined,
                         plainEncoding: ['UTF8'],
@@ -276,9 +274,8 @@ class OptionsManager {
                 case 'AES/CBC/PKCS5Padding':
                 case 'AES/ECB/PKCS5Padding':
                     const aesKeys = await this.getAESKeys();
-                    const algParts = algorithm.split('/');
                     config = {
-                        algorithm: `AES/${algParts[1]}/${algParts[2]}`,
+                        algorithm: algorithm,
                         key: { value: aesKeys.key, encoding: ['UTF8'] },
                         iv: aesKeys.iv ? { value: aesKeys.iv, encoding: ['UTF8'] } : undefined,
                         plainEncoding: ['UTF8'],
@@ -290,9 +287,8 @@ class OptionsManager {
                 case 'SM4/CBC':
                 case 'SM4/ECB':
                     const sm4Keys = await this.getAESKeys();
-                    const sm4Parts = algorithm.split('/');
                     config = {
-                        algorithm: `SM4/${sm4Parts[1]}`,
+                        algorithm: algorithm,
                         key: { value: sm4Keys.key, encoding: ['UTF8'] },
                         iv: sm4Keys.iv ? { value: sm4Keys.iv, encoding: ['UTF8'] } : undefined,
                         plainEncoding: ['UTF8'],

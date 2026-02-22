@@ -114,7 +114,7 @@ export default function OptionsPage() {
   // 当翻译未准备好时显示加载状态
   if (!isReady || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <div className="text-xl font-medium text-gray-700">Loading...</div>
@@ -129,7 +129,7 @@ export default function OptionsPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex w-full h-screen bg-gray-50">
         {/* Sidebar */}
         <Sidebar className="border-r bg-white" variant="sidebar">
           <SidebarContent>
@@ -177,11 +177,12 @@ export default function OptionsPage() {
             )}
             
             {activeSection === 'encryption-test' && (
-              <div className="space-y-6 max-w-6xl mx-auto">
+              <div className="space-y-6 w-full">
                 <h1 className="text-2xl font-bold">{t('options.sidebar.encryption_test')}</h1>
                 <CipherTestComponent 
                   configs={savedConfigs}
                   selectedConfig={currentConfig}
+                  className="w-full"
                 />
               </div>
             )}

@@ -499,22 +499,22 @@ export default function PopUp() {
                         </TooltipContent>
                     </Tooltip>
                     
-                    {/*/!* Donate *!/*/}
-                    {/*<Tooltip>*/}
-                    {/*    <TooltipTrigger asChild>*/}
-                    {/*        <a*/}
-                    {/*            href="https://buymeacoffee.com/example"*/}
-                    {/*            target="_blank"*/}
-                    {/*            rel="noopener noreferrer"*/}
-                    {/*            className="text-yellow-600 hover:text-yellow-700 transition-colors duration-200"*/}
-                    {/*        >*/}
-                    {/*            <Coffee className="w-5 h-5" />*/}
-                    {/*        </a>*/}
-                    {/*    </TooltipTrigger>*/}
-                    {/*    <TooltipContent>*/}
-                    {/*        <p>{t('common.donate')}</p>*/}
-                    {/*    </TooltipContent>*/}
-                    {/*</Tooltip>*/}
+                    {/* Donate */}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <a
+                                href="https://ko-fi.com/pastekitlab"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-yellow-600 hover:text-yellow-700 transition-colors duration-200"
+                            >
+                                <Coffee className="w-5 h-5" />
+                            </a>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{t('common.donate')}</p>
+                        </TooltipContent>
+                    </Tooltip>
                     
                     {/* GitHub */}
                     <Tooltip>

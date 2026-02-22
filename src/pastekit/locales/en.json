@@ -305,8 +305,10 @@
       "messages": {
         "select_valid_config": "Please select a valid configuration",
         "enter_test_text": "Please enter test text",
+        "enter_ciphertext": "Please enter ciphertext",
         "execute_encrypt_first": "Please execute encryption first or enter ciphertext",
         "encrypt_success": "Encryption successful",
+        "decrypt_success": "Decryption successful",
         "decrypt_success_match": "✅ Decryption successful and result matches original text",
         "decrypt_success_mismatch": "⚠️ Decryption successful but result does not match original text",
         "full_test_pass": "✅ Full test passed! Encryption and decryption results are consistent",
@@ -315,7 +317,9 @@
         "unsupported_mode": "Unsupported {{type}} mode: {{mode}}. Supported modes: {{modes}}",
         "encrypt_failed": "Encryption failed: {{error}}",
         "decrypt_failed": "Decryption failed: {{error}}",
-        "test_failed": "Test failed: {{error}}"
+        "test_failed": "Test failed: {{error}}",
+        "encryption_result": "🔒 Encryption Result",
+        "decryption_result": "🔓 Decryption Result"
       },
       "decrypt_result_validation": "Decryption result validation",
       "strict_comparison_result": "Strict comparison result",

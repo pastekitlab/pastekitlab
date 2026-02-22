@@ -472,18 +472,14 @@ function EncodingSettingsEditor({
                 <SelectValue placeholder={`${t('common.add')} ${t('components.keyconfigmanager.ciphertext_encoding')}`} />
               </SelectTrigger>
               <SelectContent>
-                {CIPHERTEXT_ENCODING_OPTIONS.map(option => {
-                  const isSelected = cipherEncoding.includes(option.value);
-                  return (
-                    <SelectItem 
-                      key={option.value} 
-                      value={option.value}
-                      disabled={isSelected}
-                    >
-                      {option.label}{isSelected ? ' (' + t('common.added') + ')' : ''}
-                    </SelectItem>
-                  );
-                })}
+                {CIPHERTEXT_ENCODING_OPTIONS.map(option => (
+                  <SelectItem 
+                    key={option.value} 
+                    value={option.value}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             

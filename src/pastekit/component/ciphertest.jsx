@@ -87,8 +87,8 @@ export default function CipherTestComponent({
       return;
     }
 
-    if (!encryptResult.trim()) {
-      toast.error(t('components.ciphertest.messages.execute_encrypt_first'));
+    if (!testText.trim()) {
+      toast.error(t('encryption.messages.enter_ciphertext'));
       return;
     }
 
@@ -108,17 +108,12 @@ export default function CipherTestComponent({
       
       // 适配配置格式
       const adaptedConfig = adaptConfigForCipher(config);
-      const result = CipherUtils.decrypt(encryptResult, adaptedConfig);
+      // 使用 testText 作为密文进行解密
+      const result = CipherUtils.decrypt(testText, adaptedConfig);
       setDecryptResult(result);
       
-      // 验证与输入文本的一致性
-      const isMatch = normalizeString(result) === normalizeString(testText);
-      if (isMatch) {
-        toast.success(t('components.ciphertest.messages.decrypt_success_match'));
-      } else {
-        toast.warning(t('components.ciphertest.messages.decrypt_success_mismatch'));
-        console.log(t('components.ciphertest.decrypt_result_validation'), result === testText, t('components.ciphertest.normalized_comparison_result'), isMatch);
-      }
+      // 解密成功提示
+      toast.success(t('components.ciphertest.messages.decrypt_success'));
     } catch (error) {
       console.error('Decryption failed:', error);
       toast.error(t('components.ciphertest.messages.decrypt_failed', { error: error.message }));
@@ -171,6 +166,8 @@ export default function CipherTestComponent({
       
       if (isMatch) {
         toast.success(t('components.ciphertest.messages.full_test_pass'));
+        // 在完整测试中显示一致性提示
+        console.log(t('components.ciphertest.result_consistent'));
       } else {
         toast.warning(t('components.ciphertest.messages.full_test_mismatch'));
         // 输出详细调试信息
@@ -311,8 +308,8 @@ export default function CipherTestComponent({
   const currentConfig = getCurrentConfig();
 
   return (
-    <div className={`space-y-4 w-full ${className}`}>
-      <Card className="w-full">
+    <div className={`space-y-4 w-full h-full flex flex-col ${className}`}>
+      <Card className="w-full flex-1 flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {t('components.ciphertest.title')}
@@ -323,7 +320,7 @@ export default function CipherTestComponent({
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 flex-1 overflow-auto">
           {/* 配置选择器 */}
           {showConfigSelector && configs.length > 0 && (
             <div className="space-y-2">
@@ -445,11 +442,11 @@ export default function CipherTestComponent({
           </div>
 
           {/* 结果显示区域 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full flex-1 min-h-0">
             {/* 加密结果 */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                {t('components.ciphertest.encrypt_result')}
+            <div className="space-y-2 flex flex-col h-full">
+              <Label className="flex items-center gap-2 flex-shrink-0">
+                {t('components.ciphertest.messages.encryption_result')}
                 {encryptResult && (
                   <span className="text-xs text-green-600">{t('components.ciphertest.encrypted')}</span>
                 )}
@@ -458,15 +455,14 @@ export default function CipherTestComponent({
                 value={encryptResult}
                 readOnly
                 placeholder={t('components.ciphertest.encrypt_result_placeholder')}
-                rows={4}
-                className="font-mono text-sm bg-muted"
+                className="font-mono text-sm bg-muted flex-1 min-h-[120px] w-full resize-none"
               />
             </div>
 
             {/* 解密结果 */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                {t('components.ciphertest.decrypt_result')}
+            <div className="space-y-2 flex flex-col h-full">
+              <Label className="flex items-center gap-2 flex-shrink-0">
+                {t('components.ciphertest.messages.decryption_result')}
                 {decryptResult && (
                   <span className="text-xs text-green-600">{t('components.ciphertest.decrypted')}</span>
                 )}
@@ -475,13 +471,12 @@ export default function CipherTestComponent({
                 value={decryptResult}
                 readOnly
                 placeholder={t('components.ciphertest.decrypt_result_placeholder')}
-                rows={4}
-                className="font-mono text-sm bg-muted"
+                className="font-mono text-sm bg-muted flex-1 min-h-[120px] w-full resize-none"
               />
               
               {/* 结果对比 */}
               {decryptResult && testText && (
-                <div className={`text-sm p-2 rounded ${
+                <div className={`text-sm p-2 rounded flex-shrink-0 ${
                   normalizeString(decryptResult) === normalizeString(testText) 
                     ? 'bg-green-100 text-green-800 border border-green-200' 
                     : 'bg-red-100 text-red-800 border border-red-200'
@@ -493,13 +488,13 @@ export default function CipherTestComponent({
                   {/* 详细比较信息 */}
                   <details className="mt-2">
                     <summary className="cursor-pointer text-xs">{t('components.ciphertest.detailed_comparison')}</summary>
-                    <div className="text-xs mt-1 space-y-1">
-                      <div>{t('components.ciphertest.strict_comparison')}: {decryptResult === testText ? '✅ ' + t('components.ciphertest.equal') : '❌ ' + t('components.ciphertest.not_equal')}</div>
-                      <div>{t('components.ciphertest.normalized_comparison')}: {normalizeString(decryptResult) === normalizeString(testText) ? '✅ ' + t('components.ciphertest.equal') : '❌ ' + t('components.ciphertest.not_equal')}</div>
-                      <div>{t('components.ciphertest.original_length')}: {testText.length} {t('components.ciphertest.characters')}</div>
-                      <div>{t('components.ciphertest.decrypted_length')}: {decryptResult.length} {t('components.ciphertest.characters')}</div>
-                      <div>{t('components.ciphertest.original_preview')}: "{testText.substring(0, 50)}{testText.length > 50 ? '...' : ''}"</div>
-                      <div>{t('components.ciphertest.decrypted_preview')}: "{decryptResult.substring(0, 50)}{decryptResult.length > 50 ? '...' : ''}"</div>
+                    <div className="text-xs mt-1 space-y-1 max-w-full overflow-hidden">
+                      <div className="truncate">{t('components.ciphertest.strict_comparison')}: {decryptResult === testText ? '✅ ' + t('components.ciphertest.equal') : '❌ ' + t('components.ciphertest.not_equal')}</div>
+                      <div className="truncate">{t('components.ciphertest.normalized_comparison')}: {normalizeString(decryptResult) === normalizeString(testText) ? '✅ ' + t('components.ciphertest.equal') : '❌ ' + t('components.ciphertest.not_equal')}</div>
+                      <div className="truncate">{t('components.ciphertest.original_length')}: {testText.length} {t('components.ciphertest.characters')}</div>
+                      <div className="truncate">{t('components.ciphertest.decrypted_length')}: {decryptResult.length} {t('components.ciphertest.characters')}</div>
+                      <div className="truncate">{t('components.ciphertest.original_preview')}: "{testText.substring(0, 50)}{testText.length > 50 ? '...' : ''}"</div>
+                      <div className="truncate">{t('components.ciphertest.decrypted_preview')}: "{decryptResult.substring(0, 50)}{decryptResult.length > 50 ? '...' : ''}"</div>
                     </div>
                   </details>
                 </div>
@@ -509,7 +504,7 @@ export default function CipherTestComponent({
 
           {/* 测试统计信息 */}
           {encryptResult && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm flex-shrink-0">
               <div className="bg-muted p-3 rounded">
                 <div className="text-muted-foreground">{t('components.ciphertest.original_size')}</div>
                 <div className="font-medium">{testText.length} {t('components.ciphertest.characters')}</div>

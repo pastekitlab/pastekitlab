@@ -152,13 +152,10 @@ export class EncodingHandler {
   static addCipherEncoding(setState, encoding) {
     setState(prev => {
       const currentEncodings = prev.cipherEncoding || [];
-      if (!currentEncodings.includes(encoding)) {
-        return {
-          ...prev,
-          cipherEncoding: [...currentEncodings, encoding]
-        };
-      }
-      return prev;
+      return {
+        ...prev,
+        cipherEncoding: [...currentEncodings, encoding]
+      };
     });
   }
 
