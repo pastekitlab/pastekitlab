@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { CipherUtils } from '../utils/cipherutils';
 import { StorageUtils } from '../utils/storageutils';
+import { useTranslation } from '../utils/i18n';
 
 const AutoCipherTool = ({ content = '' }) => {
+  const [t] = useTranslation();
   const [decryptionResults, setDecryptionResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [configs, setConfigs] = useState([]);
@@ -25,7 +19,7 @@ const AutoCipherTool = ({ content = '' }) => {
         setConfigs(allConfigs);
       } catch (err) {
         console.error('加载配置失败:', err);
-        setError('加载加密配置失败');
+        setError(t('components.autociphertool.error.no_configs'));
       }
     };
     loadConfigs();
@@ -56,12 +50,12 @@ const AutoCipherTool = ({ content = '' }) => {
   // 自动解密函数
   const autoDecrypt = async () => {
     if (!content.trim()) {
-      setError('没有可解密的内容');
+      setError(t('components.autociphertool.error.no_content'));
       return;
     }
 
     if (configs.length === 0) {
-      setError('没有找到任何加密配置，请先在密钥配置管理中添加配置');
+      setError(t('components.autociphertool.error.no_configs'));
       return;
     }
 
@@ -80,7 +74,7 @@ const AutoCipherTool = ({ content = '' }) => {
           results.push({
             configName: config.name,
             success: false,
-            error: '配置无效',
+            error: t('components.autociphertool.error.invalid_config'),
             plaintext: null
           });
           continue;
@@ -131,7 +125,7 @@ const AutoCipherTool = ({ content = '' }) => {
           results.push({
             configName: config.name,
             success: false,
-            error: '解密失败或内容未发生变化',
+            error: t('components.autociphertool.error.decrypt_failed'),
             plaintext: null
           });
         }
@@ -140,7 +134,7 @@ const AutoCipherTool = ({ content = '' }) => {
         results.push({
           configName: config.name,
           success: false,
-          error: err.message || '解密过程出错',
+          error: err.message || t('components.autociphertool.error.process_error'),
           plaintext: null
         });
       }
@@ -152,7 +146,7 @@ const AutoCipherTool = ({ content = '' }) => {
     // 检查是否有成功的解密
     const successfulResults = results.filter(r => r.success);
     if (successfulResults.length === 0) {
-      setError('未能使用任何配置成功解密该内容');
+      setError(t('components.autociphertool.error.no_successful_decrypt'));
     }
   };
 
@@ -167,13 +161,13 @@ const AutoCipherTool = ({ content = '' }) => {
 
   return (
     <div className="w-full border rounded p-4 space-y-4 h-full">
-      <h3 className="text-lg font-bold">🔍 Automatic Decryption Tool</h3>
+      <h3 className="text-lg font-bold">{t('components.autociphertool.title')}</h3>
       
       <div className="space-y-4">
 
         {error && (
           <div className="p-3 bg-red-100 text-red-800 rounded text-sm">
-            <strong>Error:</strong> {error}
+            <strong>{t('common.error')}:</strong> {error}
           </div>
         )}
       </div>
@@ -182,7 +176,7 @@ const AutoCipherTool = ({ content = '' }) => {
       {successfulResults.length > 0 && (
         <div className="space-y-4 flex-1">
           <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-            🔓 Decryption Success Results ({successfulResults.length} items)
+            {t('components.autociphertool.success.title')} ({successfulResults.length} {t('common.items')})
           </div>
           
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -198,12 +192,12 @@ const AutoCipherTool = ({ content = '' }) => {
                     )}
                   </div>
                   <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded font-medium">
-                    Success
+                    {t('components.autociphertool.success.label')}
                   </span>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-green-700">Decryption Successful</div>
+                  <div className="text-sm font-medium text-green-700">{t('components.autociphertool.success.message')}</div>
                   <div className="bg-white border border-green-200 rounded p-3">
                     <pre className="whitespace-pre-wrap break-words text-sm max-w-full overflow-hidden">
                       {result.plaintext}
@@ -218,13 +212,13 @@ const AutoCipherTool = ({ content = '' }) => {
 
       {/* 使用说明 */}
       <div className="border rounded p-3 bg-gray-50">
-        <h4 className="font-medium text-sm mb-2 text-gray-700">Usage Instructions</h4>
+        <h4 className="font-medium text-sm mb-2 text-gray-700">{t('components.autociphertool.usage.title')}</h4>
         <div className="space-y-1 text-sm text-gray-600">
-          <div>• The system will use all saved encryption configurations to attempt decryption sequentially</div>
-          <div>• Only successful decryption results are displayed</div>
-          <div>• Successful results are highlighted with green theme</div>
+          <div>• {t('components.autociphertool.usage.instruction1')}</div>
+          <div>• {t('components.autociphertool.usage.instruction2')}</div>
+          <div>• {t('components.autociphertool.usage.instruction3')}</div>
           <div className="mt-2 pt-2 border-t text-xs">
-            <strong>Tip:</strong> Please ensure correct encryption configurations have been added in Key Configuration Management
+            <strong>{t('common.tip')}:</strong> {t('components.autociphertool.usage.tip')}
           </div>
         </div>
       </div>

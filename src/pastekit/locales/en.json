@@ -30,7 +30,9 @@
     "github_repository": "GitHub Repository",
     "language_switch": "Language Switch",
     "select_language": "Select Language",
-    "current_language": "Current Language"
+    "current_language": "Current Language",
+    "items": "items",
+    "tip": "Tip"
   },
   "popup": {
     "title": "PasteKitLab",
@@ -232,6 +234,7 @@
       "save_config": "Save Configuration",
       "delete_config": "Delete Configuration",
       "generate_keys": "🔑 Generate RSA Keys",
+      "generate_sm2_keys": "🔑 Generate SM2 Keys",
       "config_list": "Configuration List",
       "actions": "Actions",
       "base_config": "Basic Configuration",
@@ -247,10 +250,12 @@
         "created": "Configuration created and saved",
         "saved": "Configuration saved",
         "deleted": "Configuration deleted",
-        "keys_generated": "RSA key pair generated successfully! Please click save button manually to save configuration"
+        "keys_generated": "RSA key pair generated successfully! Please click save button manually to save configuration",
+        "sm2_keys_generated": "SM2 key pair generated successfully! Please click save button manually to save configuration"
       },
       "no_configs": "No configurations available, please create a new configuration",
       "generating_keys": "Generating RSA key pair",
+      "generating_sm2_keys": "Generating SM2 key pair",
       "confirm_delete": "Are you sure you want to delete configuration",
       "confirm_delete_suffix": "",
       "total_configs": "Total {{count}} configurations",
@@ -380,6 +385,29 @@
       "scan_prompt": "📱 Scan QR code to access content",
       "content_label": "QR code content",
       "enter_content": "Please enter content to generate QR code"
+    },
+    "autociphertool": {
+      "title": "🔍 Automatic Decryption Tool",
+      "error": {
+        "no_content": "No content to decrypt",
+        "no_configs": "No encryption configurations found. Please add configurations in Key Configuration Management first",
+        "invalid_config": "Invalid configuration",
+        "decrypt_failed": "Decryption failed or content unchanged",
+        "process_error": "Decryption process error",
+        "no_successful_decrypt": "Failed to successfully decrypt this content with any configuration"
+      },
+      "success": {
+        "title": "🔓 Decryption Success Results",
+        "label": "Success",
+        "message": "Decryption Successful"
+      },
+      "usage": {
+        "title": "Usage Instructions",
+        "instruction1": "The system will use all saved encryption configurations to attempt decryption sequentially",
+        "instruction2": "Only successful decryption results are displayed",
+        "instruction3": "Successful results are highlighted with green theme",
+        "tip": "Tip: Please ensure correct encryption configurations have been added in Key Configuration Management"
+      }
     }
   }
 }

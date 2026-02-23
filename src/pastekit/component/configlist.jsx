@@ -134,7 +134,8 @@ function getConfigDisplayInfo(config) {
   const mode = config.mode || config.algorithm?.split('/')[1] || '';
   
   let modeDisplay = '';
-  if (algorithmType === 'RSA' || config.algorithm?.startsWith('RSA')) {
+  if (algorithmType === 'RSA' || config.algorithm?.startsWith('RSA') || 
+      algorithmType === 'SM2' || config.algorithm?.startsWith('SM2')) {
     modeDisplay = 'N/A';
   } else {
     if (NEED_PADDING_MODES.has(mode)) {

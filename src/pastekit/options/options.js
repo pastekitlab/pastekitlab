@@ -128,11 +128,11 @@ class OptionsManager {
 
             // 导出公钥
             const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-            const publicKeyPEM = this.arrayBufferToPEM(publicKey, "PUBLIC KEY");
+            const publicKeyPEM = this.arrayBufferToPEM(publicKey, "PUBLIC KEY", false);
 
             // 导出私钥
             const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-            const privateKeyPEM = this.arrayBufferToPEM(privateKey, "PRIVATE KEY");
+            const privateKeyPEM = this.arrayBufferToPEM(privateKey, "PRIVATE KEY", false);
 
             // 填入表单
             document.getElementById('publicKey').value = publicKeyPEM;
@@ -146,8 +146,14 @@ class OptionsManager {
         }
     }
 
-    arrayBufferToPEM(buffer, type) {
+    arrayBufferToPEM(buffer, type, includeHeaders = true) {
         const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+        
+        if (!includeHeaders) {
+            // 只返回Base64内容，不包含PEM头部和尾部标记
+            return base64;
+        }
+        
         const pem = `-----BEGIN ${type}-----\n`;
         const end = `\n-----END ${type}-----`;
         
@@ -199,6 +205,17 @@ class OptionsManager {
                     config = {
                         algorithm: 'RSA',
                         publicKey: { value: rsaKeys.publicKey, encoding: ['UTF8'] },
+                        plainEncoding: ['UTF8'],
+                        cipherEncoding: ['BASE64']
+                    };
+                    ciphertext = CipherUtils.encrypt(plaintext, config);
+                    break;
+
+                case 'SM2':
+                    const sm2Keys = await this.getSM2Keys();
+                    config = {
+                        algorithm: 'SM2',
+                        publicKey: { value: sm2Keys.publicKey, encoding: ['UTF8'] },
                         plainEncoding: ['UTF8'],
                         cipherEncoding: ['BASE64']
                     };
@@ -265,6 +282,17 @@ class OptionsManager {
                     config = {
                         algorithm: 'RSA',
                         privateKey: { value: rsaKeys.privateKey, encoding: ['UTF8'] },
+                        plainEncoding: ['UTF8'],
+                        cipherEncoding: ['BASE64']
+                    };
+                    plaintext = CipherUtils.decrypt(ciphertext, config);
+                    break;
+
+                case 'SM2':
+                    const sm2Keys = await this.getSM2Keys();
+                    config = {
+                        algorithm: 'SM2',
+                        privateKey: { value: sm2Keys.privateKey, encoding: ['UTF8'] },
                         plainEncoding: ['UTF8'],
                         cipherEncoding: ['BASE64']
                     };
@@ -375,6 +403,20 @@ class OptionsManager {
         return {
             key: keys.aesKey,
             iv: keys.aesIv || ''
+        };
+    }
+
+    async getSM2Keys() {
+        const result = await chrome.storage.local.get(['encryptionKeys']);
+        const keys = result.encryptionKeys;
+        
+        if (!keys || !keys.sm2PublicKey || !keys.sm2PrivateKey) {
+            throw new Error('请先配置SM2公钥和私钥');
+        }
+        
+        return {
+            publicKey: keys.sm2PublicKey,
+            privateKey: keys.sm2PrivateKey
         };
     }
 

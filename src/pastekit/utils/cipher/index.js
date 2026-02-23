@@ -2,5 +2,6 @@
 export { EncodingUtils } from './encodingutils.js';
 export { AESCipher } from './aescipher.js';
 export { RSACipher } from './rsacipher.js';
+export { SM2Cipher } from './sm2cipher.js';
 export { SM4Cipher } from './sm4cipher.js';
 export { CipherUtils } from './cipherutils.js';

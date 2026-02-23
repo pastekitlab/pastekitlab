@@ -11,7 +11,9 @@ import { useTranslation } from '../utils/i18n';
 import { 
   normalizeConfig, 
   validateRequiredFields,
-  ConfigManager 
+  ConfigManager,
+  generateRSAKeys,
+  generateSM2Keys
 } from '../utils/keyconfigutils';
 import { 
   ENCODING_OPTIONS,
@@ -55,14 +57,31 @@ export default function ConfigEditor({
     onDelete(config.name);
   };
 
-  const handleGenerateKeys = () => {
-    ConfigManager.generateRSAKeys((keyPairData) => {
-      const formattedKeys = ConfigManager.formatRSAKeyPair(keyPairData);
-      setEditedConfig(prev => ({
-        ...prev,
-        ...formattedKeys
-      }));
-    });
+  const handleGenerateKeys = async () => {
+    try {
+      if (config.algorithmType === 'SM2') {
+        // 生成SM2密钥对
+        await generateSM2Keys((keyPairData) => {
+          console.log('SM2密钥生成完成，keyPairData:', keyPairData);
+          setEditedConfig(prev => ({
+            ...prev,
+            ...keyPairData
+          }));
+        });
+      } else {
+        // 生成RSA密钥对
+        await generateRSAKeys((keyPairData) => {
+          console.log('RSA密钥生成完成，keyPairData:', keyPairData);
+          setEditedConfig(prev => ({
+            ...prev,
+            ...keyPairData
+          }));
+        });
+      }
+    } catch (error) {
+      console.error('生成密钥失败:', error);
+      toast.error(`生成密钥失败: ${error.message}`);
+    }
   };
 
   return (
@@ -168,8 +187,8 @@ function KeyConfigEditor({ config, onUpdateConfig, showGenerateButton, onGenerat
         <h3 className="text-lg font-semibold">{t('components.keyconfigmanager.key_config')}</h3>
       </div>
       
-      {config.algorithmType === 'RSA' ? (
-        <RSAModeEditor 
+      {config.algorithmType === 'RSA' || config.algorithmType === 'SM2' ? (
+        <AsymmetricModeEditor 
           config={config}
           onUpdateConfig={onUpdateConfig}
           onGenerateKeys={onGenerateKeys}
@@ -188,9 +207,9 @@ function KeyConfigEditor({ config, onUpdateConfig, showGenerateButton, onGenerat
 }
 
 /**
- * RSA模式编辑器
+ * 非对称算法模式编辑器（支持RSA和SM2）
  */
-function RSAModeEditor({ config, onUpdateConfig, onGenerateKeys, showGenerateButton, t }) {
+function AsymmetricModeEditor({ config, onUpdateConfig, onGenerateKeys, showGenerateButton, t }) {
   const updatePublicKeyValue = (value) => {
     onUpdateConfig(prev => ({
       ...prev,
@@ -291,7 +310,9 @@ function RSAModeEditor({ config, onUpdateConfig, onGenerateKeys, showGenerateBut
       
       {showGenerateButton && (
         <Button variant="success" onClick={onGenerateKeys} className="w-full">
-          🔑 {t('components.keyconfigmanager.generate_keys')}
+          🔑 {config.algorithmType === 'SM2' 
+            ? t('components.keyconfigmanager.generate_sm2_keys') 
+            : t('components.keyconfigmanager.generate_keys')}
         </Button>
       )}
     </>

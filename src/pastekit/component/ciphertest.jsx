@@ -305,6 +305,18 @@ export default function CipherTestComponent({
     }
   }, [selectedConfig, configs]);
 
+  // 当配置或测试文本发生变化时，自动清除之前的加密结果
+  React.useEffect(() => {
+    if (encryptResult && testText) {
+      // 延迟清除，让用户看到结果后再清除
+      const timer = setTimeout(() => {
+        setEncryptResult('');
+        setDecryptResult('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [testConfig, configs]);
+
   const currentConfig = getCurrentConfig();
 
   return (

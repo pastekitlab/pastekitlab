@@ -4,10 +4,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 
 // 支持的算法/模式/填充
-const ALGORITHMS = ['AES', 'SM4', 'RSA'];
+const ALGORITHMS = ['AES', 'SM2', 'SM4', 'RSA'];
 // 扩展 AES/SM4 常见模式（注意：CryptoJS 不支持 GCM 模式）
 const MODE_MAP = {
   AES: ['CBC', 'ECB', 'CFB', 'OFB', 'CTR'],
+  SM2: [],
   SM4: ['CBC', 'ECB', 'CFB', 'OFB', 'CTR'],
   RSA: []
 };
@@ -73,11 +74,17 @@ export default function CipherTool({ initialValue = {}, onSave, onCancel, onChan
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [algorithm, model, padding]);
 
-  // algorithm 改变时确保 model 可用
+  // algorithm 改变时确保 model 可用，并且对于非对称算法清除padding
   useEffect(() => {
     const modes = MODE_MAP[algorithm] || [];
     if (modes.length > 0 && !modes.includes(model)) setModel(modes[0]);
     if (modes.length === 0) setModel('');
+    
+    // 对于非对称算法(SM2/RSA)，清除padding
+    const isAsymmetric = algorithm === 'RSA' || algorithm === 'SM2';
+    if (isAsymmetric) {
+      setPadding('');
+    }
   }, [algorithm]);
 
   // 当 model 改变时，根据是否需要填充来设置或清除 padding
@@ -92,13 +99,13 @@ export default function CipherTool({ initialValue = {}, onSave, onCancel, onChan
   }, [model]);
 
   const modelRequiresPadding = NEED_PADDING_MODES.has(model);
-  const isRSA = algorithm === 'RSA';
-  const gridColsClass = !isRSA && modelRequiresPadding ? 'grid-cols-3' : 'grid-cols-2';
+  const isAsymmetric = algorithm === 'RSA' || algorithm === 'SM2';
+  const gridColsClass = !isAsymmetric && modelRequiresPadding ? 'grid-cols-3' : 'grid-cols-2';
 
   return (
     <div className="space-y-3 w-full">
-      {/* RSA: 仅显示算法选择 */}
-      {isRSA ? (
+      {/* 非对称算法(RSA/SM2): 仅显示算法选择 */}
+      {isAsymmetric ? (
         <div className="grid grid-cols-1 gap-4">
           <div>
             <Label>算法</Label>

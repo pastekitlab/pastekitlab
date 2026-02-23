@@ -17,13 +17,13 @@ export class AESCipher {
     // 处理密钥
     let parsedKey = key.value;
     if (key.encoding && key.encoding.length > 0) {
-      parsedKey = EncodingUtils.decode(key.value, 'UTF8', key.encoding);
+      parsedKey = EncodingUtils.decode(key.value, key.encoding[0], []);
     }
     
     // 处理初始化向量
     let parsedIv = iv?.value || '';
     if (iv?.encoding && iv.encoding.length > 0) {
-      parsedIv = EncodingUtils.decode(iv.value, 'UTF8', iv.encoding);
+      parsedIv = EncodingUtils.decode(iv.value, iv.encoding[0], []);
     }
     
     // 根据模式选择加密方式
@@ -76,13 +76,13 @@ export class AESCipher {
     // 处理密钥
     let parsedKey = key.value;
     if (key.encoding && key.encoding.length > 0) {
-      parsedKey = EncodingUtils.decode(key.value, 'UTF8', key.encoding);
+      parsedKey = EncodingUtils.decode(key.value, key.encoding[0], []);
     }
     
     // 处理初始化向量
     let parsedIv = iv?.value || '';
     if (iv?.encoding && iv.encoding.length > 0) {
-      parsedIv = EncodingUtils.decode(iv.value, 'UTF8', iv.encoding);
+      parsedIv = EncodingUtils.decode(iv.value, iv.encoding[0], []);
     }
     
     const keyWordArray = CryptoJS.enc.Utf8.parse(parsedKey);

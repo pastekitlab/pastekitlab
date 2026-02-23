@@ -23,8 +23,12 @@ export class ConfigValidator {
   static isValidConfig(config) {
     if (!config || !config.name) return false;
     
-    if (config.algorithm?.startsWith('RSA')) {
-      // RSA配置需要公钥和私钥都有值
+    // 检查是否为非对称算法(RSA/SM2)
+    const isAsymmetric = config.algorithm?.startsWith('RSA') || config.algorithm?.startsWith('SM2') || 
+                        config.algorithmType === 'RSA' || config.algorithmType === 'SM2';
+    
+    if (isAsymmetric) {
+      // 非对称算法需要公钥和私钥都有值
       return config.publicKey?.value && config.privateKey?.value;
     } else {
       // 对称算法需要密钥有值
@@ -62,7 +66,11 @@ export class ConfigValidator {
       return { isValid: false, message: ERROR_MESSAGES.EMPTY_CONFIG_NAME };
     }
     
-    if (config.algorithm?.startsWith('RSA')) {
+    // 检查是否为非对称算法(RSA/SM2)
+    const isAsymmetric = config.algorithm?.startsWith('RSA') || config.algorithm?.startsWith('SM2') || 
+                        config.algorithmType === 'RSA' || config.algorithmType === 'SM2';
+    
+    if (isAsymmetric) {
       if (!config.publicKey?.value?.trim() || !config.privateKey?.value?.trim()) {
         return { isValid: false, message: ERROR_MESSAGES.EMPTY_RSA_KEYS };
       }
@@ -237,10 +245,10 @@ export class RSAKeyGenerator {
       );
 
       const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-      const publicKeyPEM = this.arrayBufferToPEM(publicKey, "PUBLIC KEY");
+      const publicKeyPEM = RSAKeyGenerator.arrayBufferToPEM(publicKey, "PUBLIC KEY", false);
 
       const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-      const privateKeyPEM = this.arrayBufferToPEM(privateKey, "PRIVATE KEY");
+      const privateKeyPEM = RSAKeyGenerator.arrayBufferToPEM(privateKey, "PRIVATE KEY", false);
 
       const keyPairData = {
         publicKey: {
@@ -265,14 +273,31 @@ export class RSAKeyGenerator {
   }
 
   /**
-   * ArrayBuffer转PEM格式（去除头部尾部标记，只保留Base64内容）
+   * ArrayBuffer转PEM格式
    * @param {ArrayBuffer} buffer - 数据缓冲区
    * @param {string} type - 类型标识
-   * @returns {string} PEM格式字符串
+   * @param {boolean} includeHeaders - 是否包含PEM头部和尾部标记
+   * @returns {string} PEM格式字符串或纯Base64内容
    */
-  static arrayBufferToPEM(buffer, type) {
+  static arrayBufferToPEM(buffer, type, includeHeaders = true) {
     const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-    return base64;
+    
+    if (!includeHeaders) {
+      // 只返回Base64内容，不包含PEM头部和尾部标记
+      return base64;
+    }
+    
+    const pemHeader = `-----BEGIN ${type}-----\n`;
+    const pemFooter = `\n-----END ${type}-----`;
+    
+    // 每64个字符换行
+    let result = pemHeader;
+    for (let i = 0; i < base64.length; i += 64) {
+      result += base64.substr(i, 64) + '\n';
+    }
+    result += pemFooter;
+    
+    return result;
   }
 }
 
@@ -354,6 +379,132 @@ export const saveConfigs = ConfigStorageManager.saveConfigs;
 // RSA密钥生成便捷函数
 export const generateRSAKeys = RSAKeyGenerator.generateKeys;
 
+/**
+ * SM2密钥生成工具类
+ */
+export class SM2KeyGenerator {
+  /**
+   * 生成SM2密钥对
+   * @param {Function} onUpdateCallback - 更新回调函数
+   * @returns {Promise<void>}
+   */
+  static async generateKeys(onUpdateCallback) {
+    try {
+      toast.info(LOADING_MESSAGES.GENERATING_RSA_KEYS); // 复用RSA的提示信息
+      
+      // 动态导入SM2库
+      const { sm2 } = await import('sm-crypto');
+      
+      // 生成SM2密钥对
+      const keypair = sm2.generateKeyPairHex();
+      
+      // 转换为PEM格式
+      const publicKeyPEM = SM2KeyGenerator.convertToPublicKeyPEM(keypair.publicKey);
+      const privateKeyPEM = SM2KeyGenerator.convertToPrivateKeyPEM(keypair.privateKey);
+
+      const keyPairData = {
+        publicKey: {
+          value: publicKeyPEM,
+          encoding: ['UTF8']
+        },
+        privateKey: {
+          value: privateKeyPEM,
+          encoding: ['UTF8']
+        }
+      };
+
+      if (onUpdateCallback && typeof onUpdateCallback === 'function') {
+        onUpdateCallback(keyPairData);
+      }
+      
+      toast.success(SUCCESS_MESSAGES.RSA_KEYS_GENERATED); // 复用RSA的成功信息
+    } catch (error) {
+      console.error('生成SM2密钥失败:', error);
+      toast.error(`生成失败: ${error.message}`);
+    }
+  }
+
+  /**
+   * 将十六进制公钥转换为完整的PEM格式
+   * @param {string} hexKey - 十六进制公钥
+   * @returns {string} 完整PEM格式公钥
+   */
+  static convertToPublicKeyPEM(hexKey) {
+    console.log('转换公钥为PEM格式:', hexKey?.substring(0, 32) + '...');
+    
+    try {
+      // 确保输入是有效的十六进制字符串
+      if (!/^[0-9a-fA-F]+$/.test(hexKey)) {
+        throw new Error('输入不是有效的十六进制字符串');
+      }
+      
+      // 将十六进制转换为字节数组
+      const byteArray = [];
+      for (let i = 0; i < hexKey.length; i += 2) {
+        byteArray.push(parseInt(hexKey.substr(i, 2), 16));
+      }
+      
+      // 转换为Base64
+      const base64Key = btoa(String.fromCharCode(...byteArray));
+      
+      // 格式化为完整PEM格式
+      let pemFormatted = '';
+      for (let i = 0; i < base64Key.length; i += 64) {
+        pemFormatted += base64Key.substr(i, 64) + '\n';
+      }
+      pemFormatted += '';
+      
+      console.log('生成的PEM公钥长度:', pemFormatted.length);
+      return pemFormatted;
+    } catch (error) {
+      console.error('公钥PEM转换失败:', error);
+      throw new Error(`公钥PEM格式转换失败: ${error.message}`);
+    }
+  }
+
+  /**
+   * 将十六进制私钥转换为完整的PEM格式
+   * @param {string} hexKey - 十六进制私钥
+   * @returns {string} 完整PEM格式私钥
+   */
+  static convertToPrivateKeyPEM(hexKey) {
+    console.log('转换私钥为PEM格式:', hexKey?.substring(0, 32) + '...');
+    
+    try {
+      // 确保输入是有效的十六进制字符串
+      if (!/^[0-9a-fA-F]+$/.test(hexKey)) {
+        throw new Error('输入不是有效的十六进制字符串');
+      }
+      
+      // 将十六进制转换为字节数组
+      const byteArray = [];
+      for (let i = 0; i < hexKey.length; i += 2) {
+        byteArray.push(parseInt(hexKey.substr(i, 2), 16));
+      }
+      
+      // 转换为Base64
+      const base64Key = btoa(String.fromCharCode(...byteArray));
+      
+      // 格式化为完整PEM格式
+      let pemFormatted = '';
+      for (let i = 0; i < base64Key.length; i += 64) {
+        pemFormatted += base64Key.substr(i, 64) + '\n';
+      }
+      pemFormatted += '';
+      
+      console.log('生成的PEM私钥长度:', pemFormatted.length);
+      return pemFormatted;
+    } catch (error) {
+      console.error('私钥PEM转换失败:', error);
+      throw new Error(`私钥PEM格式转换失败: ${error.message}`);
+    }
+  }
+
+}
+
+// SM2密钥生成便捷函数
+export const generateSM2Keys = SM2KeyGenerator.generateKeys;
+
 // 分页处理便捷函数
 export const calculatePagination = PaginationHelper.calculatePagination;
 export const generatePageNumbers = PaginationHelper.generatePageNumbers;
@@ -408,15 +559,18 @@ export class ConfigManager {
   static updateAlgorithmConfig(config, algorithmData) {
     const { algorithm, model, padding } = algorithmData;
     
+    // 对于非对称算法(RSA/SM2)，不需要mode和padding
+    const isAsymmetric = algorithm === 'RSA' || algorithm === 'SM2';
+    
     return {
       ...config,
-      algorithm: algorithm === 'RSA' 
-        ? 'RSA'
+      algorithm: isAsymmetric
+        ? algorithm
         : `${algorithm}${model ? '/' + model : ''}${padding ? '/' + padding : ''}`,
       algorithmType: algorithm || config.algorithmType,
-      mode: algorithm === 'RSA' ? '' : (model || config.mode),
-      model: algorithm === 'RSA' ? '' : (model || config.model),
-      padding: algorithm === 'RSA' ? '' : (padding !== undefined ? padding : config.padding)
+      mode: isAsymmetric ? '' : (model || config.mode),
+      model: isAsymmetric ? '' : (model || config.model),
+      padding: isAsymmetric ? '' : (padding !== undefined ? padding : config.padding)
     };
   }
 
@@ -426,6 +580,24 @@ export class ConfigManager {
    * @returns {Object} 格式化的密钥对象
    */
   static formatRSAKeyPair(keyPairData) {
+    return {
+      publicKey: {
+        value: keyPairData.publicKeyPEM || keyPairData.publicKey,
+        encoding: ['UTF8']
+      },
+      privateKey: {
+        value: keyPairData.privateKeyPEM || keyPairData.privateKey,
+        encoding: ['UTF8']
+      }
+    };
+  }
+
+  /**
+   * 获取SM2密钥对数据
+   * @param {Object} keyPairData - 密钥对数据
+   * @returns {Object} 格式化的密钥对象
+   */
+  static formatSM2KeyPair(keyPairData) {
     return {
       publicKey: {
         value: keyPairData.publicKeyPEM || keyPairData.publicKey,

@@ -2,6 +2,7 @@ import CryptoJS from 'crypto-js';
 import { EncodingUtils } from './encodingutils.js';
 import { AESCipher } from './aescipher.js';
 import { RSACipher } from './rsacipher.js';
+import { SM2Cipher } from './sm2cipher.js';
 import { SM4Cipher } from './sm4cipher.js';
 
 /**
@@ -39,6 +40,9 @@ export class CipherUtils {
     switch (mainAlgorithm) {
       case 'AES':
         ciphertext = AESCipher.encrypt(processedPlaintext, algorithmConfig);
+        break;
+      case 'SM2':
+        ciphertext = SM2Cipher.encrypt(processedPlaintext, config);
         break;
       case 'SM4':
         ciphertext = SM4Cipher.encrypt(processedPlaintext, algorithmConfig);
@@ -95,6 +99,9 @@ export class CipherUtils {
     switch (mainAlgorithm) {
       case 'AES':
         plaintext = AESCipher.decrypt(processedCiphertext, config);
+        break;
+      case 'SM2':
+        plaintext = SM2Cipher.decrypt(processedCiphertext, config);
         break;
       case 'SM4':
         // 如果密文是 base64 格式，需要先转换为 hex

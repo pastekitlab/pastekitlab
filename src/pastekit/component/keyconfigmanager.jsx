@@ -10,10 +10,7 @@ import ConfigEditor from './configeditor';
 import { NEED_PADDING_MODES, ITEMS_PER_PAGE } from '../utils/keyconfigconstants';
 import {ConfigManager, loadConfigs, saveConfigs} from '../utils/keyconfigutils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { toast } from 'sonner';
-import { StorageUtils } from '../utils/storageutils';
 import { useTranslation } from '../utils/i18n';
 
 /**
@@ -205,59 +202,6 @@ export default function KeyConfigManager({
     }
   };
 
-  // 生成RSA密钥对
-  const generateRSAKeys = async (configToUpdate, onUpdateCallback) => {
-    try {
-      toast.info(`${t('components.keyconfigmanager.generating_keys')}...`);
-      
-      const keyPair = await window.crypto.subtle.generateKey(
-        {
-          name: "RSASSA-PKCS1-v1_5",
-          modulusLength: 2048,
-          publicExponent: new Uint8Array([1, 0, 1]),
-          hash: "SHA-256",
-        },
-        true,
-        ["sign", "verify"]
-      );
-
-      const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-      const publicKeyPEM = arrayBufferToPEM(publicKey, "PUBLIC KEY");
-
-      const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-      const privateKeyPEM = arrayBufferToPEM(privateKey, "PRIVATE KEY");
-
-      const updatedConfig = {
-        ...configToUpdate,
-        publicKey: {
-          value: publicKeyPEM,
-          encoding: ['UTF8']
-        },
-        privateKey: {
-          value: privateKeyPEM,
-          encoding: ['UTF8']
-        }
-      };
-
-      // 只更新输入框值，不自动保存
-      if (onUpdateCallback && typeof onUpdateCallback === 'function') {
-        onUpdateCallback(updatedConfig);
-      }
-      
-      toast.success(t('components.keyconfigmanager.messages.keys_generated'));
-    } catch (error) {
-      console.error('生成RSA密钥失败:', error);
-      toast.error(`生成失败: ${error.message}`);
-    }
-  };
-
-  // ArrayBuffer转PEM格式（去除头部尾部标记，只保留Base64内容）
-  const arrayBufferToPEM = (buffer, type) => {
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-    // 只返回Base64内容，不包含PEM头部和尾部标记
-    return base64;
-  };
-
   // Get currently selected configuration
   const getCurrentConfig = () => {
     return ConfigManager.getCurrentConfig(configs, selectedConfig);
@@ -424,15 +368,22 @@ export default function KeyConfigManager({
                   <div>
                     {(() => {
                       const cur = getCurrentConfig();
+                      const algorithmType = cur?.algorithmType || cur?.algorithm?.split('/')[0] || '';
                       const mode = cur?.mode || cur?.algorithm?.split('/')[1] || '';
                       const padding = cur?.padding || cur?.algorithm?.split('/')[2] || '';
                       return (
                         <>
-                          {t('components.keyconfigmanager.mode')}: <span className="font-medium">{mode || 'CBC'}</span>
-                          {NEED_PADDING_MODES.has(mode) && (
+                          {algorithmType === 'RSA' || algorithmType === 'SM2' ? (
+                            <span>N/A</span>
+                          ) : (
                             <>
-                              <span className="mx-2">•</span>
-                              {t('components.keyconfigmanager.padding')}: <span className="font-medium">{padding || 'PKCS5Padding'}</span>
+                              {t('components.keyconfigmanager.mode')}: <span className="font-medium">{mode || 'CBC'}</span>
+                              {NEED_PADDING_MODES.has(mode) && (
+                                <>
+                                  <span className="mx-2">•</span>
+                                  {t('components.keyconfigmanager.padding')}: <span className="font-medium">{padding || 'PKCS5Padding'}</span>
+                                </>
+                              )}
                             </>
                           )}
                         </>

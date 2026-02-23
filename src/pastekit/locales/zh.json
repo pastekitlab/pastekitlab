@@ -30,7 +30,9 @@
     "github_repository": "GitHub仓库",
     "language_switch": "语言切换",
     "select_language": "选择语言",
-    "current_language": "当前语言"
+    "current_language": "当前语言",
+    "items": "项",
+    "tip": "提示"
   },
   "popup": {
     "title": "PasteKitLab",
@@ -231,6 +233,7 @@
       "save_config": "保存配置",
       "delete_config": "删除配置",
       "generate_keys": "🔑 生成RSA密钥对",
+      "generate_sm2_keys": "🔑 生成SM2密钥对",
       "config_list": "配置列表",
       "actions": "操作",
       "base_config": "基础配置",
@@ -246,10 +249,12 @@
         "created": "配置已创建并保存",
         "saved": "配置已保存",
         "deleted": "配置已删除",
-        "keys_generated": "RSA密钥对生成成功！请手动点击保存按钮保存配置"
+        "keys_generated": "RSA密钥对生成成功！请手动点击保存按钮保存配置",
+        "sm2_keys_generated": "SM2密钥对生成成功！请手动点击保存按钮保存配置"
       },
       "no_configs": "暂无配置，请创建新配置",
       "generating_keys": "正在生成RSA密钥对",
+      "generating_sm2_keys": "正在生成SM2密钥对",
       "confirm_delete": "确定要删除配置",
       "confirm_delete_suffix": "吗",
       "total_configs": "共 {{count}} 个配置",
@@ -379,6 +384,29 @@
       "scan_prompt": "📱 扫描二维码访问内容",
       "content_label": "二维码内容",
       "enter_content": "请输入内容生成二维码"
+    },
+    "autociphertool": {
+      "title": "🔍 自动解密工具",
+      "error": {
+        "no_content": "没有可解密的内容",
+        "no_configs": "没有找到任何加密配置，请先在密钥配置管理中添加配置",
+        "invalid_config": "配置无效",
+        "decrypt_failed": "解密失败或内容未发生变化",
+        "process_error": "解密过程出错",
+        "no_successful_decrypt": "未能使用任何配置成功解密该内容"
+      },
+      "success": {
+        "title": "🔓 解密成功结果",
+        "label": "成功",
+        "message": "解密成功"
+      },
+      "usage": {
+        "title": "使用说明",
+        "instruction1": "系统将使用所有保存的加密配置依次尝试解密",
+        "instruction2": "只显示成功解密的结果",
+        "instruction3": "成功结果以绿色主题突出显示",
+        "tip": "提示：请确保已在密钥配置管理中添加了正确的加密配置"
+      }
     }
   }
 }

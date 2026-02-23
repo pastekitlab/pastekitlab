@@ -23,7 +23,7 @@ export class RSACipher {
     let processedPlaintext = plaintext;
     if (plainEncoding && plainEncoding.length > 0 && !plainEncoding.includes('UTF8')) {
       // 如果明文是以其他编码方式存储的，需要先解码为UTF8
-      processedPlaintext = EncodingUtils.decode(plaintext, 'UTF8', plainEncoding);
+      processedPlaintext = EncodingUtils.decode(plaintext, plainEncoding[0], []);
     }
     
     // 处理公钥

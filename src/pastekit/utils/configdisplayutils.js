@@ -40,8 +40,9 @@ export class ConfigDisplayHandler {
     
     const algorithmType = config.algorithmType || config.algorithm?.split('/')[0] || '';
     
-    // RSA算法不显示模式和填充
-    if (algorithmType === 'RSA' || config.algorithm?.startsWith('RSA')) {
+    // 非对称算法(RSA/SM2)不显示模式和填充
+    if (algorithmType === 'RSA' || config.algorithm?.startsWith('RSA') || 
+        algorithmType === 'SM2' || config.algorithm?.startsWith('SM2')) {
       return 'N/A';
     }
     
@@ -104,7 +105,7 @@ export class ConfigDisplayHandler {
     if (!config) return { isValid: false, message: '配置不存在' };
     
     // 检查必需字段
-    if (config.algorithm?.startsWith('RSA')) {
+    if (config.algorithm?.startsWith('RSA') || config.algorithm?.startsWith('SM2')) {
       if (!config.publicKey?.value?.trim() || !config.privateKey?.value?.trim()) {
         return { isValid: false, message: 'RSA配置缺少公钥或私钥' };
       }
