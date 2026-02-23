@@ -55,9 +55,9 @@
   "options": {
     "title": "PasteKitLab 设置中心",
     "sidebar": {
-      "key_config": "🔐 秘钥配置",
-      "encryption_test": "🧪 加密解密测试",
-      "about": "ℹ️ 关于"
+      "key_config": "秘钥配置",
+      "encryption_test": "加密解密测试",
+      "about": "关于"
     }
   },
   "keyconfig": {

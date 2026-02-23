@@ -346,8 +346,8 @@ export default function CipherTestComponent({
               {currentConfig && (
                 <div className="text-sm text-muted-foreground p-2 bg-muted rounded">
                   <div>{t('components.ciphertest.algorithm')}: {currentConfig.algorithm || t('components.keyconfigmanager.messages.loading')}</div>
-                  <div>{t('components.ciphertest.plaintext_encoding')}: {currentConfig.plainEncoding?.[0] || 'UTF8'}</div>
-                  <div>{t('components.ciphertest.ciphertext_encoding')}: {currentConfig.cipherEncoding?.[0] || 'BASE64'}</div>
+                  <div>{t('components.ciphertest.plaintext_encoding')}: {currentConfig.plainEncoding?.join(',') || 'UTF8'}</div>
+                  <div>{t('components.ciphertest.ciphertext_encoding')}: {currentConfig.cipherEncoding?.join(',') || 'BASE64'}</div>
                   {currentConfig.algorithmType !== 'RSA' && (
                     <div>
                       {t('components.ciphertest.mode')}: {currentConfig.mode || currentConfig.algorithm?.split('/')[1] || 'CBC'}

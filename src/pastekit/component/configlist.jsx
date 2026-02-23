@@ -147,8 +147,8 @@ function getConfigDisplayInfo(config) {
   
   return {
     algorithmType,
-    plainEncoding: config.plainEncoding?.[0] || 'UTF8',
-    cipherEncoding: config.cipherEncoding?.[0] || 'BASE64',
+    plainEncoding: config.plainEncoding?.join(',') || 'UTF8',
+    cipherEncoding: config.cipherEncoding?.join(',') || 'BASE64',
     modeDisplay
   };
 }

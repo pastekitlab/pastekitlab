@@ -55,9 +55,9 @@
   "options": {
     "title": "PasteKitLab Settings",
     "sidebar": {
-      "key_config": "🔐 Key Configuration",
-      "encryption_test": "🧪 Encryption/Decryption Test",
-      "about": "ℹ️ About"
+      "key_config": "Key Configuration",
+      "encryption_test": "Encryption/Decryption Test",
+      "about": "About"
     }
   },
   "keyconfig": {

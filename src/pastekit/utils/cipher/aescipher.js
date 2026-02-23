@@ -111,6 +111,11 @@ export class AESCipher {
     
     decrypted = CryptoJS.AES.decrypt(ciphertext, keyWordArray, decryptOptions);
     
+    // 增加解密结果有效性检查
+    if (!decrypted || decrypted.toString() === '') {
+      throw new Error('AES解密失败：解密结果为空');
+    }
+    
     // 针对流模式的特殊处理：手动移除可能的零填充
     if (['CFB', 'OFB', 'CTR'].includes(modeUpper)) {
       // 获取原始字节数组
@@ -149,6 +154,12 @@ export class AESCipher {
     // 对于块模式，安全地转换为UTF-8字符串
     try {
       const result = decrypted.toString(CryptoJS.enc.Utf8);
+      
+      // 增加解密结果验证
+      if (!result || result.trim() === '') {
+        throw new Error('解密结果为空或无效');
+      }
+      
       // 移除可能的PKCS#7填充
       if (['CBC', 'ECB'].includes(modeUpper)) {
         const paddingLength = result.charCodeAt(result.length - 1);

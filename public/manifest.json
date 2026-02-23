@@ -23,6 +23,12 @@
         "default": "Alt+Shift+A"
       },
       "description": "Open PasteKitLab popup"
+    },
+    "open-options": {
+      "suggested_key": {
+        "default": "Alt+Shift+Z"
+      },
+      "description": "Open PasteKitLab options page"
     }
   },
   "host_permissions": [

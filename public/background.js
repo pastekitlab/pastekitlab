@@ -13,6 +13,13 @@ chrome.commands.onCommand.addListener((command) => {
       console.log('[PasteKitLab] openPopup 在此窗口不可用（正常）:', err.message);
       console.log('[PasteKitLab] ℹ️ 这是正常现象，特别是在全屏或特殊窗口中');
     });
+  } else if (command === 'open-options') {
+    console.log('[PasteKitLab] 打开 options 页面命令触发:', command);
+    
+    // 打开 options 页面
+    chrome.runtime.openOptionsPage().catch(err => {
+      console.error('[PasteKitLab] 打开 options 页面失败:', err);
+    });
   }
 });
 
@@ -25,4 +32,4 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
-console.log('Background script loaded - 监听快捷键 Ctrl+Shift+A');
+console.log('Background script loaded - 监听快捷键 Alt+Shift+A 和 Alt+Shift+Z');
