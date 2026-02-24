@@ -60,6 +60,7 @@
       "key_config": "Key Configuration",
       "encryption_test": "Encryption/Decryption Test",
       "signature_tool": "Signature Tool",
+      "ai_prompts": "AI Prompts",
       "about": "About"
     }
   },
@@ -465,6 +466,32 @@
         "hmac_sha512": "HMAC-SHA512",
         "rsa_sign": "RSA Signature",
         "sm2_sign": "SM2 Signature"
+      }
+    },
+    "aiprompts": {
+      "title": "🤖 AI Prompt Management",
+      "add_prompt": "Add Prompt",
+      "edit_prompt": "Edit Prompt",
+      "prompt_name": "Prompt Name",
+      "prompt_template": "Prompt Template",
+      "category": "Category",
+      "enter_name": "Please enter prompt name",
+      "enter_template": "Please enter prompt template",
+      "placeholder_help": "Use {{content}} as content placeholder",
+      "copy_to_clipboard": "Copy to Clipboard",
+      "categories": {
+        "general": "General",
+        "coding": "Coding",
+        "writing": "Writing",
+        "translation": "Translation",
+        "analysis": "Analysis"
+      },
+      "messages": {
+        "save_success": "Prompt saved successfully",
+        "save_failed": "Failed to save prompt",
+        "load_failed": "Failed to load prompts",
+        "fill_fields": "Please fill in prompt name and template",
+        "delete_confirm": "Are you sure you want to delete this prompt?"
       }
     }
   }

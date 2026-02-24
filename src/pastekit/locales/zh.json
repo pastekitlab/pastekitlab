@@ -60,6 +60,7 @@
       "key_config": "秘钥配置",
       "encryption_test": "加密解密测试",
       "signature_tool": "签名工具",
+      "ai_prompts": "AI提示词",
       "about": "关于"
     }
   },
@@ -464,6 +465,32 @@
         "hmac_sha512": "HMAC-SHA512",
         "rsa_sign": "RSA签名",
         "sm2_sign": "SM2签名"
+      }
+    },
+    "aiprompts": {
+      "title": "🤖 AI提示词管理",
+      "add_prompt": "添加提示词",
+      "edit_prompt": "编辑提示词",
+      "prompt_name": "提示词名称",
+      "prompt_template": "提示词模板",
+      "category": "分类",
+      "enter_name": "请输入提示词名称",
+      "enter_template": "请输入提示词模板",
+      "placeholder_help": "使用 {{content}} 作为内容占位符",
+      "copy_to_clipboard": "复制到剪贴板",
+      "categories": {
+        "general": "通用",
+        "coding": "编程",
+        "writing": "写作",
+        "translation": "翻译",
+        "analysis": "分析"
+      },
+      "messages": {
+        "save_success": "提示词保存成功",
+        "save_failed": "提示词保存失败",
+        "load_failed": "加载提示词失败",
+        "fill_fields": "请填写提示词名称和模板",
+        "delete_confirm": "确定要删除此提示词吗？"
       }
     }
   }

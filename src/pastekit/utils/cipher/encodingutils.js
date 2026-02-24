@@ -208,11 +208,17 @@ export class EncodingUtils {
    */
   static _base64Decode(base64Str) {
     try {
-      return decodeURIComponent(escape(atob(base64Str)));
+      // 预先检查字符范围，避免atob报错
+      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64Str)) {
+        throw new Error('Invalid Base64 character');
+      }
+      
+      const decoded = atob(base64Str);
+      return decodeURIComponent(escape(decoded));
     } catch (e) {
-      // 如果解码失败，直接抛出错误
-      console.error('Base64解码失败:', e.message);
-      throw new Error(`Base64解码失败: ${e.message}`);
+      // 静默处理错误，返回null而不是抛出异常
+      console.warn('Base64解码失败:', e.message, '输入:', base64Str.substring(0, 50) + '...');
+      return null;
     }
   }
 
@@ -430,11 +436,12 @@ export class EncodingUtils {
           break;
         case 'BASE64':
           if (typeof result === 'string') {
-            try {
-              result = this._base64Decode(result);
+            const decoded = this._base64Decode(result);
+            if (decoded !== null) {
+              result = decoded;
               console.info(`Base64解码: ${result}`);
-            } catch (e) {
-              console.warn('Base64解码失败:', e.message);
+            } else {
+              console.warn('Base64解码失败，保持原始数据');
             }
           }
           break;

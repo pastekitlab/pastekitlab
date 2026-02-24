@@ -15,7 +15,8 @@
     "128": "PasteKitLab_128.png"
   },
   "permissions": [
-    "commands"
+    "commands",
+    "activeTab"
   ],
   "commands": {
     "_execute_action": {

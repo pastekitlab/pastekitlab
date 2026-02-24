@@ -1,9 +1,9 @@
 import ReactDOM from "react-dom/client";
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useRef} from "react";
 import {Textarea} from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Github, Settings, Video, Book, MessageSquare, Coffee } from "lucide-react";
-import { useChromePopupHeight } from "@/hooks/use-chrome-popup-height";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {Github, Settings, Video, Book, MessageSquare, Coffee} from "lucide-react";
+import {useChromePopupHeight} from "@/hooks/use-chrome-popup-height";
 import TimeTool from "@/pastekit/component/timetool"
 import CroneTool from "@/pastekit/component/cronetool"
 import JsonTool from "@/pastekit/component/jsontool"
@@ -13,13 +13,14 @@ import IpTool from "@/pastekit/component/iptool"
 import DnsTool from "@/pastekit/component/dnstool"
 import WorldClock from "@/pastekit/component/worldclock"
 import AutoCipherTool from "@/pastekit/component/autociphertool"
+import AIPromptSelector from "@/pastekit/component/aipromptselector";
 import LanguageSwitcher from "@/pastekit/component/languageswitcher";
-import { useTranslation, preloadTranslations } from "@/pastekit/utils/i18n";
+import {useTranslation, preloadTranslations} from "@/pastekit/utils/i18n";
 
 // RSA密文特征检测
 async function isLikelyRSACipher(content) {
     const trimmedContent = content.trim();
-    
+
     // 基本格式检查 - 必须是有效的Base64
     const base64Pattern = /^[A-Za-z0-9+/]*={0,2}$/;
     if (!base64Pattern.test(trimmedContent)) {
@@ -34,17 +35,17 @@ async function isLikelyRSACipher(content) {
     // 长度特征检查 - RSA常见长度
     const typicalRSALengths = [344, 172, 256, 128];
     const isTypicalLength = typicalRSALengths.includes(trimmedContent.length);
-    
+
     // 检查是否存在RSA配置
     try {
-        const { StorageUtils } = await import('../utils/storageutils');
+        const {StorageUtils} = await import('../utils/storageutils');
         const result = await StorageUtils.getItem('keyConfigs');
         const configs = result.keyConfigs || [];
-        const hasRSAConfig = configs.some(config => 
-            config.algorithm?.toUpperCase().includes('RSA') || 
+        const hasRSAConfig = configs.some(config =>
+            config.algorithm?.toUpperCase().includes('RSA') ||
             config.algorithmType?.toUpperCase() === 'RSA'
         );
-        
+
         // 如果有RSA配置且长度符合特征，则很可能是RSA密文
         if (hasRSAConfig && (isTypicalLength || trimmedContent.length > 100)) {
             console.log('检测到RSA密文特征:', {
@@ -57,7 +58,7 @@ async function isLikelyRSACipher(content) {
     } catch (err) {
         console.log('RSA配置检查失败:', err.message);
     }
-    
+
     return false;
 }
 
@@ -122,23 +123,23 @@ const detectContentType = async (content) => {
     if (dateTimePattern.test(trimmedContent)) {
         return 'datetime';
     }
+    try {
+        // RSA密文特殊检测
+        if (await isLikelyRSACipher(trimmedContent)) {
+            return 'encrypted';
+        }
 
-    // RSA密文特殊检测
-    if (await isLikelyRSACipher(trimmedContent)) {
-        return 'encrypted';
-    }
+        // 智能加密内容检测：优先检测加密内容
+        if (trimmedContent.length > 10) {
 
-    // 智能加密内容检测：优先检测加密内容
-    if (trimmedContent.length > 10) {
-        try {
             // 导入必要的工具函数
-            const { StorageUtils } = await import('../utils/storageutils');
-            const { CipherUtils } = await import('../utils/cipherutils');
-            
+            const {StorageUtils} = await import('../utils/storageutils');
+            const {CipherUtils} = await import('../utils/cipherutils');
+
             // 获取所有加密配置
             const result = await StorageUtils.getItem('keyConfigs');
             const configs = result.keyConfigs || [];
-            
+
             if (configs.length > 0) {
                 // 尝试用每个配置解密
                 for (const config of configs) {
@@ -147,15 +148,15 @@ const detectContentType = async (content) => {
                         // 检查解密结果
                         if (decrypted && decrypted !== trimmedContent) {
                             // 只有CFB模式才进行可打印字符判断
-                            const isCFBMode = config.algorithm?.toUpperCase().includes('CFB') || 
-                                            config.mode?.toUpperCase() === 'CFB'||config.algorithm?.toUpperCase().includes('CTR') ||
+                            const isCFBMode = config.algorithm?.toUpperCase().includes('CFB') ||
+                                config.mode?.toUpperCase() === 'CFB' || config.algorithm?.toUpperCase().includes('CTR') ||
                                 config.mode?.toUpperCase() === 'CTR';
-                            
+
                             if (isCFBMode) {
                                 // 导入文本工具函数
-                                const { analyzePrintableCharacters } = await import('../utils/textutils');
+                                const {analyzePrintableCharacters} = await import('../utils/textutils');
                                 const analysis = analyzePrintableCharacters(decrypted);
-                                
+
                                 console.log('CFB模式解密结果分析:', {
                                     configName: config.name,
                                     originalLength: trimmedContent.length,
@@ -163,7 +164,7 @@ const detectContentType = async (content) => {
                                     decryptedContent: decrypted,
                                     ...analysis
                                 });
-                                
+
                                 // CFB模式下，可打印字符比例超过50%才认为是有效的明文
                                 if (analysis.isReadable) {
                                     return 'encrypted';
@@ -184,9 +185,9 @@ const detectContentType = async (content) => {
                     }
                 }
             }
-        } catch (err) {
-            console.log('加密内容检测失败:', err);
         }
+    } catch (err) {
+        console.log('加密内容检测失败:', err);
     }
 
     // Detect URL encoding characteristics (%xx format) and verify if decoded content contains http
@@ -226,6 +227,8 @@ export default function PopUp() {
     const [content, setContent] = useState('');
     const maxHeight = useChromePopupHeight();
     const [contentType, setContentType] = useState('encode');
+    const [generatedPrompt, setGeneratedPrompt] = useState('');
+    const [isOnAIWebsite, setIsOnAIWebsite] = useState(false);
     const textareaRef = useRef(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -242,7 +245,7 @@ export default function PopUp() {
                 setIsLoading(false);
             }
         };
-        
+
         initializeTranslations();
     }, []);
 
@@ -256,6 +259,44 @@ export default function PopUp() {
         }
     }, [isReady]); // 依赖isReady确保在翻译准备好后聚焦
 
+    // 检测是否在AI网站
+    useEffect(() => {
+        const aiWebsites = [
+            'https://www.qianwen.com',
+            'https://kimi.moonshot.cn',
+            'https://chat.deepseek.com',
+            'https://yiyan.baidu.com',
+            'https://chatglm.cn',
+            'https://xinghuo.xfyun.cn',
+            'https://yuanbao.tencent.com',
+            'https://chat.openai.com',
+            'https://claude.ai',
+            'https://gemini.google.com'
+        ];
+
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (chrome.runtime.lastError) {
+                console.error('获取标签页信息失败:', chrome.runtime.lastError);
+                return;
+            }
+
+            if (tabs[0]?.url) {
+                try {
+                    const currentUrl = new URL(tabs[0].url);
+                    const currentOrigin = `${currentUrl.origin}`;
+                    const isAI = aiWebsites.includes(currentOrigin);
+                    setIsOnAIWebsite(isAI);
+
+                    if (isAI) {
+                        console.log('Popup检测到AI网站:', currentOrigin);
+                    }
+                } catch (error) {
+                    console.error('解析URL失败:', error);
+                }
+            }
+        });
+    }, []);
+
     // 内容类型检测（异步）
     useEffect(() => {
         const detectType = async () => {
@@ -263,11 +304,11 @@ export default function PopUp() {
                 setContentType('encode');
                 return;
             }
-            
+
             const type = await detectContentType(content);
             setContentType(type);
         };
-        
+
         detectType();
     }, [content]);
 
@@ -290,19 +331,19 @@ export default function PopUp() {
         };
 
         // 添加wheel事件监听器到body
-        document.body.addEventListener('wheel', handleWheel, { passive: false });
-        
+        document.body.addEventListener('wheel', handleWheel, {passive: false});
+
         // 也监听touch事件以支持移动设备
         const handleTouchMove = (e) => {
             e.preventDefault();
         };
-        
-        document.body.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+        document.body.addEventListener('touchmove', handleTouchMove, {passive: false});
 
         // 禁用默认的滚动行为
         document.body.style.overflow = 'hidden';
         document.documentElement.style.overflow = 'hidden';
-        
+
         console.log('🚀 Scroll control initialized');
 
         return () => {
@@ -321,7 +362,8 @@ export default function PopUp() {
             return (
                 <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                        <div
+                            className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
                         <div className="text-sm text-gray-500">Loading translations...</div>
                     </div>
                 </div>
@@ -330,7 +372,7 @@ export default function PopUp() {
 
         // When content is empty, display default local IP
         if (!content || content.trim() === '') {
-            return <IpTool content={content} showMyIp={true} />;
+            return <IpTool content={content} showMyIp={true}/>;
         }
 
         switch (contentType) {
@@ -339,23 +381,23 @@ export default function PopUp() {
             case 'cidr':
             case 'ipv6cidr':
                 // When IP is entered, display both local IP and detailed query results
-                return <IpTool content={content} showMyIp={true} />;
+                return <IpTool content={content} showMyIp={true}/>;
             case 'domain':
-                return <DnsTool content={content} />;
+                return <DnsTool content={content}/>;
             case 'cron':
-                return <CroneTool cronExpr={content} />;
+                return <CroneTool cronExpr={content}/>;
             case 'timestamp':
             case 'datetime':
-                return <TimeTool content={content} />;
+                return <TimeTool content={content}/>;
             case 'json':
-                return <JsonTool content={content} />;
+                return <JsonTool content={content}/>;
             case 'url':
-                return <UrlTool content={content} />;
+                return <UrlTool content={content}/>;
             case 'encrypted':
-                return <AutoCipherTool content={content} />;
+                return <AutoCipherTool content={content}/>;
             case 'encode':
             default:
-                return <EncodeTool content={content} />;
+                return <EncodeTool content={content}/>;
         }
     };
 
@@ -378,10 +420,10 @@ export default function PopUp() {
             <div className="shrink-0">
                 {/* Language Switcher */}
                 <div className="h-[30px] flex items-center px-2">
-                    <LanguageSwitcher variant="horizontal" />
+                    <LanguageSwitcher variant="horizontal"/>
                 </div>
                 <div className="border-b">
-                    <WorldClock />
+                    <WorldClock/>
                 </div>
                 <div>
                     <Textarea
@@ -391,7 +433,7 @@ export default function PopUp() {
                         id="message-2"
                         value={content}
                         onChange={(e) => {
-                           setContent(e.target.value)
+                            setContent(e.target.value)
                         }}
                     />
                     <div className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">
@@ -402,33 +444,38 @@ export default function PopUp() {
                             console.log('Trimmed Content:', content?.trim());
                             console.log('Is Empty:', !content || content.trim() === '');
                             console.log('ContentType:', contentType);
-                            
+
                             const detectedFormat = t('popup.detected_format');
                             const defaultIP = t('popup.default_ip');
                             const formatText = t(`popup.formats.${contentType}`);
-                            
+
                             console.log('detected_format translation:', detectedFormat);
                             console.log('default_ip translation:', defaultIP);
                             console.log('format translation:', formatText);
-                            
-                            const result = !content || content.trim() === '' 
+
+                            const result = !content || content.trim() === ''
                                 ? `${detectedFormat} ${defaultIP}`
                                 : `${detectedFormat} ${formatText}`;
-                            
+
                             console.log('Final display text:', result);
                             console.groupEnd();
-                            
+
                             return result;
                         })()}
                     </div>
                 </div>
             </div>
-            
+
             {/* 可滚动的内容区域 */}
             <div className="flex-1 overflow-y-auto">
-                {renderToolComponent()}
+                {!isOnAIWebsite && renderToolComponent()}
+                <AIPromptSelector
+                    content={content}
+                    onGeneratedPromptChange={setGeneratedPrompt}
+                    onAIWebsiteDetected={setIsOnAIWebsite}
+                />
             </div>
-            
+
             {/* Footer */}
             <div className="shrink-0 border-t bg-gray-50 px-4 py-3 flex justify-center items-center gap-4">
                 <TooltipProvider delayDuration={100}>
@@ -440,14 +487,14 @@ export default function PopUp() {
                                 target="_blank"
                                 className="text-gray-600 hover:text-gray-800 transition-colors duration-200"
                             >
-                                <Settings className="w-5 h-5" />
+                                <Settings className="w-5 h-5"/>
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>{t('common.advanced_settings')}</p>
                         </TooltipContent>
                     </Tooltip>
-                    
+
                     {/* Video Tutorial */}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -457,14 +504,14 @@ export default function PopUp() {
                                 rel="noopener noreferrer"
                                 className="text-red-600 hover:text-red-700 transition-colors duration-200"
                             >
-                                <Video className="w-5 h-5" />
+                                <Video className="w-5 h-5"/>
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>{t('common.video_tutorial')}</p>
                         </TooltipContent>
                     </Tooltip>
-                    
+
                     {/*/!* Documentation *!/*/}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -474,14 +521,14 @@ export default function PopUp() {
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-700 transition-colors duration-200"
                             >
-                                <Book className="w-5 h-5" />
+                                <Book className="w-5 h-5"/>
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>{t('common.documentation')}</p>
                         </TooltipContent>
                     </Tooltip>
-                    
+
                     {/* Feedback */}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -491,14 +538,14 @@ export default function PopUp() {
                                 rel="noopener noreferrer"
                                 className="text-green-600 hover:text-green-700 transition-colors duration-200"
                             >
-                                <MessageSquare className="w-5 h-5" />
+                                <MessageSquare className="w-5 h-5"/>
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>{t('common.feedback')}</p>
                         </TooltipContent>
                     </Tooltip>
-                    
+
                     {/* Donate */}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -508,14 +555,14 @@ export default function PopUp() {
                                 rel="noopener noreferrer"
                                 className="text-yellow-600 hover:text-yellow-700 transition-colors duration-200"
                             >
-                                <Coffee className="w-5 h-5" />
+                                <Coffee className="w-5 h-5"/>
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>{t('common.donate')}</p>
                         </TooltipContent>
                     </Tooltip>
-                    
+
                     {/* GitHub */}
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -525,7 +572,7 @@ export default function PopUp() {
                                 rel="noopener noreferrer"
                                 className="bg-gray-900 text-white p-1 rounded hover:bg-gray-800 transition-colors duration-200"
                             >
-                                <Github className="w-5 h-5" />
+                                <Github className="w-5 h-5"/>
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
