@@ -295,9 +295,9 @@ export function tSync(key, params = {}) {
   // 使用预加载的翻译数据
   const translations = preloadedTranslations[currentLang] || {};
   
-  // 如果还在初始化阶段或者没有翻译数据，返回空字符串而不是键名
+  // 如果还在初始化阶段或者没有翻译数据，返回键名作为后备
   if (isInitializing || Object.keys(translations).length === 0) {
-    return '';
+    return key;
   }
   
   // 处理嵌套键 (如 'popup.detected_format')
@@ -320,13 +320,13 @@ export function tSync(key, params = {}) {
     if (pathExists) {
       translation = currentObj;
     } else {
-      translation = '';
+      translation = key;
     }
   } else {
     // 处理简单键
     translation = translations[key];
     if (translation === undefined) {
-      translation = '';
+      translation = key;
     }
   }
 

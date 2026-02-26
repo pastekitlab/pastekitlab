@@ -122,6 +122,43 @@ detect(content): ToolType[]
 
 No backend required.
 
+## 🔒 HTTPS 开发环境
+
+本项目包含完整的 HTTPS 开发环境，用于测试安全连接和证书处理。
+
+### 快速开始
+
+```bash
+# 1. 设置本地 SSL 证书（首次运行）
+./scripts/setup-local-ssl.sh
+
+# 2. 启动 HTTPS 测试环境
+./start-https-test.sh
+
+# 3. 在浏览器中访问
+https://localhost:8443
+```
+
+### 特性
+
+* ✅ 使用 mkcert 生成受信任的本地证书
+* ✅ 支持 Chrome、Firefox、Safari 等主流浏览器
+* ✅ 自动 Mock 数据服务
+* ✅ 完整的安全头配置
+* ✅ 证书有效期至 2028 年
+
+### 目录结构
+
+```
+scripts/
+├── https-mock-server.cjs    # HTTPS Mock 服务器
+├── setup-local-ssl.sh       # 本地证书设置脚本
+└── server.key/cert          # SSL 证书文件
+
+start-https-test.sh          # 测试环境启动脚本
+test-https.html              # HTTPS 测试页面
+```
+
 ---
 
 ## 📦 Installation (Dev)

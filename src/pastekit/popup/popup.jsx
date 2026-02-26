@@ -438,29 +438,13 @@ export default function PopUp() {
                     />
                     <div className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">
                         {(() => {
-                            // 添加调试信息
-                            console.group('Popup Format Display Debug');
-                            console.log('Content:', content);
-                            console.log('Trimmed Content:', content?.trim());
-                            console.log('Is Empty:', !content || content.trim() === '');
-                            console.log('ContentType:', contentType);
-
                             const detectedFormat = t('popup.detected_format');
                             const defaultIP = t('popup.default_ip');
                             const formatText = t(`popup.formats.${contentType}`);
 
-                            console.log('detected_format translation:', detectedFormat);
-                            console.log('default_ip translation:', defaultIP);
-                            console.log('format translation:', formatText);
-
-                            const result = !content || content.trim() === ''
+                            return !content || content.trim() === ''
                                 ? `${detectedFormat} ${defaultIP}`
                                 : `${detectedFormat} ${formatText}`;
-
-                            console.log('Final display text:', result);
-                            console.groupEnd();
-
-                            return result;
                         })()}
                     </div>
                 </div>

@@ -1,0 +1,15 @@
+{
+  "name": "pastekit-mock-server",
+  "version": "1.0.0",
+  "description": "PasteKit Lab Local Mock Server",
+  "main": "scripts/mock-server.cjs",
+  "scripts": {
+    "mock-server": "node scripts/mock-server.cjs",
+    "start": "node scripts/mock-server.cjs"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "keywords": ["mock", "server", "pastekit"],
+  "author": "PasteKit Lab",
+  "license": "MIT"
+}

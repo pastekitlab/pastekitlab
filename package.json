@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build  && node scripts/post-build.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "mock-server": "node scripts/mock-server.cjs",
+    "https-mock-server": "node scripts/https-mock-server.cjs",
+    "start-https-mock": "node scripts/start-https-mock.cjs"
   },
   "devDependencies": {
     "@types/node": "^24.7.2",

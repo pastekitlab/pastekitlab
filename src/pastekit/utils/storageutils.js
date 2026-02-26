@@ -1,6 +1,6 @@
 /**
  * 通用存储工具类
- * 支持 Chrome 扩展环境和普通网页环境
+ * 支持 Chrome 扩展环境、Node.js 环境和普通网页环境
  */
 export class StorageUtils {
   /**
@@ -9,6 +9,97 @@ export class StorageUtils {
    */
   static isChromeExtension() {
     return typeof chrome !== 'undefined' && chrome.storage;
+  }
+
+  /**
+   * 检查是否在 Node.js 环境中
+   * @returns {boolean}
+   */
+  static isNodeEnvironment() {
+    return typeof process !== 'undefined' && process.versions && process.versions.node;
+  }
+
+  /**
+   * 获取 Node.js 存储文件路径
+   * @returns {string}
+   */
+  static getNodeStoragePath() {
+    const path = typeof require !== 'undefined' ? require('path') : null;
+    if (!path) return './storage.json';
+    
+    const fs = typeof require !== 'undefined' ? require('fs') : null;
+    if (!fs) return './storage.json';
+    
+    // 尝试获取用户主目录
+    const homeDir = process.env.HOME || process.env.USERPROFILE || './';
+    const appDir = path.join(homeDir, '.pastekit');
+    
+    // 确保目录存在
+    if (!fs.existsSync(appDir)) {
+      fs.mkdirSync(appDir, { recursive: true });
+    }
+    
+    return path.join(appDir, 'storage.json');
+  }
+
+  /**
+   * 读取 Node.js 存储文件
+   * @returns {Object}
+   */
+  static readNodeStorage() {
+    if (!this.isNodeEnvironment()) return {};
+    
+    const fs = typeof require !== 'undefined' ? require('fs') : null;
+    if (!fs) return {};
+    
+    try {
+      const filePath = this.getNodeStoragePath();
+      console.log('[StorageUtils] 读取存储文件路径:', filePath);
+      
+      if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, 'utf8');
+        console.log('[StorageUtils] 读取到的原始数据:', data);
+        const parsed = JSON.parse(data);
+        console.log('[StorageUtils] 解析后的数据:', parsed);
+        return parsed;
+      }
+      console.log('[StorageUtils] 存储文件不存在，返回空对象');
+      return {};
+    } catch (error) {
+      console.warn('[StorageUtils] 读取 Node.js 存储文件失败:', error);
+      return {};
+    }
+  }
+
+  /**
+   * 写入 Node.js 存储文件
+   * @param {Object} data
+   */
+  static writeNodeStorage(data) {
+    if (!this.isNodeEnvironment()) return;
+    
+    const fs = typeof require !== 'undefined' ? require('fs') : null;
+    const path = typeof require !== 'undefined' ? require('path') : null;
+    if (!fs || !path) return;
+    
+    try {
+      const filePath = this.getNodeStoragePath();
+      const dirPath = path.dirname(filePath);
+      
+      console.log('[StorageUtils] 写入存储文件路径:', filePath);
+      console.log('[StorageUtils] 写入的数据:', data);
+      
+      // 确保目录存在
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+        console.log('[StorageUtils] 创建目录:', dirPath);
+      }
+      
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+      console.log('[StorageUtils] 写入成功');
+    } catch (error) {
+      console.warn('[StorageUtils] 写入 Node.js 存储文件失败:', error);
+    }
   }
 
   /**
@@ -45,6 +136,12 @@ export class StorageUtils {
       } else {
         return chrome.storage.local.set(storageObj);
       }
+    } else if (this.isNodeEnvironment()) {
+      // Node.js 环境
+      const storage = this.readNodeStorage();
+      storage[key] = serializedValue;
+      this.writeNodeStorage(storage);
+      return Promise.resolve();
     } else if (this.supportsLocalStorage()) {
       // 普通网页环境
       localStorage.setItem(key, serializedValue);
@@ -83,6 +180,38 @@ export class StorageUtils {
         }
       }
       return deserialized;
+    } else if (this.isNodeEnvironment()) {
+      // Node.js 环境
+      const storage = this.readNodeStorage();
+      const result = {};
+      
+      if (typeof keys === 'string') {
+        const value = storage[keys];
+        try {
+          result[keys] = value ? JSON.parse(value) : null;
+        } catch (e) {
+          result[keys] = value;
+        }
+      } else if (Array.isArray(keys)) {
+        keys.forEach(key => {
+          const value = storage[key];
+          try {
+            result[key] = value ? JSON.parse(value) : null;
+          } catch (e) {
+            result[key] = value;
+          }
+        });
+      } else {
+        // 获取所有键值对
+        for (const [key, value] of Object.entries(storage)) {
+          try {
+            result[key] = JSON.parse(value);
+          } catch (e) {
+            result[key] = value;
+          }
+        }
+      }
+      return result;
     } else if (this.supportsLocalStorage()) {
       // 普通网页环境
       if (typeof keys === 'string') {
@@ -138,6 +267,16 @@ export class StorageUtils {
       } else {
         return chrome.storage.local.remove(keys);
       }
+    } else if (this.isNodeEnvironment()) {
+      // Node.js 环境
+      const storage = this.readNodeStorage();
+      if (typeof keys === 'string') {
+        delete storage[keys];
+      } else if (Array.isArray(keys)) {
+        keys.forEach(key => delete storage[key]);
+      }
+      this.writeNodeStorage(storage);
+      return Promise.resolve();
     } else if (this.supportsLocalStorage()) {
       // 普通网页环境
       if (typeof keys === 'string') {
@@ -166,6 +305,10 @@ export class StorageUtils {
       } else {
         return chrome.storage.local.clear();
       }
+    } else if (this.isNodeEnvironment()) {
+      // Node.js 环境
+      this.writeNodeStorage({});
+      return Promise.resolve();
     } else if (this.supportsLocalStorage()) {
       // 普通网页环境
       localStorage.clear();
@@ -247,6 +390,12 @@ export class StorageUtils {
       } else {
         return chrome.storage.local.set(serializedItems);
       }
+    } else if (this.isNodeEnvironment()) {
+      // Node.js 环境
+      const storage = this.readNodeStorage();
+      Object.assign(storage, serializedItems);
+      this.writeNodeStorage(storage);
+      return Promise.resolve();
     } else if (this.supportsLocalStorage()) {
       Object.entries(serializedItems).forEach(([key, value]) => {
         localStorage.setItem(key, value);

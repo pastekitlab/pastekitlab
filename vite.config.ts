@@ -13,6 +13,8 @@ export default defineConfig({
         fs: {
             allow: ['.']
         },
+        // 启用 HTTPS
+        https: true,
         // 监听所有网络接口，包括局域网
         host: '0.0.0.0',
         // 或者直接设置为 true

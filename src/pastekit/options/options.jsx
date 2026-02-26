@@ -15,6 +15,7 @@ import KeyConfigManager from '../component/keyconfigmanager.jsx';
 import CipherTestComponent from '../component/ciphertest.jsx';
 import SignatureTool from '../component/signaturetool.jsx';
 import AIPromptManager from '../component/aipromptmanager.jsx';
+import Dnrmanager from '../component/dnrmanager.jsx';
 import AboutComponent from '../component/about.jsx';
 import LanguageSwitcher from '../component/languageswitcher.jsx';
 import { useTranslation, preloadTranslations } from '../utils/i18n';
@@ -24,6 +25,7 @@ const getMenuItems = (t) => [
   { id: 'key-config', label: t('options.sidebar.key_config'), icon: 'key' },
   { id: 'encryption-test', label: t('options.sidebar.encryption_test'), icon: 'test-tube' },
   { id: 'signature-tool', label: t('options.sidebar.signature_tool'), icon: 'pen-tool' },
+  { id: 'mock-manager', label: t('options.sidebar.mock_manager'), icon: 'theater-masks' },
   { id: 'ai-prompts', label: t('options.sidebar.ai_prompts'), icon: 'message-circle' },
   { id: 'about', label: t('options.sidebar.about'), icon: 'info' }
 ];
@@ -159,6 +161,7 @@ export default function OptionsPage() {
                           {item.icon === 'key' && '🔐'}
                           {item.icon === 'test-tube' && '🧪'}
                           {item.icon === 'pen-tool' && '✍️'}
+                          {item.icon === 'theater-masks' && '🎭'}
                           {item.icon === 'message-circle' && '💬'}
                           {item.icon === 'info' && 'ℹ️'}
                         </span>
@@ -200,6 +203,19 @@ export default function OptionsPage() {
                   configs={savedConfigs}
                   className="w-full"
                 />
+              </div>
+            )}
+            
+            {activeSection === 'mock-manager' && (
+              <div className="space-y-6 w-full">
+                {isReady ? (
+                  <Dnrmanager t={t} />
+                ) : (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <span className="ml-2">Loading translations...</span>
+                  </div>
+                )}
               </div>
             )}
             

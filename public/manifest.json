@@ -16,7 +16,19 @@
   },
   "permissions": [
     "commands",
-    "activeTab"
+    "activeTab",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "storage",
+    "permissions"
+  ],
+  "host_permissions": [
+    "https://localhost:8443/*",
+    "https://free.freeipapi.com/",
+    "https://dns.alidns.com/"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
   ],
   "commands": {
     "_execute_action": {
@@ -32,12 +44,8 @@
       "description": "Open PasteKitLab options page"
     }
   },
-  "host_permissions": [
-    "https://free.freeipapi.com/",
-    "https://dns.alidns.com/"
-  ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https: http:; frame-src 'self'; child-src 'self';"
   },
   "background": {
     "service_worker": "background.js"
