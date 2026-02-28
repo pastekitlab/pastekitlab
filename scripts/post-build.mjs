@@ -3,7 +3,7 @@ import { cp, rm, readdir, stat } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 
 const dist = './dist';
-const TARGET_FILES = ['popup.html', 'options.html'];
+const TARGET_FILES = ['popup.html', 'options.html','panel.html'];
 
 /**
  * 递归查找目录中指定文件的完整路径

@@ -231,6 +231,26 @@
       "example_domains": "Example: www.google.com or github.com",
       "support_desc": "Supports A, AAAA, and CNAME record queries"
     },
+    "panel": {
+      "title": "🔐 Decryption Monitor Panel",
+      "status": {
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "timeout": "Connection Timeout"
+      },
+      "requests_count": "{{count}} requests total",
+      "requests": "Request List",
+      "details": "Details",
+      "no_requests": "No network requests",
+      "refresh_hint": "Please refresh the page or initiate network requests",
+      "select_request": "Please select a request to view details",
+      "request_not_found": "Request not found",
+      "request_body": "Request Body",
+      "response_body": "Response Body",
+      "decrypt": "Decrypt",
+      "refresh_configs": "Refresh Configs",
+      "clear_requests": "Clear Requests"
+    },
     "keyconfigmanager": {
       "title": "🔐 Key Configuration Management",
       "test_panel": "🧪 Test Panel",

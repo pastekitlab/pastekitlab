@@ -34,7 +34,7 @@ export default function Dnrmanager({ t }) {
     method: 'GET',
     actionType: 'redirect', // redirect, block, allow
     redirectUrl: '',
-    resourceTypes: ['xmlhttprequest', 'fetch'], // 默认拦截 AJAX 和 Fetch 请求
+    resourceTypes: ['xmlhttprequest'], // 默认拦截 AJAX 和 Fetch 请求
     excludedInitiatorDomains: [],
     excludedRequestDomains: [],
     priority: 1,
@@ -233,7 +233,7 @@ export default function Dnrmanager({ t }) {
       method: 'GET',
       actionType: 'redirect',
       redirectUrl: '',
-      resourceTypes: ['xmlhttprequest', 'fetch'],
+      resourceTypes: ['xmlhttprequest'],
       excludedInitiatorDomains: [],
       excludedRequestDomains: [],
       priority: 1,

@@ -231,6 +231,26 @@
       "example_domains": "示例：www.google.com 或 github.com",
       "support_desc": "支持A、AAAA和CNAME记录查询"
     },
+    "panel": {
+      "title": "🔐 解密监控面板",
+      "status": {
+        "connected": "已连接",
+        "disconnected": "未连接",
+        "timeout": "连接超时"
+      },
+      "requests_count": "共 {{count}} 个请求",
+      "requests": "请求列表",
+      "details": "详情",
+      "no_requests": "暂无网络请求",
+      "refresh_hint": "请刷新页面或发起网络请求",
+      "select_request": "请选择一个请求查看详情",
+      "request_not_found": "未找到请求",
+      "request_body": "请求体",
+      "response_body": "响应体",
+      "decrypt": "解密",
+      "refresh_configs": "刷新配置",
+      "clear_requests": "清空请求"
+    },
     "keyconfigmanager": {
       "title": "🔐 秘钥配置管理",
       "test_panel": "🧪 测试面板",
