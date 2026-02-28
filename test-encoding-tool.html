@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编解码工具测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">🔤 编解码工具测试</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">功能说明</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li>支持 Base64、Hex、URL、Unicode 四种编码格式</li>
+                <li>可进行编码和解码操作</li>
+                <li>提供快捷操作按钮（复制、交换、清空）</li>
+                <li>实时结果显示和错误提示</li>
+            </ul>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">测试用例</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h3 class="font-medium mb-2">Base64 测试</h3>
+                    <div class="text-sm text-gray-600 mb-2">
+                        <strong>原文:</strong> Hello World! 你好世界<br>
+                        <strong>Base64编码:</strong> SGVsbG8gV29ybGQhIOS9oOWlve+8jOS4lueVjO+8gQ==
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-medium mb-2">Hex 测试</h3>
+                    <div class="text-sm text-gray-600 mb-2">
+                        <strong>原文:</strong> ABC<br>
+                        <strong>Hex编码:</strong> 414243
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-medium mb-2">URL 测试</h3>
+                    <div class="text-sm text-gray-600 mb-2">
+                        <strong>原文:</strong> hello world?<br>
+                        <strong>URL编码:</strong> hello%20world%3F
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-medium mb-2">Unicode 测试</h3>
+                    <div class="text-sm text-gray-600 mb-2">
+                        <strong>原文:</strong> 中<br>
+                        <strong>Unicode编码:</strong> \u4e2d
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t pt-4">
+                <h3 class="font-medium mb-3">使用说明</h3>
+                <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1">
+                    <li>选择操作类型（编码/解码）</li>
+                    <li>选择编码方式（Base64/Hex/URL/Unicode）</li>
+                    <li>在输入框中输入要处理的文本</li>
+                    <li>点击"编码"或"解码"按钮执行操作</li>
+                    <li>结果将显示在输出框中</li>
+                    <li>可使用快捷按钮进行复制、交换等操作</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center text-sm text-gray-500">
+            此测试页面用于验证编解码工具的核心功能。<br>
+            实际功能已在 PasteKitLab 的 options 页面中集成。
+        </div>
+    </div>
+</body>
+</html>

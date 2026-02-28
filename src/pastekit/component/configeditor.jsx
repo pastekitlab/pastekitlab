@@ -443,7 +443,7 @@ function EncodingSettingsEditor({
             {/* 编码选择器 */}
             <Select onValueChange={onAddPlainEncoding}>
               <SelectTrigger>
-                <SelectValue placeholder={`${t('common.add')} ${t('components.keyconfigmanager.plaintext_encoding')}`} />
+                <SelectValue placeholder={t('common.add') + ' ' + t('components.keyconfigmanager.plaintext_encoding')} />
               </SelectTrigger>
               <SelectContent>
                 {PLAINTEXT_ENCODING_OPTIONS.map(option => {
@@ -490,7 +490,7 @@ function EncodingSettingsEditor({
             {/* 编码选择器 */}
             <Select onValueChange={onAddCipherEncoding}>
               <SelectTrigger>
-                <SelectValue placeholder={`${t('common.add')} ${t('components.keyconfigmanager.ciphertext_encoding')}`} />
+                <SelectValue placeholder={t('common.add') + ' ' + t('components.keyconfigmanager.ciphertext_encoding')} />
               </SelectTrigger>
               <SelectContent>
                 {CIPHERTEXT_ENCODING_OPTIONS.map(option => (

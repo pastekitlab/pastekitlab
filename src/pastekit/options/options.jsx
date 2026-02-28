@@ -14,6 +14,7 @@ import { StorageUtils } from '../utils/storageutils.js';
 import KeyConfigManager from '../component/keyconfigmanager.jsx';
 import CipherTestComponent from '../component/ciphertest.jsx';
 import SignatureTool from '../component/signaturetool.jsx';
+import EncodingTool from '../component/encodingtool.jsx';
 import AIPromptManager from '../component/aipromptmanager.jsx';
 import Dnrmanager from '../component/dnrmanager.jsx';
 import AboutComponent from '../component/about.jsx';
@@ -25,6 +26,7 @@ const getMenuItems = (t) => [
   { id: 'key-config', label: t('options.sidebar.key_config'), icon: 'key' },
   { id: 'encryption-test', label: t('options.sidebar.encryption_test'), icon: 'test-tube' },
   { id: 'signature-tool', label: t('options.sidebar.signature_tool'), icon: 'pen-tool' },
+  { id: 'encoding-tool', label: t('options.sidebar.encoding_tool') || '编解码工具', icon: 'text' },
   { id: 'mock-manager', label: t('options.sidebar.mock_manager'), icon: 'theater-masks' },
   { id: 'ai-prompts', label: t('options.sidebar.ai_prompts'), icon: 'message-circle' },
   { id: 'about', label: t('options.sidebar.about'), icon: 'info' }
@@ -161,6 +163,7 @@ export default function OptionsPage() {
                           {item.icon === 'key' && '🔐'}
                           {item.icon === 'test-tube' && '🧪'}
                           {item.icon === 'pen-tool' && '✍️'}
+                          {item.icon === 'text' && '🔤'}
                           {item.icon === 'theater-masks' && '🎭'}
                           {item.icon === 'message-circle' && '💬'}
                           {item.icon === 'info' && 'ℹ️'}
@@ -203,6 +206,13 @@ export default function OptionsPage() {
                   configs={savedConfigs}
                   className="w-full"
                 />
+              </div>
+            )}
+            
+            {activeSection === 'encoding-tool' && (
+              <div className="space-y-6 w-full">
+                <h1 className="text-2xl font-bold">{t('options.sidebar.encoding_tool') || '编解码工具'}</h1>
+                <EncodingTool className="w-full" />
               </div>
             )}
             

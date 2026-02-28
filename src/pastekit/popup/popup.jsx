@@ -7,7 +7,7 @@ import {useChromePopupHeight} from "@/hooks/use-chrome-popup-height";
 import TimeTool from "@/pastekit/component/timetool"
 import CroneTool from "@/pastekit/component/cronetool"
 import JsonTool from "@/pastekit/component/jsontool"
-import EncodeTool from "@/pastekit/component/encodetool"
+import AutoEncodeTool from "@/pastekit/component/autoencodetool"
 import UrlTool from "@/pastekit/component/urltool"
 import IpTool from "@/pastekit/component/iptool"
 import DnsTool from "@/pastekit/component/dnstool"
@@ -397,7 +397,7 @@ export default function PopUp() {
                 return <AutoCipherTool content={content}/>;
             case 'encode':
             default:
-                return <EncodeTool content={content}/>;
+                return <AutoEncodeTool content={content}/>;
         }
     };
 

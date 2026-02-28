@@ -240,10 +240,10 @@ const getSupportedFormats = () => [
     { key: 'qrcode', name: 'QR Code', encode: null, decode: null, isQR: true }
 ];
 
-export default function EncodeTool({ content }) {
+export default function AutoEncodeTool({ content }) {
     const [t] = useTranslation();
     
-    console.log('🔧 EncodeTool rendering:', {
+    console.log('🔧 AutoEncodeTool rendering:', {
         content: content?.substring(0, 50) + '...',
         hasContent: !!content,
         timestamp: Date.now()
@@ -414,19 +414,19 @@ export default function EncodeTool({ content }) {
     return (
         <div>
             <div className="w-full border rounded p-4 space-y-4">
-                <h3 className="text-lg font-bold">{t('components.encodetool.title')}</h3>
+                <h3 className="text-lg font-bold">{t('components.autoencodetool.title')}</h3>
             
             {/* Detected format */}
             {detectedFormat && (
                 <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
-                    🔍 {t('components.encodetool.detected_format')}: <strong>{formats.find(f => f.key === detectedFormat)?.name || detectedFormat}</strong>
+                    🔍 {t('components.autoencodetool.detected_format')}: <strong>{formats.find(f => f.key === detectedFormat)?.name || detectedFormat}</strong>
                 </div>
             )}
 
             {/* Error notification */}
             {error && (
                 <div className="p-3 bg-red-100 text-red-800 rounded text-sm">
-                    <strong>{t('components.encodetool.processing_error')}:</strong> {error}
+                    <strong>{t('components.autoencodetool.processing_error')}:</strong> {error}
                 </div>
             )}
 
@@ -477,7 +477,7 @@ export default function EncodeTool({ content }) {
                                 {/* Display operation type and results */}
                                 {result.operation === 'encode' && result.encodeSuccess && (
                                     <div className="mb-2">
-                                        <div className="text-xs text-gray-500 mb-1">🔄 {t('components.encodetool.encoding_result', { format: format.name })}:</div>
+                                        <div className="text-xs text-gray-500 mb-1">🔄 {t('components.autoencodetool.encoding_result', { format: format.name })}:</div>
                                         <div className="text-xs font-mono bg-green-100 px-2 py-1 rounded break-all">
                                             {result.encoded}
                                         </div>
@@ -487,7 +487,7 @@ export default function EncodeTool({ content }) {
                                 {result.operation === 'decode' && result.decodeSuccess && (
                                     <div>
                                         <div className="text-xs text-gray-500 mb-1">
-                                            🔓 {t('components.encodetool.decoding_result', { format: format.name })}:
+                                            🔓 {t('components.autoencodetool.decoding_result', { format: format.name })}:
                                         </div>
                                         
                                         {/* Byte array hint */}
@@ -512,15 +512,15 @@ export default function EncodeTool({ content }) {
             {!detectedFormat && Object.keys(results).length === 0 && !error && (
                 <div className="text-center text-gray-500 py-8">
                     <div className="text-4xl mb-2">🔧</div>
-                    <div>{t('components.encodetool.enter_content')}</div>
-                    <div className="text-sm mt-1">{t('components.encodetool.support_desc')}</div>
+                    <div>{t('components.autoencodetool.enter_content')}</div>
+                    <div className="text-sm mt-1">{t('components.autoencodetool.support_desc')}</div>
                 </div>
             )}
 
             {/* Current format has no results notification */}
             {results[activeFormat] && !results[activeFormat].encodeSuccess && !results[activeFormat].decodeSuccess && (
                 <div className="text-center text-gray-500 py-4">
-                    {t('components.encodetool.cannot_process')}
+                    {t('components.autoencodetool.cannot_process')}
                 </div>
             )}
         </div>

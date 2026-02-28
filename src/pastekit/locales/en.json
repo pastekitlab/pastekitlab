@@ -6,6 +6,8 @@
     "edit": "Edit",
     "create": "Create",
     "confirm": "Confirm",
+    "add": "Add",
+    "optional": "Optional",
     "close": "Close",
     "loading": "Loading...",
     "success": "Success",
@@ -60,6 +62,7 @@
       "key_config": "Key Configuration",
       "encryption_test": "Encryption/Decryption Test",
       "signature_tool": "Signature Tool",
+      "encoding_tool": "Encoding Tool",
       "mock_manager": "DNR Manager",
       "ai_prompts": "AI Prompts",
       "about": "About"
@@ -193,6 +196,16 @@
       "support_desc": "Supports multiple encoding formats, encryption/decryption, and QR code generation",
       "cannot_process": "Current format cannot process this content"
     },
+    "autoencodetool": {
+      "title": "Auto Encoding/Decoding Tool",
+      "detected_format": "Detected input format",
+      "processing_error": "Processing error",
+      "encoding_result": "🔄 Encoding result (Plain text → {{format}})",
+      "decoding_result": "🔓 Decoding result ({{format}} → Plain text)",
+      "enter_content": "Enter content to view encoding/decoding results",
+      "support_desc": "Supports multiple encoding formats, encryption/decryption, and QR code generation",
+      "cannot_process": "Current format cannot process this content"
+    },
     "urltool": {
       "processing_error": "Processing error",
       "enter_content": "Enter URL or encoded content to view processing results",
@@ -243,6 +256,11 @@
       "key_config": "Key Configuration",
       "encoding_settings": "Encoding Settings",
       "encoding_explanation": "Encoding Explanation",
+      "plaintext_encoding_desc": "The encoding format of plaintext before encryption, such as UTF-8, Base64, etc.",
+      "ciphertext_encoding_desc": "The encoding format of ciphertext for storage or transmission, such as Base64, Hex, etc.",
+      "key_iv_encoding": "Key/IV Encoding",
+      "key_iv_encoding_desc": "The encoding format of key and initialization vector, usually UTF-8",
+      "support_compound_encoding": "Supports compound encoding, multiple encoding methods can be selected and applied in sequence",
       "messages": {
         "enter_name": "Please enter configuration name",
         "name_exists": "Configuration name already exists",
@@ -493,6 +511,17 @@
         "fill_fields": "Please fill in prompt name and template",
         "delete_confirm": "Are you sure you want to delete this prompt?"
       }
+    },
+    "encodingtool": {
+      "title": "Encoding Tool",
+      "operation": "Operation Type",
+      "encode": "Encode",
+      "decode": "Decode",
+      "encoding_type": "Encoding Type",
+      "input": "Input Text",
+      "input_placeholder": "Please enter text to process...",
+      "output": "Output Result",
+      "output_placeholder": "Processing result will be displayed here..."
     },
     "mockmanager": {
       "title": "Mock Rule Management",
