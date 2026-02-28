@@ -62,7 +62,7 @@ export class CipherUtils {
     // 对密文进行后处理编码 - 统一使用EncodingUtils
     if (cipherEncoding && cipherEncoding.length > 0) {
       // 使用EncodingUtils处理所有密文编码
-      ciphertext = EncodingUtils.encode(ciphertext, 'UTF8', cipherEncoding);
+      ciphertext = EncodingUtils.encode(ciphertext, 'Base64', cipherEncoding);
     }
     
     return ciphertext;
@@ -86,7 +86,7 @@ export class CipherUtils {
     
     // 如果有编码配置，使用EncodingUtils进行解码处理
     if (cipherEncoding && cipherEncoding.length > 0) {
-      processedCiphertext = EncodingUtils.decode(ciphertext, 'UTF8', cipherEncoding);
+      processedCiphertext = EncodingUtils.decode(ciphertext, "BASE64", cipherEncoding);
     } else if (mainAlgorithm === 'SM4' && cipherEncoding.includes('HEX')) {
       // 特殊处理：如果是 SM4 且输出为 HEX，则直接使用
       processedCiphertext = ciphertext;

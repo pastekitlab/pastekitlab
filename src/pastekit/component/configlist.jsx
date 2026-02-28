@@ -43,6 +43,19 @@ export default function ConfigList({
             <th className="text-center py-3 px-4 font-semibold text-sm border-b">{t('components.keyconfigmanager.actions')}</th>
           </tr>
         </thead>
+        <style jsx>{`
+          tr:focus {
+            outline: none !important;
+            box-shadow: none !important;
+          }
+          tr::-moz-focus-inner {
+            border: 0;
+          }
+          table {
+            border-collapse: separate;
+            border-spacing: 0;
+          }
+        `}</style>
         <tbody>
           {currentConfigs.map((config, index) => (
             <ConfigRow
@@ -71,10 +84,20 @@ function ConfigRow({ config, isSelected, rowIndex, onSelect, onEdit, onDelete, i
   
   return (
     <tr 
-      className={`border-b hover:bg-muted/50 cursor-pointer transition-colors ${
-        isSelected ? 'bg-primary/10' : ''
-      } ${rowIndex % 2 === 0 ? 'bg-background' : 'bg-muted/30'}`}
+      className={`border-b cursor-pointer transition-colors duration-200 ease-out ${
+        isSelected 
+          ? 'bg-primary/15 border-primary/20' 
+          : (rowIndex % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40')
+      }`}
       onClick={() => onSelect(config.name)}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.currentTarget.classList.add('hover-state');
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.classList.remove('hover-state');
+      }}
     >
       <td className="py-3 px-4 font-medium">{config.name}</td>
       <td className="py-3 px-4">{displayInfo.algorithmType}</td>
