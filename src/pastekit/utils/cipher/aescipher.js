@@ -109,11 +109,30 @@ export class AESCipher {
       decryptOptions.iv = ivWordArray;
     }
     
+    // 添加详细的调试信息
+    console.log('[AES解密] 解密参数:', {
+      ciphertextLength: ciphertext.length,
+      ciphertextPreview: ciphertext.substring(0, 50) + '...',
+      keyLength: parsedKey.length,
+      keyPreview: parsedKey.substring(0, 16) + '...',
+      ivLength: parsedIv.length,
+      ivPreview: parsedIv.substring(0, 16) + '...',
+      mode: modeUpper,
+      padding: paddingUpper
+    });
+    
     decrypted = CryptoJS.AES.decrypt(ciphertext, keyWordArray, decryptOptions);
     
     // 增加解密结果有效性检查
+    console.log('[AES解密] 解密结果:', {
+      hasResult: !!decrypted,
+      resultType: typeof decrypted,
+      resultLength: decrypted?.toString().length || 0,
+      resultPreview: decrypted?.toString().substring(0, 50) + '...' || 'null'
+    });
+    
     if (!decrypted || decrypted.toString() === '') {
-      throw new Error('AES解密失败：解密结果为空');
+      throw new Error(`AES解密失败：解密结果为空。密文长度:${ciphertext.length}, 模式:${modeUpper}`);
     }
     
     // 针对流模式的特殊处理：手动移除可能的零填充

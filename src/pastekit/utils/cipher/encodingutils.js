@@ -135,7 +135,7 @@ export class EncodingUtils {
                 // 根据数据编码方式先转换为字符串
                 const base64DataStr = this._convertDataToString(data, dataEncoding);
                 // 执行一次Base64编码
-                const base64Str = btoa(unescape(encodeURIComponent(base64DataStr)));
+                const base64Str = this._toBase64(unescape(encodeURIComponent(base64DataStr)));
                 console.info(`Base64编码: ${base64DataStr} -> ${base64Str}`);
                 return CryptoJS.enc.Base64.parse(base64Str);
             case 'BASE64_URLSAFE':
@@ -143,7 +143,7 @@ export class EncodingUtils {
                 const urlSafeDataStr = this._convertDataToString(data, dataEncoding);
 
                 // 执行Base64 URL安全编码
-                const urlSafeBase64 = btoa(unescape(encodeURIComponent(urlSafeDataStr)))
+                const urlSafeBase64 = this._toBase64(unescape(encodeURIComponent(urlSafeDataStr)))
                     .replace(/\+/g, '-')
                     .replace(/\//g, '_')
                     .replace(/=/g, '');
@@ -218,12 +218,138 @@ export class EncodingUtils {
                 throw new Error('Invalid Base64 character');
             }
 
-            const decoded = atob(base64Str);
-            return decodeURIComponent(escape(decoded));
+            // 检查是否在background环境中（没有document对象）
+            if (typeof document === 'undefined') {
+                // 在background环境中使用自定义解码
+                return this._fromBase64(base64Str);
+            } else {
+                // 在浏览器环境中使用atob
+                const decoded = atob(base64Str);
+                return decodeURIComponent(escape(decoded));
+            }
         } catch (e) {
             // 静默处理错误，返回null而不是抛出异常
             console.warn('Base64解码失败:', e.message, '输入:', base64Str.substring(0, 50) + '...');
             return null;
+        }
+    }
+
+    /**
+     * 跨环境的Base64编码实现
+     * @private
+     * @param {string} str - 要编码的字符串
+     * @returns {string} Base64编码结果
+     */
+    static _toBase64(str) {
+        // 检查环境并选择合适的实现
+        if (typeof document !== 'undefined' && typeof btoa !== 'undefined') {
+            // 浏览器环境
+            return btoa(str);
+        } else {
+            // Background环境或其他环境，使用自定义实现
+            return this._customBase64Encode(str);
+        }
+    }
+
+    /**
+     * 跨环境的Base64解码实现
+     * @private
+     * @param {string} base64Str - Base64字符串
+     * @returns {string} 解码结果
+     */
+    static _fromBase64(base64Str) {
+        // 检查环境并选择合适的实现
+        if (typeof document !== 'undefined' && typeof atob !== 'undefined') {
+            // 浏览器环境
+            const decoded = atob(base64Str);
+            return decodeURIComponent(escape(decoded));
+        } else {
+            // Background环境或其他环境，使用自定义实现
+            return this._customBase64Decode(base64Str);
+        }
+    }
+
+    /**
+     * 自定义Base64编码实现
+     * @private
+     * @param {string} str - 要编码的字符串
+     * @returns {string} Base64编码结果
+     */
+    static _customBase64Encode(str) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        let result = '';
+        let i = 0;
+        
+        // 使用标准的 Base64 分组处理方式
+        for (let groupStart = 0; groupStart < str.length; groupStart += 3) {
+            // 获取三个字节（不足的用0补齐）
+            const chr1 = str.charCodeAt(groupStart);
+            const chr2 = groupStart + 1 < str.length ? str.charCodeAt(groupStart + 1) : 0;
+            const chr3 = groupStart + 2 < str.length ? str.charCodeAt(groupStart + 2) : 0;
+            
+            // 计算四个6位值
+            const enc1 = chr1 >> 2;
+            const enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+            const enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+            const enc4 = chr3 & 63;
+            
+            // 根据实际有效字节数添加结果
+            result += chars.charAt(enc1);
+            result += chars.charAt(enc2);
+            
+            if (groupStart + 1 >= str.length) {
+                // 只有一个有效字节：添加 '=='
+                result += '==';
+            } else if (groupStart + 2 >= str.length) {
+                // 只有两个有效字节：添加第三个字符和 '='
+                result += chars.charAt(enc3) + '=';
+            } else {
+                // 三个字节都有效：添加所有四个字符
+                result += chars.charAt(enc3) + chars.charAt(enc4);
+            }
+        }
+        
+        return result;
+    }
+
+    /**
+     * 自定义Base64解码实现
+     * @private
+     * @param {string} base64Str - Base64字符串
+     * @returns {string} 解码结果
+     */
+    static _customBase64Decode(base64Str) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        let result = '';
+        let i = 0;
+        
+        // 移除填充字符
+        base64Str = base64Str.replace(/[^A-Za-z0-9+/]/g, '');
+        
+        while (i < base64Str.length) {
+            const enc1 = chars.indexOf(base64Str.charAt(i++));
+            const enc2 = chars.indexOf(base64Str.charAt(i++));
+            const enc3 = chars.indexOf(base64Str.charAt(i++));
+            const enc4 = chars.indexOf(base64Str.charAt(i++));
+            
+            const chr1 = (enc1 << 2) | (enc2 >> 4);
+            const chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+            const chr3 = ((enc3 & 3) << 6) | enc4;
+            
+            result += String.fromCharCode(chr1);
+            
+            if (enc3 !== 64) {
+                result += String.fromCharCode(chr2);
+            }
+            if (enc4 !== 64) {
+                result += String.fromCharCode(chr3);
+            }
+        }
+        
+        try {
+            return decodeURIComponent(escape(result));
+        } catch (e) {
+            return result;
         }
     }
 
@@ -495,7 +621,7 @@ export class EncodingUtils {
                     // 默认输出Base64格式
                     try {
                         // 直接使用原始字节数据进行Base64编码
-                        result = btoa(str);
+                        result = this._toBase64(str);
                         console.info(`[HEX解码] 最后一层解码，HEX转Base64: ${data.substring(0, 32)}... -> ${result}`);
                     } catch (base64Error) {
                         console.warn(`[HEX解码] Base64转换失败，返回原始转换结果: ${base64Error.message}`);

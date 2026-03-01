@@ -24,22 +24,29 @@ export class StorageUtils {
    * @returns {string}
    */
   static getNodeStoragePath() {
-    const path = typeof require !== 'undefined' ? require('path') : null;
-    if (!path) return './storage.json';
-    
-    const fs = typeof require !== 'undefined' ? require('fs') : null;
-    if (!fs) return './storage.json';
-    
-    // 尝试获取用户主目录
-    const homeDir = process.env.HOME || process.env.USERPROFILE || './';
-    const appDir = path.join(homeDir, '.pastekit');
-    
-    // 确保目录存在
-    if (!fs.existsSync(appDir)) {
-      fs.mkdirSync(appDir, { recursive: true });
+    // 在浏览器环境中直接返回默认路径
+    if (typeof window !== 'undefined' || typeof document !== 'undefined') {
+      return './storage.json';
     }
     
-    return path.join(appDir, 'storage.json');
+    try {
+      const path = require('path');
+      const fs = require('fs');
+      
+      // 尝试获取用户主目录
+      const homeDir = process.env.HOME || process.env.USERPROFILE || './';
+      const appDir = path.join(homeDir, '.pastekit');
+      
+      // 确保目录存在
+      if (!fs.existsSync(appDir)) {
+        fs.mkdirSync(appDir, { recursive: true });
+      }
+      
+      return path.join(appDir, 'storage.json');
+    } catch (error) {
+      console.warn('[StorageUtils] 获取Node.js存储路径失败:', error);
+      return './storage.json';
+    }
   }
 
   /**
@@ -47,12 +54,15 @@ export class StorageUtils {
    * @returns {Object}
    */
   static readNodeStorage() {
+    // 在浏览器环境中直接返回空对象
+    if (typeof window !== 'undefined' || typeof document !== 'undefined') {
+      return {};
+    }
+    
     if (!this.isNodeEnvironment()) return {};
     
-    const fs = typeof require !== 'undefined' ? require('fs') : null;
-    if (!fs) return {};
-    
     try {
+      const fs = require('fs');
       const filePath = this.getNodeStoragePath();
       console.log('[StorageUtils] 读取存储文件路径:', filePath);
       
@@ -76,13 +86,16 @@ export class StorageUtils {
    * @param {Object} data
    */
   static writeNodeStorage(data) {
+    // 在浏览器环境中直接返回
+    if (typeof window !== 'undefined' || typeof document !== 'undefined') {
+      return;
+    }
+    
     if (!this.isNodeEnvironment()) return;
     
-    const fs = typeof require !== 'undefined' ? require('fs') : null;
-    const path = typeof require !== 'undefined' ? require('path') : null;
-    if (!fs || !path) return;
-    
     try {
+      const fs = require('fs');
+      const path = require('path');
       const filePath = this.getNodeStoragePath();
       const dirPath = path.dirname(filePath);
       

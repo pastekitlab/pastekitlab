@@ -190,6 +190,19 @@ const detectContentType = async (content) => {
         console.log('加密内容检测失败:', err);
     }
 
+    // Detect JSON format
+    try {
+        // Check if content looks like JSON (starts with { or [)
+        if ((trimmedContent.startsWith('{') && trimmedContent.endsWith('}')) || 
+            (trimmedContent.startsWith('[') && trimmedContent.endsWith(']'))) {
+            // Try to parse as JSON
+            JSON.parse(trimmedContent);
+            return 'json';
+        }
+    } catch (e) {
+        // Not valid JSON, continue with other detections
+    }
+
     // Detect URL encoding characteristics (%xx format) and verify if decoded content contains http
     if (trimmedContent.toLowerCase().startsWith('http')) {
         return 'url';

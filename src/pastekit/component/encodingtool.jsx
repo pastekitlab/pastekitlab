@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useTranslation } from '../utils/i18n';
+import { EncodingUtils } from '../utils/cipher/encodingutils';
 
 /**
  * 编解码工具组件
@@ -15,119 +16,148 @@ export default function EncodingTool({ className = '' }) {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [operation, setOperation] = useState('encode'); // encode | decode
-  const [encodingType, setEncodingType] = useState('base64'); // base64 | hex | url | unicode
+  const [inputEncoding, setInputEncoding] = useState('utf8'); // utf8 | base64 | hex | url | unicode
+  const [outputEncoding, setOutputEncoding] = useState('base64'); // utf8 | base64 | hex | url | unicode
 
-  // 编码解码映射表
-  const encodingMap = {
-    base64: {
-      name: 'Base64',
-      encode: (text) => {
-        try {
-          return btoa(unescape(encodeURIComponent(text)));
-        } catch (error) {
-          throw new Error('Base64编码失败: 输入包含无效字符');
-        }
-      },
-      decode: (text) => {
-        try {
-          return decodeURIComponent(escape(atob(text)));
-        } catch (error) {
-          throw new Error('Base64解码失败: 无效的Base64字符串');
-        }
-      }
-    },
-    hex: {
-      name: 'Hex',
-      encode: (text) => {
-        try {
-          return Array.from(new TextEncoder().encode(text))
-            .map(byte => byte.toString(16).padStart(2, '0'))
-            .join('');
-        } catch (error) {
-          throw new Error('Hex编码失败');
-        }
-      },
-      decode: (text) => {
-        try {
-          // 移除空格和换行符
-          const cleanText = text.replace(/[\s\r\n]/g, '');
-          if (cleanText.length % 2 !== 0) {
-            throw new Error('Hex字符串长度必须为偶数');
-          }
-          const bytes = new Uint8Array(cleanText.length / 2);
-          for (let i = 0; i < bytes.length; i++) {
-            bytes[i] = parseInt(cleanText.substr(i * 2, 2), 16);
-          }
-          return new TextDecoder().decode(bytes);
-        } catch (error) {
-          throw new Error('Hex解码失败: ' + error.message);
-        }
-      }
-    },
-    url: {
-      name: 'URL',
-      encode: (text) => {
-        try {
-          return encodeURIComponent(text);
-        } catch (error) {
-          throw new Error('URL编码失败');
-        }
-      },
-      decode: (text) => {
-        try {
-          return decodeURIComponent(text);
-        } catch (error) {
-          throw new Error('URL解码失败: 无效的URL编码');
-        }
-      }
-    },
-    unicode: {
-      name: 'Unicode',
-      encode: (text) => {
-        try {
-          return text.split('').map(char => 
-            '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0')
-          ).join('');
-        } catch (error) {
-          throw new Error('Unicode编码失败');
-        }
-      },
-      decode: (text) => {
-        try {
-          return text.replace(/\\u([\d\w]{4})/gi, (match, grp) => 
-            String.fromCharCode(parseInt(grp, 16))
-          );
-        } catch (error) {
-          throw new Error('Unicode解码失败: 无效的Unicode格式');
-        }
-      }
+  // 编码选项映射
+  const encodingOptions = [
+    { value: 'utf8', label: 'UTF-8' },
+    { value: 'base64', label: 'Base64' },
+    { value: 'hex', label: 'Hex' },
+    { value: 'url', label: 'URL' },
+    { value: 'unicode', label: 'Unicode' }
+  ];
+
+  // 编码名称映射
+  const encodingNames = {
+    utf8: 'UTF-8',
+    base64: 'Base64',
+    hex: 'Hex',
+    url: 'URL',
+    unicode: 'Unicode'
+  };
+
+  // 转换编码格式为 EncodingUtils 格式
+  const convertEncodingFormat = (encoding) => {
+    switch (encoding.toLowerCase()) {
+      case 'utf8': return 'UTF8';
+      case 'base64': return 'BASE64';
+      case 'hex': return 'HEX';
+      case 'url': return 'UTF8'; // URL编码使用UTF8作为基础
+      case 'unicode': return 'UTF8'; // Unicode编码使用UTF8作为基础
+      default: return 'UTF8';
     }
   };
 
-  // 执行编解码操作
+  // 执行编码转换操作
   const handleProcess = () => {
     if (!inputText.trim()) {
-      toast.error('请输入要处理的文本');
+      toast.error('请输入要转换的文本');
       return;
     }
 
     try {
-      const processor = encodingMap[encodingType];
-      if (!processor) {
-        throw new Error('不支持的编码类型');
+      let result;
+      
+      if (operation === 'encode') {
+        // 编码转换：从输入编码转换为输出编码
+        const inputFormat = convertEncodingFormat(inputEncoding);
+        const outputFormat = convertEncodingFormat(outputEncoding);
+        
+        if (inputFormat === outputFormat) {
+          // 相同编码格式，直接返回原文
+          result = inputText;
+        } else if (inputFormat === 'UTF8') {
+          // 从UTF8转换为目标编码
+          result = EncodingUtils.encode(inputText, 'UTF8', [outputFormat]);
+        } else if (outputFormat === 'UTF8') {
+          // 从源编码转换为UTF8
+          result = EncodingUtils.decode(inputText, inputFormat, [inputFormat]);
+        } else {
+          // 从一种编码转换为另一种编码：先解码为UTF8，再编码为目标格式
+          const utf8Text = EncodingUtils.decode(inputText, inputFormat, [inputFormat]);
+          result = EncodingUtils.encode(utf8Text, 'UTF8', [outputFormat]);
+        }
+      } else {
+        // 解码转换：从输出编码转换为输入编码（反向操作）
+        const inputFormat = convertEncodingFormat(inputEncoding);
+        const outputFormat = convertEncodingFormat(outputEncoding);
+        
+        if (inputFormat === outputFormat) {
+          // 相同编码格式，直接返回原文
+          result = inputText;
+        } else if (inputFormat === 'UTF8') {
+          // 从目标编码转换回UTF8（使用decode）
+          if (needsSpecialHandling(outputEncoding)) {
+            result = handleSpecialEncoding(inputText, outputEncoding, false);
+          } else {
+            result = EncodingUtils.decode(inputText, outputFormat, [outputFormat]);
+          }
+        } else if (outputFormat === 'UTF8') {
+          // 从UTF8转换回源编码（使用encode）
+          if (needsSpecialHandling(inputEncoding)) {
+            result = handleSpecialEncoding(inputText, inputEncoding, true);
+          } else {
+            result = EncodingUtils.encode(inputText, 'UTF8', [inputFormat]);
+          }
+        } else {
+          // 从一种编码转换为另一种编码：先解码为目标编码的UTF8形式，再编码为源编码
+          let utf8Text;
+          if (needsSpecialHandling(outputEncoding)) {
+            utf8Text = handleSpecialEncoding(inputText, outputEncoding, false);
+          } else {
+            utf8Text = EncodingUtils.decode(inputText, outputFormat, [outputFormat]);
+          }
+          
+          if (needsSpecialHandling(inputEncoding)) {
+            result = handleSpecialEncoding(utf8Text, inputEncoding, true);
+          } else {
+            result = EncodingUtils.encode(utf8Text, 'UTF8', [inputFormat]);
+          }
+        }
       }
-
-      const result = operation === 'encode' 
-        ? processor.encode(inputText) 
-        : processor.decode(inputText);
       
       setOutputText(result);
-      toast.success(`${processor.name}${operation === 'encode' ? '编码' : '解码'}成功`);
+      const inputName = encodingNames[inputEncoding];
+      const outputName = encodingNames[outputEncoding];
+      const operationText = operation === 'encode' ? '编码转换' : '解码转换';
+      toast.success(`${inputName} → ${outputName} ${operationText}成功`);
     } catch (error) {
-      console.error('编解码失败:', error);
+      console.error('编码转换失败:', error);
       toast.error(error.message);
       setOutputText('');
     }
+  };
+
+  // 处理URL和Unicode编码的特殊逻辑
+  const handleSpecialEncoding = (text, encoding, isEncode) => {
+    if (encoding === 'url') {
+      try {
+        return isEncode ? encodeURIComponent(text) : decodeURIComponent(text);
+      } catch (error) {
+        throw new Error(isEncode ? 'URL编码失败' : 'URL解码失败');
+      }
+    } else if (encoding === 'unicode') {
+      try {
+        if (isEncode) {
+          return text.split('').map(char => 
+            '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0')
+          ).join('');
+        } else {
+          return text.replace(/\\u([\d\w]{4})/gi, (match, grp) => 
+            String.fromCharCode(parseInt(grp, 16))
+          );
+        }
+      } catch (error) {
+        throw new Error(isEncode ? 'Unicode编码失败' : 'Unicode解码失败');
+      }
+    }
+    return null;
+  };
+
+  // 检查是否需要使用特殊编码处理
+  const needsSpecialHandling = (encoding) => {
+    return encoding === 'url' || encoding === 'unicode';
   };
 
   // 复制结果到剪贴板
@@ -153,12 +183,17 @@ export default function EncodingTool({ className = '' }) {
     toast.info('已清空所有内容');
   };
 
-  // 交换输入输出
+  // 交换输入输出编码和文本
   const swapInputOutput = () => {
-    const temp = inputText;
+    const tempText = inputText;
+    const tempEncoding = inputEncoding;
+    
     setInputText(outputText);
-    setOutputText(temp);
-    toast.info('已交换输入输出');
+    setOutputText(tempText);
+    setInputEncoding(outputEncoding);
+    setOutputEncoding(tempEncoding);
+    
+    toast.info('已交换输入输出编码和文本');
   };
 
   return (
@@ -166,7 +201,7 @@ export default function EncodingTool({ className = '' }) {
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🔤 {t('components.encodingtool.title') || '编解码工具'}
+            🔤 {t('components.encodingtool.title') || '编码转换工具'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -193,17 +228,36 @@ export default function EncodingTool({ className = '' }) {
             
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
-                {t('components.encodingtool.encoding_type') || '编码方式'}
+                {t('components.encodingtool.input_encoding') || '输入编码'}
               </label>
-              <Select value={encodingType} onValueChange={setEncodingType}>
+              <Select value={inputEncoding} onValueChange={setInputEncoding}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="base64">Base64</SelectItem>
-                  <SelectItem value="hex">Hex</SelectItem>
-                  <SelectItem value="url">URL</SelectItem>
-                  <SelectItem value="unicode">Unicode</SelectItem>
+                  {encodingOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-2 block">
+                {t('components.encodingtool.output_encoding') || '输出编码'}
+              </label>
+              <Select value={outputEncoding} onValueChange={setOutputEncoding}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {encodingOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -216,7 +270,7 @@ export default function EncodingTool({ className = '' }) {
               size="sm"
               onClick={handleProcess}
             >
-              {operation === 'encode' ? '🔄 编码' : '🔄 解码'}
+              {operation === 'encode' ? '🔄 编码转换' : '🔄 解码转换'}
             </Button>
             <Button 
               variant="outline" 
@@ -250,7 +304,7 @@ export default function EncodingTool({ className = '' }) {
             <Textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={t('components.encodingtool.input_placeholder') || '请输入要处理的文本...'}
+              placeholder={`${t('components.encodingtool.input_placeholder') || '请输入要转换的文本...'} (${encodingNames[inputEncoding]})`}
               className="min-h-[120px] font-mono text-sm"
             />
           </div>
@@ -263,7 +317,7 @@ export default function EncodingTool({ className = '' }) {
             <Textarea
               value={outputText}
               readOnly
-              placeholder={t('components.encodingtool.output_placeholder') || '处理结果将显示在这里...'}
+              placeholder={`${t('components.encodingtool.output_placeholder') || '转换结果将显示在这里...'} (${encodingNames[outputEncoding]})`}
               className="min-h-[120px] font-mono text-sm bg-muted"
             />
           </div>

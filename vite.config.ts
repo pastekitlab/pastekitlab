@@ -50,8 +50,12 @@ export default defineConfig({
                 options: resolve(__dirname, "src/pastekit/options/options.html"),
                 // 新的扩展入口
                 background: resolve(__dirname, "src/pastekit/background/background.js"),
+                // ciphertuils: resolve(__dirname, "src/pastekit/utils/cipher/cipherutils.js"),
+
                 panel: resolve(__dirname, "src/pastekit/panel/panel.html")
             },
+            // 为 background script 禁用预加载
+            preserveEntrySignatures: false,
             output: {
                 entryFileNames: (chunkInfo) => {
                     // 为不同的入口指定不同的输出路径
@@ -87,7 +91,13 @@ export default defineConfig({
                         }
                     }
                 }
-            }
-        }
+            },
+            // 为background.js禁用模块语法
+            external: []
+        },
+        // 确保background.js不使用ES模块
+        target: ['es2020'],
+        outDir: 'dist',
+        emptyOutDir: true
     }
 });
