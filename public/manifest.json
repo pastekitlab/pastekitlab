@@ -20,12 +20,8 @@
     "storage"
   ],
   "host_permissions": [
-    "https://localhost:8443/*",
-    "https://free.freeipapi.com/",
-    "https://dns.alidns.com/"
   ],
   "optional_host_permissions": [
-    "<all_urls>"
   ],
   "commands": {
     "_execute_action": {
@@ -48,5 +44,4 @@
     "service_worker": "background.js",
     "type": "module"
   }
-
 }

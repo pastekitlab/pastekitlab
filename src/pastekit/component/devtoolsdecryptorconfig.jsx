@@ -20,11 +20,13 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
   const [decryptionConfigs, setDecryptionConfigs] = useState([]);
   const [newConfig, setNewConfig] = useState({
     domain: '',
-    keyConfigId: '',
+    requestKeyConfigId: '',  // 请求密钥配置
+    responseKeyConfigId: '',  // 响应密钥配置
     enabled: true,
     description: ''
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [useSameKeyForRequestAndResponse, setUseSameKeyForRequestAndResponse] = useState(false);
 
   // 组件挂载时加载配置
   useEffect(() => {
@@ -82,8 +84,13 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       return;
     }
     
-    if (!newConfig.keyConfigId) {
-      toast.error('请选择密钥配置');
+    if (!newConfig.requestKeyConfigId) {
+      toast.error('请选择请求密钥配置');
+      return;
+    }
+
+    if (!useSameKeyForRequestAndResponse && !newConfig.responseKeyConfigId) {
+      toast.error('请选择响应密钥配置，或启用"请求和响应使用相同密钥"选项');
       return;
     }
 
@@ -93,18 +100,13 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       return;
     }
 
-    // 检查并申请域名权限
-    const permissionGranted = await requestDomainPermission(newConfig.domain);
-    if (!permissionGranted) {
-      toast.error('权限申请被拒绝，无法添加配置');
-      return;
-    }
 
     // 只保存配置名称，不保存完整配置数据
     const configToAdd = {
       id: generateId(),
       domain: newConfig.domain,
-      keyConfigName: newConfig.keyConfigId, // 保存配置名称而非ID
+      requestKeyConfigName: newConfig.requestKeyConfigId, // 请求密钥配置名称
+      responseKeyConfigName: useSameKeyForRequestAndResponse ? newConfig.requestKeyConfigId : newConfig.responseKeyConfigId, // 响应密钥配置名称
       enabled: newConfig.enabled,
       description: newConfig.description,
       createdAt: Date.now(),
@@ -117,10 +119,12 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
     // 重置表单
     setNewConfig({
       domain: '',
-      keyConfigId: '',
+      requestKeyConfigId: '',
+      responseKeyConfigId: '',
       enabled: true,
       description: ''
     });
+    setUseSameKeyForRequestAndResponse(false);
     
     toast.success(`配置添加成功！已为域名 ${newConfig.domain} 申请并获得权限。`);
   };
@@ -286,16 +290,35 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="keyConfig">密钥配置 *</Label>
+              <Label>密钥配置模式</Label>
+              <div className="flex items-center space-x-2 pt-2">
+                <Switch
+                  id="useSameKey"
+                  checked={useSameKeyForRequestAndResponse}
+                  onCheckedChange={(checked) => {
+                    setUseSameKeyForRequestAndResponse(checked);
+                    if (checked) {
+                      setNewConfig({...newConfig, responseKeyConfigId: newConfig.requestKeyConfigId});
+                    }
+                  }}
+                />
+                <Label htmlFor="useSameKey">请求和响应使用相同密钥</Label>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="requestKeyConfig">请求密钥配置 *</Label>
               <div className="space-y-1">
                 <Select 
-                  value={newConfig.keyConfigId?.toString() || 'no-selection'} 
+                  value={newConfig.requestKeyConfigId?.toString() || 'no-selection'} 
                   onValueChange={(value) => {
-                    console.log('[DevTools Config] 选择密钥配置:', value, '类型:', typeof value);
-                    console.log('[DevTools Config] configs数据:', configs);
-                    // 排除占位符值
+                    console.log('[DevTools Config] 选择请求密钥配置:', value);
                     if (value && value !== 'no-selection' && value !== 'no-configs') {
-                      setNewConfig({...newConfig, keyConfigId: value});
+                      const updateData = {...newConfig, requestKeyConfigId: value};
+                      if (useSameKeyForRequestAndResponse) {
+                        updateData.responseKeyConfigId = value;
+                      }
+                      setNewConfig(updateData);
                     }
                   }}
                 >
@@ -305,24 +328,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                   <SelectContent>
                     {configs && configs.length > 0 ? (
                       configs.map((config) => {
-                        // 调试：检查配置结构
-                        console.log('[DevTools Config] 配置项结构:', {
-                          name: config.name,
-                          id: config.id,
-                          hasId: !!config.id,
-                          idType: typeof config.id
-                        });
-                        
-                        // 使用 name 作为 ID 如果 id 不存在
                         const configId = (config.id || config.name)?.toString();
-                        
-                        // 确保 value 不为空字符串
-                        if (!configId || configId === '') {
-                          console.warn('[DevTools Config] 发现无效的配置标识:', config);
-                          return null;
-                        }
-                        
-                        // 安全地获取算法类型，避免空括号
                         const algorithmType = config.type || config.algorithmType || '';
                         const displayText = algorithmType 
                           ? `${config.name} (${algorithmType})`
@@ -333,7 +339,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                             {displayText}
                           </SelectItem>
                         );
-                      }).filter(Boolean) // 过滤掉 null 值
+                      }).filter(Boolean)
                     ) : (
                       <SelectItem value="no-configs" disabled>
                         暂无可用的密钥配置，请先在密钥配置管理中添加
@@ -342,16 +348,65 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  当前选择: {newConfig.keyConfigId || '未选择'}
+                  当前选择：{newConfig.requestKeyConfigId || '未选择'}
                 </p>
-                {newConfig.keyConfigId && (
+                {newConfig.requestKeyConfigId && (
                   <p className="text-xs text-blue-600">
-                    识别算法: {getAlgorithmFromKeyConfig(newConfig.keyConfigId)}
+                    识别算法：{getAlgorithmFromKeyConfig(newConfig.requestKeyConfigId)}
                   </p>
                 )}
               </div>
-
             </div>
+
+            {!useSameKeyForRequestAndResponse && (
+              <div className="space-y-2">
+                <Label htmlFor="responseKeyConfig">响应密钥配置 *</Label>
+                <div className="space-y-1">
+                  <Select 
+                    value={newConfig.responseKeyConfigId?.toString() || 'no-selection'} 
+                    onValueChange={(value) => {
+                      console.log('[DevTools Config] 选择响应密钥配置:', value);
+                      if (value && value !== 'no-selection' && value !== 'no-configs') {
+                        setNewConfig({...newConfig, responseKeyConfigId: value});
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="请选择密钥配置" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {configs && configs.length > 0 ? (
+                        configs.map((config) => {
+                          const configId = (config.id || config.name)?.toString();
+                          const algorithmType = config.type || config.algorithmType || '';
+                          const displayText = algorithmType 
+                            ? `${config.name} (${algorithmType})`
+                            : config.name;
+                          
+                          return (
+                            <SelectItem key={configId} value={configId}>
+                              {displayText}
+                            </SelectItem>
+                          );
+                        }).filter(Boolean)
+                      ) : (
+                        <SelectItem value="no-configs" disabled>
+                          暂无可用的密钥配置
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    当前选择：{newConfig.responseKeyConfigId || '未选择'}
+                  </p>
+                  {newConfig.responseKeyConfigId && (
+                    <p className="text-xs text-blue-600">
+                      识别算法：{getAlgorithmFromKeyConfig(newConfig.responseKeyConfigId)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
             
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="description">描述</Label>
@@ -409,19 +464,28 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                       
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                         <div>
-                          <span className="text-muted-foreground">算法:</span>{' '}
+                          <span className="text-muted-foreground">请求算法:</span>{' '}
                           <span className="font-medium">
-                            {getAlgorithmFromKeyConfig(config.keyConfigName)}
+                            {getAlgorithmFromKeyConfig(config.requestKeyConfigName)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">密钥:</span>{' '}
-                          <span className="font-medium">{config.keyConfigName}</span>x
+                          <span className="text-muted-foreground">响应算法:</span>{' '}
+                          <span className="font-medium">
+                            {getAlgorithmFromKeyConfig(config.responseKeyConfigName)}
+                          </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground">创建时间:</span>{' '}
                           <span>{new Date(config.createdAt).toLocaleString()}</span>
                         </div>
+                      </div>
+                      
+                      <div className="text-xs text-muted-foreground mt-1">
+                        <span>请求密钥:{config.requestKeyConfigName}</span>
+                        {config.requestKeyConfigName !== config.responseKeyConfigName && (
+                          <span className="ml-2">| 响应密钥:{config.responseKeyConfigName}</span>
+                        )}
                       </div>
                     </div>
                     
@@ -462,6 +526,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
             <h4 className="font-medium mb-2">如何使用:</h4>
             <ol className="list-decimal list-inside space-y-1 text-sm">
               <li>在此页面添加需要监控的域名和对应的密钥配置</li>
+              <li>可以分别为请求和响应配置不同的密钥</li>
               <li>打开目标网站并按 F12 打开开发者工具</li>
               <li>切换到 "PasteKit Decryptor" 面板</li>
               <li>点击 "连接后台" 开始监控网络请求</li>
@@ -475,7 +540,8 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
             <h4 className="font-medium mb-2">注意事项:</h4>
             <ul className="list-disc list-inside space-y-1 text-sm">
               <li>域名支持子域名匹配，如配置 example.com 会匹配 api.example.com</li>
-              <li>每个解密配置只能选择一个密钥配置</li>
+              <li>可以分别为请求和响应配置不同的密钥配置</li>
+              <li>如果请求和响应使用相同密钥，可以开启"请求和响应使用相同密钥"开关</li>
               <li>建议只对必要的域名启用监控以提高性能</li>
               <li>解密功能依赖于正确的密钥配置，请确保密钥信息准确</li>
               <li>某些网站的安全策略可能会阻止扩展的网络监控功能</li>

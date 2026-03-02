@@ -80,8 +80,13 @@ async function loadDecryptionConfigs() {
         console.log('[CryptoDevTools Background] 开始加载解密配置');
         const result = await chrome.storage.local.get(['decryptionConfigs']);
 
+        console.log('[CryptoDevTools Background] chrome.storage.local.get 返回结果:', result);
+        
         // 处理可能的字符串格式数据
         let rawConfigs = result.decryptionConfigs || [];
+
+        console.log('[CryptoDevTools Background] 原始配置数据:', rawConfigs);
+        console.log('[CryptoDevTools Background] 原始配置类型:', typeof rawConfigs, Array.isArray(rawConfigs));
 
         // 如果是字符串，尝试解析为 JSON
         if (typeof rawConfigs === 'string') {
@@ -94,16 +99,48 @@ async function loadDecryptionConfigs() {
             }
         }
 
-        // 确保配置是数组格式
-        decryptionConfigs = Array.isArray(rawConfigs) ? rawConfigs : [];
+        // 确保配置是数组格式 - 增强的检查逻辑
+        if (Array.isArray(rawConfigs)) {
+            decryptionConfigs = rawConfigs;
+        } else if (rawConfigs && typeof rawConfigs === 'object') {
+            // 如果是对象，尝试提取值或转换为空数组
+            console.warn('[CryptoDevTools Background] 配置数据是对象而非数组，尝试转换');
+            // 如果是类数组对象，转换为数组
+            if (rawConfigs.length !== undefined) {
+                decryptionConfigs = Array.from(rawConfigs);
+            } else {
+                // 其他对象情况，设为空数组
+                decryptionConfigs = [];
+            }
+        } else {
+            decryptionConfigs = [];
+        }
 
         console.log(`[CryptoDevTools Background] 加载了 ${decryptionConfigs.length} 个配置`);
         console.log('[CryptoDevTools Background] 配置详情:', decryptionConfigs);
+        
+        // 验证每个配置的结构
+        decryptionConfigs.forEach((config, index) => {
+            console.log(`[CryptoDevTools Background] 配置[${index}]:`, {
+                domain: config.domain,
+                requestKeyConfigName: config.requestKeyConfigName,
+                responseKeyConfigName: config.responseKeyConfigName,
+                enabled: config.enabled
+            });
+        });
     } catch (error) {
         console.error('[CryptoDevTools Background] 加载配置失败:', error);
         decryptionConfigs = []; // 出错时设为空数组
     }
 }
+
+// 监听配置变化并重新加载
+chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'local' && changes.decryptionConfigs) {
+        console.log('[CryptoDevTools Background] 检测到解密配置变化，重新加载');
+        loadDecryptionConfigs();
+    }
+});
 
 // 设置消息监听器
 function setupMessageListeners() {
@@ -176,24 +213,49 @@ async function handleDevToolsMessage(message, port) {
 async function handleNetworkData(message, port) {
     const {requestId, url, method, requestBody,requestHeaders, responseBody,responseHeaders, statusCode} = message;
 
-    // 检查是否有匹配的配置
-    const matchedConfig = findMatchingConfig(url);
-    if (!matchedConfig) {
-        console.log(`[CryptoDevTools Background] URL 不匹配任何配置: ${url}`);
+    // 过滤 OPTIONS 预检请求
+    if (method && method.toUpperCase() === 'OPTIONS') {
+        console.log(`[CryptoDevTools Background] 跳过 OPTIONS 预检请求：${url}`);
         return;
     }
 
-    console.log(`[CryptoDevTools Background] 发现匹配配置: ${JSON.stringify(matchedConfig)}`);
+    // 检查是否有匹配的配置
+    const matchedConfig = findMatchingConfig(url);
+    if (!matchedConfig) {
+        console.log(`[CryptoDevTools Background] URL 不匹配任何配置：${url}`);
+        return;
+    }
 
-    // 根据匹配配置中的keyConfigId查找实际的密钥配置
-    const keyConfig = findKeyConfigById(matchedConfig.keyConfigName);
-    if (!keyConfig) {
-        console.warn(`[CryptoDevTools Background] 未找到ID为 ${matchedConfig.keyConfigName} 的密钥配置`);
-        // 发送错误信息到 DevTools 面板
+    console.log(`[CryptoDevTools Background] 发现匹配配置：${JSON.stringify(matchedConfig)}`);
+
+    // 根据匹配配置中的 keyConfigName 查找实际的密钥配置
+    // 区分请求密钥配置和响应密钥配置
+    const requestKeyConfig = findKeyConfigById(matchedConfig.requestKeyConfigName);
+    const responseKeyConfig = findKeyConfigById(matchedConfig.responseKeyConfigName);
+    
+    if (!requestKeyConfig) {
+        console.warn(`[CryptoDevTools Background] 未找到请求密钥配置：${matchedConfig.requestKeyConfigName}`);
         port.postMessage({
             type: "DECRYPTION_RESULT",
             requestId,
-            error: `未找到对应的密钥配置: ${matchedConfig.keyConfigName}`,
+            error: `未找到对应的请求密钥配置：${matchedConfig.requestKeyConfigName}`,
+            request: {
+                url,
+                method,
+                statusCode,
+                requestBody,
+                responseBody
+            }
+        });
+        return;
+    }
+    
+    if (!responseKeyConfig) {
+        console.warn(`[CryptoDevTools Background] 未找到响应密钥配置：${matchedConfig.responseKeyConfigName}`);
+        port.postMessage({
+            type: "DECRYPTION_RESULT",
+            requestId,
+            error: `未找到对应的响应密钥配置：${matchedConfig.responseKeyConfigName}`,
             request: {
                 url,
                 method,
@@ -205,9 +267,9 @@ async function handleNetworkData(message, port) {
         return;
     }
 
-    console.log(`[CryptoDevTools Background] 使用密钥配置: ${keyConfig.name}`);
+    console.log(`[CryptoDevTools Background] 使用请求密钥配置：${requestKeyConfig.name}, 响应密钥配置：${responseKeyConfig.name}`);
 
-    // 加载CipherUtils
+    // 加载 CipherUtils
     const cipherUtils = loadCipherUtils();
 
 
@@ -216,16 +278,108 @@ async function handleNetworkData(message, port) {
     let plainResponseBody = null;
     let error = null;
     try {
+        // 处理响应体 - 使用响应密钥配置
         if (responseBody) {
-            plainResponseBody = cipherUtils.decrypt(responseBody, keyConfig);
+            const responseEncoding = detectContentEncoding(responseBody);
+            console.log(`[Background] 响应体编码类型：${responseEncoding}`);
+            
+            if (['HEX', 'BASE64', 'BASE64_URLSAFE'].includes(responseEncoding)) {
+                // 直接解密编码格式的数据
+                plainResponseBody = cipherUtils.decrypt(responseBody, responseKeyConfig);
+                console.info(`[Background] 直接解密响应体成功：${responseBody.substring(0, 50)}... -> ${plainResponseBody?.substring(0, 50)}...`);
+            } else if (responseEncoding === 'JSON') {
+                // JSON 格式，查找并解密其中的编码值
+                try {
+                    const jsonObj = JSON.parse(responseBody);
+                    const decryptedObj = findAndDecryptEncodedValues(jsonObj, responseKeyConfig, cipherUtils);
+                    plainResponseBody = JSON.stringify(decryptedObj, null, 2);
+                    console.info(`[Background] JSON 响应体处理完成`);
+                } catch (jsonError) {
+                    console.warn(`[Background] JSON 解析失败，跳过响应体处理:`, jsonError.message);
+                    plainResponseBody = responseBody; // 保持原值
+                }
+            } else {
+                // 其他格式，尝试直接解密
+                try {
+                    plainResponseBody = cipherUtils.decrypt(responseBody, responseKeyConfig);
+                    console.info(`[Background] 尝试直接解密响应体：${responseBody.substring(0, 50)}... -> ${plainResponseBody?.substring(0, 50)}...`);
+                } catch (decryptError) {
+                    console.log(`[Background] 响应体直接解密失败，保持原值:`, decryptError.message);
+                    plainResponseBody = responseBody; // 解密失败时保持原值
+                }
+            }
         }
-        console.info(`'解密成功， plainResponseBody:${plainResponseBody}，${responseBody}'`);
-
+        
+        // 对解密后的明文结果进行 JSON 美化
+        if (plainResponseBody) {
+            try {
+                // 尝试解析为 JSON 并美化
+                const parsed = JSON.parse(plainResponseBody);
+                plainResponseBody = JSON.stringify(parsed, null, 2);
+                console.info(`[Background] 响应体明文 JSON 美化完成`);
+            } catch (beautifyError) {
+                // 不是有效的 JSON，保持原值
+                console.debug(`[Background] 响应体明文不是 JSON 格式，跳过美化`);
+            }
+        }
+        
+        // 处理请求体 - 使用请求密钥配置
         if (requestBody) {
-            plainRequestBody = cipherUtils.decrypt(requestBody, keyConfig);
+            const requestEncoding = detectContentEncoding(requestBody);
+            console.log(`[Background] 请求体编码类型：${requestEncoding}`);
+            
+            if (['HEX', 'BASE64', 'BASE64_URLSAFE'].includes(requestEncoding)) {
+                // 直接解密编码格式的数据
+                plainRequestBody = cipherUtils.decrypt(requestBody, requestKeyConfig);
+                // 检查解密结果是否为 JSON 格式，如果是则美化
+                if (plainRequestBody && detectContentEncoding(plainRequestBody) === 'JSON') {
+                    try {
+                        // 尝试解析为 JSON 并美化
+                        const parsed = JSON.parse(plainRequestBody);
+                        plainRequestBody = JSON.stringify(parsed, null, 2);
+                        console.info(`[Background] 响应体明文 JSON 美化完成`);
+                    } catch (beautifyError) {
+                        // 不是有效的 JSON，保持原值
+                        console.debug(`[Background] 响应体明文不是 JSON 格式，跳过美化`);
+                    }
+                }
+                console.info(`[Background] 直接解密请求体成功：${requestBody.substring(0, 50)}... -> ${plainRequestBody?.substring(0, 50)}...`);
+            } else if (requestEncoding === 'JSON') {
+                // JSON 格式，查找并解密其中的编码值
+                try {
+                    const jsonObj = JSON.parse(requestBody);
+                    const decryptedObj = findAndDecryptEncodedValues(jsonObj, requestKeyConfig, cipherUtils);
+                    plainRequestBody = JSON.stringify(decryptedObj, null, 2);
+                    console.info(`[Background] JSON 请求体处理完成`);
+                } catch (jsonError) {
+                    console.warn(`[Background] JSON 解析失败，跳过请求体处理:`, jsonError.message);
+                    plainRequestBody = requestBody; // 保持原值
+                }
+            } else {
+                // 其他格式，尝试直接解密
+                try {
+                    plainRequestBody = cipherUtils.decrypt(requestBody, requestKeyConfig);
+                    // 检查解密结果是否为 JSON 格式，如果是则美化
+                    console.info(`[Background] 尝试直接解密请求体：${requestBody.substring(0, 50)}... -> ${plainRequestBody?.substring(0, 50)}...`);
+                } catch (decryptError) {
+                    console.log(`[Background] 请求体直接解密失败，保持原值:`, decryptError.message);
+                    plainRequestBody = requestBody; // 解密失败时保持原值
+                }
+            }
         }
-
-        console.info(`'解密成功，plainRequestBody:${plainRequestBody} ${requestBody}'`);
+        
+        // 对解密后的明文结果进行 JSON 美化
+        if (plainRequestBody) {
+            try {
+                // 尝试解析为 JSON 并美化
+                const parsed = JSON.parse(plainRequestBody);
+                plainRequestBody = JSON.stringify(parsed, null, 2);
+                console.info(`[Background] 请求体明文 JSON 美化完成`);
+            } catch (beautifyError) {
+                // 不是有效的 JSON，保持原值
+                console.debug(`[Background] 请求体明文不是 JSON 格式，跳过美化`);
+            }
+        }
     } catch (error) {
         console.error('[CryptoDevTools Background] 解密过程中发生错误:', error);
         console.error('[CryptoDevTools Background] 错误详情:', {
@@ -234,14 +388,15 @@ async function handleNetworkData(message, port) {
             statusCode: statusCode,
             requestBodyLength: requestBody?.length || 0,
             responseBodyLength: responseBody?.length || 0,
-            keyConfigName: keyConfig?.name,
-            algorithm: keyConfig?.algorithm,
-            mode: keyConfig?.mode,
+            requestKeyConfigName: requestKeyConfig?.name,
+            responseKeyConfigName: responseKeyConfig?.name,
+            algorithm: requestKeyConfig?.algorithm,
+            mode: requestKeyConfig?.mode,
             errorStack: error.stack
         });
         
         // 发送错误信息
-        error='解密失败: ' + error.message;
+        error='解密失败：' + error.message;
     }
 
     const decryptMessage = {
@@ -258,7 +413,8 @@ async function handleNetworkData(message, port) {
             responseHeaders,
             plainRequestBody,
             plainResponseBody,
-            config: keyConfig,
+            requestConfig: requestKeyConfig,
+            responseConfig: responseKeyConfig,
             domainConfig: matchedConfig
         }
     }
@@ -266,7 +422,81 @@ async function handleNetworkData(message, port) {
 
 }
 
-// 查找匹配的配置
+// 检测内容编码类型
+function detectContentEncoding(content) {
+    if (!content || typeof content !== 'string') {
+        return 'UNKNOWN';
+    }
+    
+    const trimmed = content.trim();
+    
+    // 检测Hex格式 (只包含0-9, a-f, A-F且长度为偶数)
+    if (/^[0-9a-fA-F]+$/.test(trimmed) && trimmed.length % 2 === 0) {
+        return 'HEX';
+    }
+    
+    // 检测Base64格式
+    if (/^[A-Za-z0-9+/]*={0,2}$/.test(trimmed) && trimmed.length % 4 === 0) {
+        // 进一步验证Base64字符范围
+        if (/^[A-Za-z0-9+/]*={0,2}$/.test(trimmed)) {
+            return 'BASE64';
+        }
+    }
+    
+    // 检测Base64 URL安全格式
+    if (/^[-_A-Za-z0-9]*=?=?$/.test(trimmed)) {
+        return 'BASE64_URLSAFE';
+    }
+    
+    // 检测JSON格式
+    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+        (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+        try {
+            JSON.parse(trimmed);
+            return 'JSON';
+        } catch (e) {
+            // 不是有效的JSON
+        }
+    }
+    
+    return 'PLAIN';
+}
+
+// 在JSON中查找编码值并解密
+function findAndDecryptEncodedValues(obj, keyConfig, cipherUtils) {
+    if (!obj || typeof obj !== 'object') {
+        return obj;
+    }
+    
+    const result = Array.isArray(obj) ? [] : {};
+    
+    for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string') {
+            const encodingType = detectContentEncoding(value);
+            if (['HEX', 'BASE64', 'BASE64_URLSAFE'].includes(encodingType)) {
+                try {
+                    // 尝试解密
+                    const decrypted = cipherUtils.decrypt(value, keyConfig);
+                    if (decrypted && decrypted !== value) {
+                        result[key] = decrypted;
+                        console.log(`[Background] 成功解密JSON字段 ${key}: ${value.substring(0, 30)}... -> ${decrypted.substring(0, 30)}...`);
+                        if(detectContentEncoding(decrypted)==='JSON'){
+                            return JSON.parse(decrypted)
+                        }
+                        continue;
+                    }
+                } catch (decryptError) {
+                    console.log(`[Background] JSON字段 ${key} 解密失败:`, decryptError.message);
+                }
+            }
+            // 如果不是编码格式或解密失败，保持原值
+            result[key] = value;
+        } else {
+            result[key] = value;
+        }
+    }
+    return result;
+}
 function findMatchingConfig(url) {
     try {
         console.log('[CryptoDevTools Background] 开始匹配配置，URL:', url);

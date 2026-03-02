@@ -78,7 +78,7 @@ export default function DevToolsPanel() {
             initializeDevToolsNetworkListener();
 
         } catch (error) {
-            console.error('[CryptoDevTools Panel] 连接初始化失败:', error);
+            console.warn('[CryptoDevTools Panel] 连接初始化失败:', error);
             if (error.message.includes('Extension context invalidated')) {
                 setConnectionStatus('invalid');
             }
@@ -448,16 +448,12 @@ export default function DevToolsPanel() {
                                             connectionStatus === 'invalid' ? 'bg-purple-500' : 'bg-red-500'
                                 }`}></div>
                                 <span className="text-sm text-gray-600">
-                  {connectionStatus === 'connected' ? t('components.panel.status.connected') :
-                      connectionStatus === 'timeout' ? t('components.panel.status.timeout') :
-                          connectionStatus === 'invalid' ? t('components.panel.status.invalid') : t('components.panel.status.disconnected')}
+                  {connectionStatus === 'connected' ? t('components.panel.status_connected') :
+                      connectionStatus === 'timeout' ? t('components.panel.status_timeout') :
+                          connectionStatus === 'invalid' ? t('components.panel.status_invalid') : t('components.panel.status_disconnected')}
                 </span>
                             </div>
-                            {connectionStatus === 'connected' && requests.length === 0 && (
-                                <span className="text-sm text-gray-600 italic">
-                                    {t('components.panel.make_request_tip')}
-                                </span>
-                            )}
+                            
                             <span className="text-sm text-gray-600">
                 {t('components.panel.requests_count', {count: requests.length})}
               </span>
@@ -653,14 +649,14 @@ export default function DevToolsPanel() {
 
                                                 {/* 请求密文 */}
                                                 <div>
-                                                    <h4 className="font-medium mb-2 flex items-center">
+                                                    <h4 className="font-medium mb-2 flex items-center max-h-32">
                                                         <span className="mr-2">🔒</span>
                                                         {t('components.panel.request_body')}
                                                     </h4>
-                                                    <pre
+                                                    <div
                                                         className="bg-gray-100 p-3 rounded text-sm overflow-scroll">
                           {requests.find(r => r.requestId === selectedRequestId)?.requestBody || t('components.panel.no_request_body')}
-                        </pre>
+                        </div>
                                                 </div>
 
                                                 {/* 请求明文 */}
@@ -724,14 +720,14 @@ export default function DevToolsPanel() {
 
                                                 {/* 响应密文 */}
                                                 <div>
-                                                    <h4 className="font-medium mb-2 flex items-center">
+                                                    <h4 className="font-medium mb-2 flex items-center max-h-32">
                                                         <span className="mr-2">🔒</span>
                                                         {t('components.panel.response_body')}
                                                     </h4>
-                                                    <pre
+                                                    <div
                                                         className="bg-gray-100 p-3 rounded text-sm overflow-scroll max-h-32">
                           {requests.find(r => r.requestId === selectedRequestId)?.responseBody || t('components.panel.no_response_body')}
-                        </pre>
+                        </div>
                                                 </div>
 
                                                 {/* 响应明文 */}
@@ -741,7 +737,7 @@ export default function DevToolsPanel() {
                                                         {t('components.panel.plain_response_body')}
                                                     </h4>
                                                     <pre
-                                                        className="bg-green-50 border border-green-200 p-3 rounded text-sm overflow-auto max-h-32">
+                                                        className="bg-green-50 border border-green-200 p-3 rounded text-sm overflow-auto ">
                           {requests.find(r => r.requestId === selectedRequestId)?.plainResponseBody || t('components.panel.no_decryption_result')}
                         </pre>
                                                 </div>

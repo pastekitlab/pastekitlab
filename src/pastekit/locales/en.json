@@ -547,12 +547,10 @@
     },
     "panel": {
       "title": "🔐 Decryption Panel",
-      "status": {
-        "connected": "Connected",
-        "disconnected": "Disconnected",
-        "timeout": "Connection Timeout",
-        "invalid": "Extension Context Invalid"
-      },
+      "status_connected": "Connected",
+      "status_disconnected": "Disconnected",
+      "status_timeout": "Connection Timeout",
+      "status_invalid": "Extension Context Invalid",
       "requests": "Request List",
       "details": "Details",
       "no_requests": "No Network Requests",

@@ -530,7 +530,7 @@ export class EncodingUtils {
         
         // 应用前置编码解码处理
         result = this._applyDecodings(result, encodings,dataEncoding);
-        console.info('Decoded data:', result);
+        console.info('final Decoded data:', result);
         return result;
     }
     
@@ -688,6 +688,7 @@ export class EncodingUtils {
                         console.warn(`[BASE64解码] HEX转换失败，保持Base64结果: ${hexError.message}`);
                     }
                 } else {
+                    result=data;
                     console.info(`[BASE64解码] 最后一层解码，保持Base64格式: ${data.substring(0, 32)}... -> ${result}`);
                 }
             } else {

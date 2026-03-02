@@ -233,11 +233,10 @@
     },
     "panel": {
       "title": "🔐 解密监控面板",
-      "status": {
-        "connected": "已连接",
-        "disconnected": "未连接",
-        "timeout": "连接超时"
-      },
+      "status_connected": "已连接",
+      "status_disconnected": "未连接",
+      "status_timeout": "连接超时",
+      "status_invalid": "扩展上下文无效",
       "make_request_tip": "请发起网络请求以查看解密结果",
       "requests_count": "共 {{count}} 个请求",
       "requests": "请求列表",
