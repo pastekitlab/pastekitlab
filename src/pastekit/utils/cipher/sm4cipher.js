@@ -28,7 +28,8 @@ export class SM4Cipher {
     if (iv?.encoding && iv.encoding.length > 0) {
       parsedIv = EncodingUtils.decode(iv.value, 'HEX', iv.encoding);
     }
-    
+
+
     // SM4 要求密钥长度为 16 字节
     const keyHex =parsedKey;
     const ivHex =  parsedIv;
