@@ -20,18 +20,18 @@ export class SM4Cipher {
     // 处理密钥
     let parsedKey = key.value;
     if (key.encoding && key.encoding.length > 0) {
-      parsedKey = EncodingUtils.decode(key.value, 'UTF8', key.encoding);
+      parsedKey = EncodingUtils.decode(key.value, 'HEX', key.encoding);
     }
     
     // 处理初始化向量
     let parsedIv = iv?.value || '';
     if (iv?.encoding && iv.encoding.length > 0) {
-      parsedIv = EncodingUtils.decode(iv.value, 'UTF8', iv.encoding);
+      parsedIv = EncodingUtils.decode(iv.value, 'HEX', iv.encoding);
     }
     
     // SM4 要求密钥长度为 16 字节
-    const keyHex = CryptoJS.enc.Utf8.parse(parsedKey).toString(CryptoJS.enc.Hex).padEnd(32, '0').substring(0, 32);
-    const ivHex = parsedIv ? CryptoJS.enc.Utf8.parse(parsedIv).toString(CryptoJS.enc.Hex).padEnd(32, '0').substring(0, 32) : '';
+    const keyHex =parsedKey;
+    const ivHex =  parsedIv;
     
     // SM4 支持的模式映射
     const sm4ModeMap = {
@@ -48,7 +48,9 @@ export class SM4Cipher {
       iv: ivHex || undefined
     };
     
-    return sm4.encrypt(plaintext, keyHex, options);
+    const result = sm4.encrypt(plaintext, keyHex, options);
+    console.info("key:",keyHex," plainText:",plaintext,'iv:',ivHex,' result:',result);
+    return result;
   }
 
   /**
@@ -63,13 +65,13 @@ export class SM4Cipher {
     // 处理密钥
     let parsedKey = key.value;
     if (key.encoding && key.encoding.length > 0) {
-      parsedKey = EncodingUtils.decode(key.value, 'UTF8', key.encoding);
+      parsedKey = EncodingUtils.decode(key.value, 'HEX', key.encoding);
     }
     
     // 处理初始化向量
     let parsedIv = iv?.value || '';
     if (iv?.encoding && iv.encoding.length > 0) {
-      parsedIv = EncodingUtils.decode(iv.value, 'UTF8', iv.encoding);
+      parsedIv = EncodingUtils.decode(iv.value, 'HEX', iv.encoding);
     }
     
     const keyHex = CryptoJS.enc.Utf8.parse(parsedKey).toString(CryptoJS.enc.Hex).padEnd(32, '0').substring(0, 32);

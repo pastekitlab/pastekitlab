@@ -565,8 +565,13 @@ export class EncodingUtils {
         switch (encoding) {
             case 'UTF8':
                 // UTF8 通常作为最终解码，保持原样
+                if(lastEncoding==='HEX'){
+                   return CryptoJS.enc.Utf8.parse(data).toString(CryptoJS.enc.Hex);
+                }
+                if(lastEncoding==='BASE64'){
+                    return CryptoJS.enc.Utf8.parse(data).toString(CryptoJS.enc.Base64);
+                }
                 return data;
-                
             case 'HEX':
                 return this._decodeHex(data, last,lastEncoding);
                 
@@ -599,7 +604,9 @@ export class EncodingUtils {
             console.info(`[HEX解码] 跳过解码，输入不是有效HEX格式: ${data.substring(0, 50)}${data.length > 50 ? '...' : ''}`);
             return data;
         }
-        
+        if (last && lastEncoding ==='HEX') {
+            return data
+        }
         try {
             // 将HEX字符串转换为UTF-8字符串
             let str = '';
@@ -666,7 +673,9 @@ export class EncodingUtils {
             console.info(`[BASE64解码] 跳过解码，输入不是有效Base64格式: ${data.substring(0, 50)}${data.length > 50 ? '...' : ''}`);
             return data;
         }
-        
+        if (last && lastEncoding==='BASE64') {
+            return data;
+        }
         const decoded = this._base64Decode(data);
         if (decoded !== null) {
             let result = decoded;

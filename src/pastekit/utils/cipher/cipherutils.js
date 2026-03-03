@@ -46,11 +46,8 @@ export class CipherUtils {
         break;
       case 'SM4':
         ciphertext = SM4Cipher.encrypt(processedPlaintext, algorithmConfig);
-        // SM4 返回的是 hex 格式，可能需要转换
-        if (cipherEncoding.includes('BASE64')) {
-          const wordArray = CryptoJS.enc.Hex.parse(ciphertext);
-          ciphertext = wordArray.toString(CryptoJS.enc.Base64);
-        }
+        // SM4 返回的是 hex 格式，如果最终需要 BASE64 输出，在此处转换
+        // 注意：不要在这里就转 Base64，而是保持 hex 格式传递给后续处理
         break;
       case 'RSA':
         ciphertext = RSACipher.encrypt(processedPlaintext, config);
@@ -59,10 +56,15 @@ export class CipherUtils {
         throw new Error(`不支持的加密算法: ${algorithm}`);
     }
     
-    // 对密文进行后处理编码 - 统一使用EncodingUtils
+    // 对密文进行后处理编码 - 统一使用 EncodingUtils
     if (cipherEncoding && cipherEncoding.length > 0) {
-      // 使用EncodingUtils处理所有密文编码
-      ciphertext = EncodingUtils.encode(ciphertext, 'Base64', cipherEncoding);
+      // SM4 返回的是 HEX 格式，需要转换为 Base64 或其他指定格式
+      if (mainAlgorithm === 'SM4') {
+        ciphertext = EncodingUtils.encode(ciphertext, 'HEX', cipherEncoding);
+      } else {
+        // AES/RSA 等算法的密文通常已经是 Base64 格式
+        ciphertext = EncodingUtils.encode(ciphertext, 'Base64', cipherEncoding);
+      }
     }
     
     return ciphertext;
@@ -81,17 +83,19 @@ export class CipherUtils {
     const algParts = algorithm.split('/');
     const mainAlgorithm = algParts[0].toUpperCase();
     
-    // 密文预处理：统一使用EncodingUtils进行解码
+    // 密文预处理：统一使用 EncodingUtils 进行解码
     let processedCiphertext = ciphertext;
-    
-    // 如果有编码配置，使用EncodingUtils进行解码处理
+        
+    // 如果有编码配置，使用 EncodingUtils 进行解码处理
     if (cipherEncoding && cipherEncoding.length > 0) {
-      processedCiphertext = EncodingUtils.decode(ciphertext, "BASE64", cipherEncoding);
-    } else if (mainAlgorithm === 'SM4' && cipherEncoding.includes('HEX')) {
-      // 特殊处理：如果是 SM4 且输出为 HEX，则直接使用
-      processedCiphertext = ciphertext;
+      if (mainAlgorithm === 'SM4') {
+        // SM4 密文通常是 BASE64 格式，需要解码为 HEX
+        processedCiphertext = EncodingUtils.decode(ciphertext, "BASE64", cipherEncoding);
+      } else {
+        // AES/RSA 等算法的密文通常已经是 Base64 格式，可以直接使用
+        processedCiphertext = EncodingUtils.decode(ciphertext, "BASE64", cipherEncoding);
+      }
     }
-    // 对于AES等算法，密文通常已经是Base64格式，可以直接使用
     
     // 根据算法选择解密方式
     let plaintext;
@@ -104,9 +108,11 @@ export class CipherUtils {
         plaintext = SM2Cipher.decrypt(processedCiphertext, config);
         break;
       case 'SM4':
-        // 如果密文是 base64 格式，需要先转换为 hex
+        // SM4Cipher.decrypt 接收 HEX 格式的密文
+        // 如果 cipherEncoding 包含 BASE64，需要先从 Base64 转为 HEX
         let hexCiphertext = processedCiphertext;
         if (!cipherEncoding.includes('HEX')) {
+          // 默认是 BASE64 格式，需要转换为 HEX
           const wordArray = CryptoJS.enc.Base64.parse(processedCiphertext);
           hexCiphertext = wordArray.toString(CryptoJS.enc.Hex);
         }
