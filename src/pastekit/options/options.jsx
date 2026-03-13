@@ -20,6 +20,7 @@ import Dnrmanager from '../component/dnrmanager.jsx';
 import AboutComponent from '../component/about.jsx';
 import DevToolsDecryptorConfig from '../component/devtoolsdecryptorconfig.jsx';
 import LanguageSwitcher from '../component/languageswitcher.jsx';
+import RequestListViewer from '../component/requestlistviewer.jsx';
 import { useTranslation, preloadTranslations } from '../utils/i18n';
 
 // Menu items configuration (will be translated dynamically)
@@ -29,6 +30,7 @@ const getMenuItems = (t) => [
   { id: 'signature-tool', label: t('options.sidebar.signature_tool'), icon: 'pen-tool' },
   { id: 'encoding-tool', label: t('options.sidebar.encoding_tool') || '编解码工具', icon: 'text' },
   { id: 'mock-manager', label: t('options.sidebar.mock_manager'), icon: 'theater-masks' },
+  { id: 'request-list', label: '请求列表', icon: 'list' },
   { id: 'devtools-decryptor', label: 'DevTools 解密器', icon: 'shield' },
   { id: 'ai-prompts', label: t('options.sidebar.ai_prompts'), icon: 'message-circle' },
   { id: 'about', label: t('options.sidebar.about'), icon: 'info' }
@@ -167,6 +169,7 @@ export default function OptionsPage() {
                           {item.icon === 'pen-tool' && '✍️'}
                           {item.icon === 'text' && '🔤'}
                           {item.icon === 'theater-masks' && '🎭'}
+                          {item.icon === 'list' && '📋'}
                           {item.icon === 'shield' && '🛡️'}
                           {item.icon === 'message-circle' && '💬'}
                           {item.icon === 'info' && 'ℹ️'}
@@ -229,6 +232,12 @@ export default function OptionsPage() {
                     <span className="ml-2">Loading translations...</span>
                   </div>
                 )}
+              </div>
+            )}
+            
+            {activeSection === 'request-list' && (
+              <div className="h-full overflow-hidden">
+                <RequestListViewer />
               </div>
             )}
             

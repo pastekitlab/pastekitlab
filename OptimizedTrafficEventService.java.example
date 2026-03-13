@@ -1,0 +1,395 @@
+/**
+ * TrafficEvent 处理逻辑优化示例
+ * 
+ * 主要改进：
+ * 1. 使用requestId 关联请求和响应
+ * 2. 对 request body 和 response body 使用配置的解密配置进行解密
+ * 3. 发送标准化的 WebSocket 消息格式
+ */
+
+package com.pastekit.proxy.service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pastekit.proxy.dto.TrafficEvent;
+import org.java_websocket.WebSocket;
+import org.java_websocket.server.WebSocketServer;
+
+import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class OptimizedTrafficEventService {
+    
+    private final WebSocketServer server;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    
+    // 用于存储请求 - 响应的映射关系
+    private final Map<String, TrafficEvent> pendingRequests = new ConcurrentHashMap<>();
+    
+    // 解密配置缓存（从数据库或配置文件加载）
+    private final Map<String, DecryptConfig> decryptConfigs = new ConcurrentHashMap<>();
+    
+    public OptimizedTrafficEventService(int port) {
+        this.server = new WebSocketServer(new InetSocketAddress(port)) {
+            @Override
+            public void onOpen(org.java_websocket.drafts.Draft_6475 conn) {
+                System.out.println("客户端已连接：" + conn.getRemoteSocketAddress());
+                
+                // 发送欢迎消息
+                TrafficEvent welcomeEvent = TrafficEvent.builder()
+                    .type(TrafficEvent.EventType.REQUEST)
+                    .build();
+                
+                Map<String, Object> message = Map.of(
+                    "type", "connected",
+                    "clientId", conn.getRemoteSocketAddress().toString(),
+                    "timestamp", System.currentTimeMillis()
+                );
+                
+                try {
+                    conn.send(objectMapper.writeValueAsString(message));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            @Override
+            public void onMessage(org.java_websocket.drafts.Draft_6475 conn, String message) {
+                try {
+                    // 解析客户端消息
+                    Map<String, Object> clientMessage = objectMapper.readValue(
+                        message, 
+                        Map.class
+                    );
+                    
+                    String msgType = (String) clientMessage.get("msgType");
+                    
+                    if ("domain".equals(msgType)) {
+                        // 处理域名配置更新
+                        handleDomainConfig(conn, clientMessage);
+                    } else if ("ping".equals(msgType)) {
+                        // 处理心跳
+                        handlePing(conn, clientMessage);
+                    }
+                    
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            @Override
+            public void onClose(org.java_websocket.drafts.Draft_6475 conn, int code, String reason) {
+                System.out.println("客户端已断开：" + conn.getRemoteSocketAddress());
+            }
+            
+            @Override
+            public void onError(org.java_websocket.drafts.Draft_6475 conn, Exception ex) {
+                System.err.println("WebSocket 错误：" + ex.getMessage());
+            }
+        };
+    }
+    
+    /**
+     * 处理请求事件
+     */
+    public void handleRequest(TrafficEvent requestEvent) {
+        System.out.println("处理请求：" + requestEvent.getUrl());
+        
+        // 生成或使用现有的 requestId
+        String requestId = requestEvent.getRequestId();
+        if (requestId == null || requestId.isEmpty()) {
+            requestId = TrafficEvent.generateRequestId(
+                requestEvent.getUrl(),
+                requestEvent.getMethod(),
+                requestEvent.getTimestamp()
+            );
+            requestEvent.setRequestId(requestId);
+        }
+        
+        // 存储请求以便后续与响应关联
+        pendingRequests.put(requestId, requestEvent);
+        
+        // 查找匹配的解密配置
+        DecryptConfig config = findMatchingConfig(requestEvent.getUrl());
+        
+        // 解密请求体
+        if (requestEvent.getBody() != null && config != null) {
+            String decryptedBody = decryptBody(requestEvent.getBody(), config);
+            requestEvent.setPlainRequestBody(decryptedBody);
+            System.out.println("请求体解密成功：" + requestId);
+        }
+        
+        // 构建 WebSocket 消息
+        Map<String, Object> wsMessage = buildWebSocketMessage(requestEvent);
+        
+        // 发送到所有连接的客户端
+        broadcastMessage(wsMessage);
+    }
+    
+    /**
+     * 处理响应事件
+     */
+    public void handleResponse(TrafficEvent responseEvent) {
+        System.out.println("处理响应：" + responseEvent.getUrl());
+        
+        // 尝试从 URL 或其他信息匹配对应的请求
+        String requestId = matchRequestToResponse(responseEvent);
+        
+        if (requestId != null) {
+            responseEvent.setRequestId(requestId);
+            
+            // 查找匹配的解密配置
+            DecryptConfig config = findMatchingConfig(responseEvent.getUrl());
+            
+            // 解密响应体
+            if (responseEvent.getBody() != null && config != null) {
+                String decryptedBody = decryptBody(responseEvent.getBody(), config);
+                responseEvent.setPlainResponseBody(decryptedBody);
+                System.out.println("响应体解密成功：" + requestId);
+            }
+            
+            // 移除已处理的请求
+            pendingRequests.remove(requestId);
+        }
+        
+        // 构建 WebSocket 消息
+        Map<String, Object> wsMessage = buildWebSocketMessage(responseEvent);
+        
+        // 发送到所有连接的客户端
+        broadcastMessage(wsMessage);
+    }
+    
+    /**
+     * 将请求和响应关联起来
+     */
+    private String matchRequestToResponse(TrafficEvent responseEvent) {
+        // 简单的匹配策略：基于 URL 和时间戳
+        // 实际项目中可能需要更复杂的策略（如基于 SSL Session ID、Connection 头等）
+        
+        for (Map.Entry<String, TrafficEvent> entry : pendingRequests.entrySet()) {
+            TrafficEvent request = entry.getValue();
+            
+            // 匹配 URL
+            if (request.getUrl().equals(responseEvent.getUrl())) {
+                // 检查时间戳（响应应该在请求之后）
+                if (responseEvent.getTimestamp() > request.getTimestamp()) {
+                    return entry.getKey();
+                }
+            }
+        }
+        
+        // 如果没有找到匹配的请求，生成一个新的 requestId
+        return TrafficEvent.generateRequestId(
+            responseEvent.getUrl(),
+            "RESPONSE",
+            responseEvent.getTimestamp()
+        );
+    }
+    
+    /**
+     * 解密请求/响应体
+     */
+    private String decryptBody(String body, DecryptConfig config) {
+        if (body == null || config == null) {
+            return body;
+        }
+        
+        try {
+            // 根据配置选择解密算法
+            switch (config.getAlgorithm()) {
+                case "AES":
+                    return decryptAES(body, config);
+                case "SM4":
+                    return decryptSM4(body, config);
+                case "RSA":
+                    return decryptRSA(body, config);
+                case "SM2":
+                    return decryptSM2(body, config);
+                default:
+                    System.err.println("不支持的算法：" + config.getAlgorithm());
+                    return body;
+            }
+        } catch (Exception e) {
+            System.err.println("解密失败：" + e.getMessage());
+            return body; // 解密失败时返回原始数据
+        }
+    }
+    
+    /**
+     * AES 解密实现
+     */
+    private String decryptAES(String body, DecryptConfig config) throws Exception {
+        // TODO: 实现 AES 解密逻辑
+        // 需要使用配置的 key、iv、mode 等参数
+        
+        String key = config.getKey();
+        String iv = config.getIv();
+        String mode = config.getMode(); // CBC, ECB, CFB, OFB
+        
+        // 示例代码（需要实际实现）：
+        // Cipher cipher = Cipher.getInstance("AES/" + mode + "/PKCS5Padding");
+        // SecretKeySpec keySpec = new SecretKeySpec(key.getBytes(), "AES");
+        // IvParameterSpec ivSpec = new IvParameterSpec(iv.getBytes());
+        // cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+        // byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(body));
+        // return new String(decrypted, StandardCharsets.UTF_8);
+        
+        return "[AES 解密结果] " + body.substring(0, Math.min(50, body.length()));
+    }
+    
+    /**
+     * SM4 解密实现
+     */
+    private String decryptSM4(String body, DecryptConfig config) throws Exception {
+        // TODO: 实现 SM4 解密逻辑（需要集成国密库）
+        return "[SM4 解密结果] " + body.substring(0, Math.min(50, body.length()));
+    }
+    
+    /**
+     * RSA 解密实现
+     */
+    private String decryptRSA(String body, DecryptConfig config) throws Exception {
+        // TODO: 实现 RSA 解密逻辑
+        return "[RSA 解密结果] " + body.substring(0, Math.min(50, body.length()));
+    }
+    
+    /**
+     * SM2 解密实现
+     */
+    private String decryptSM2(String body, DecryptConfig config) throws Exception {
+        // TODO: 实现 SM2 解密逻辑（需要集成国密库）
+        return "[SM2 解密结果] " + body.substring(0, Math.min(50, body.length()));
+    }
+    
+    /**
+     * 查找匹配的解密配置
+     */
+    private DecryptConfig findMatchingConfig(String url) {
+        // TODO: 根据 URL 查找匹配的解密配置
+        // 可以从数据库、配置文件或缓存中查找
+        
+        // 示例：从域名匹配
+        String domain = extractDomain(url);
+        return decryptConfigs.get(domain);
+    }
+    
+    /**
+     * 提取域名
+     */
+    private String extractDomain(String url) {
+        try {
+            java.net.URI uri = new java.net.URI(url);
+            return uri.getHost();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /**
+     * 构建 WebSocket 消息
+     */
+    private Map<String, Object> buildWebSocketMessage(TrafficEvent event) {
+        Map<String, Object> message = new ConcurrentHashMap<>();
+        message.put("type", event.getType() == TrafficEvent.EventType.REQUEST ? "proxy-request" : "proxy-response");
+        message.put("timestamp", System.currentTimeMillis());
+        
+        // 构建数据对象
+        Map<String, Object> data = new ConcurrentHashMap<>();
+        data.put("eventId", event.getEventId());
+        data.put("requestId", event.getRequestId());
+        data.put("type", event.getType().name());
+        data.put("direction", event.getDirection().name());
+        data.put("url", event.getUrl());
+        data.put("method", event.getMethod());
+        data.put("statusCode", event.getStatusCode());
+        data.put("headers", event.getHeaders());
+        data.put("body", event.getBody());
+        data.put("plainRequestBody", event.getPlainRequestBody());
+        data.put("plainResponseBody", event.getPlainResponseBody());
+        data.put("timestamp", event.getTimestamp());
+        data.put("latency", event.getLatency());
+        data.put("contentType", event.getContentType());
+        data.put("truncated", event.getTruncated());
+        data.put("originalContentLength", event.getOriginalContentLength());
+        
+        message.put("data", data);
+        
+        return message;
+    }
+    
+    /**
+     * 广播消息到所有客户端
+     */
+    private void broadcastMessage(Map<String, Object> message) {
+        try {
+            String jsonMessage = objectMapper.writeValueAsString(message);
+            
+            for (WebSocket conn : server.connections()) {
+                if (conn.isOpen()) {
+                    conn.send(jsonMessage);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * 处理域名配置更新
+     */
+    private void handleDomainConfig(WebSocket conn, Map<String, Object> clientMessage) {
+        System.out.println("收到域名配置：" + clientMessage);
+        
+        // 更新解密配置
+        // TODO: 根据客户端提供的域名列表更新配置
+    }
+    
+    /**
+     * 处理心跳
+     */
+    private void handlePing(WebSocket conn, Map<String, Object> clientMessage) {
+        Map<String, Object> pongMessage = Map.of(
+            "type", "pong",
+            "timestamp", System.currentTimeMillis()
+        );
+        
+        try {
+            conn.send(objectMapper.writeValueAsString(pongMessage));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void start() throws Exception {
+        server.start();
+        System.out.println("WebSocket服务器已启动，端口：" + server.getPort());
+    }
+    
+    public void stop() throws Exception {
+        server.stop();
+        System.out.println("WebSocket服务器已停止");
+    }
+    
+    /**
+     * 解密配置类
+     */
+    public static class DecryptConfig {
+        private String algorithm; // AES, SM4, RSA, SM2
+        private String key;
+        private String iv;
+        private String mode; // CBC, ECB, CFB, OFB
+        private String privateKey;
+        
+        // Getters and Setters
+        public String getAlgorithm() { return algorithm; }
+        public void setAlgorithm(String algorithm) { this.algorithm = algorithm; }
+        public String getKey() { return key; }
+        public void setKey(String key) { this.key = key; }
+        public String getIv() { return iv; }
+        public void setIv(String iv) { this.iv = iv; }
+        public String getMode() { return mode; }
+        public void setMode(String mode) { this.mode = mode; }
+        public String getPrivateKey() { return privateKey; }
+        public void setPrivateKey(String privateKey) { this.privateKey = privateKey; }
+    }
+}

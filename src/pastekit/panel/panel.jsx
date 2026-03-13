@@ -62,11 +62,23 @@ export default function DevToolsPanel() {
                 console.log('[CryptoDevTools Panel] 连接断开');
                 setIsConnected(false);
                 setConnectionStatus('disconnected');
+                
+                // 检查扩展 context 是否仍然有效
+                if (!chrome.runtime || chrome.runtime.id === undefined) {
+                    console.warn('[CryptoDevTools Panel] 扩展 context 已失效，不再重试');
+                    setConnectionStatus('invalid');
+                    return;
+                }
+                
                 // 尝试重新连接
                 setTimeout(() => {
-                    if (chrome.runtime) {
+                    // 再次检查 context 有效性
+                    if (chrome.runtime && chrome.runtime.id !== undefined) {
                         console.log('[CryptoDevTools Panel] 尝试重新连接');
                         initializeConnection();
+                    } else {
+                        console.warn('[CryptoDevTools Panel] 扩展 context 已失效，放弃重连');
+                        setConnectionStatus('invalid');
                     }
                 }, 2000);
             });
@@ -80,7 +92,15 @@ export default function DevToolsPanel() {
         } catch (error) {
             console.warn('[CryptoDevTools Panel] 连接初始化失败:', error);
             if (error.message.includes('Extension context invalidated')) {
+                console.error('[CryptoDevTools Panel] 扩展 context 已失效，无法建立连接');
                 setConnectionStatus('invalid');
+            } else {
+                // 其他错误，稍后重试
+                setTimeout(() => {
+                    if (chrome.runtime && chrome.runtime.id !== undefined) {
+                        initializeConnection();
+                    }
+                }, 3000);
             }
         }
     };
@@ -188,46 +208,58 @@ export default function DevToolsPanel() {
     // 处理 DevTools 网络请求
     const handleDevToolsNetworkRequest = async (request) => {
         console.log('[CryptoDevTools Panel] 处理网络请求:', request.request.url);
-
+    
+        // 检查扩展 context 是否有效
+        if (!chrome.runtime || chrome.runtime.id === undefined) {
+            console.warn('[CryptoDevTools Panel] 扩展 context 已失效，无法处理请求');
+            return;
+        }
+    
         // 使用 refs 检查连接状态
         if (!portRef.current || !isConnectedRef.current) {
             console.log('[CryptoDevTools Panel] 无法处理请求 - 连接未建立');
             return;
         }
-
+    
         // 检查是否匹配配置
         const matchedConfig = await getMatchingConfig(request.request.url);
         if (!matchedConfig) {
-            console.log('[CryptoDevTools Panel] URL不匹配任何配置，跳过', request.request.url);
+            console.log('[CryptoDevTools Panel] URL 不匹配任何配置，跳过', request.request.url);
             return;
         }
-
+    
         console.log('[CryptoDevTools Panel] 匹配到配置:', matchedConfig.domain);
-
+    
         // 获取请求头
         const requestHeaders = request.request.headers || [];
         console.log('[CryptoDevTools Panel] 获取到请求头:', requestHeaders);
-
+    
         // 获取响应头
         const responseHeaders = request.response.headers || [];
         console.log('[CryptoDevTools Panel] 获取到响应头:', responseHeaders);
-
+    
         // 获取请求体
         let requestBody = null;
         if (request.request.postData && request.request.postData.text) {
             requestBody = request.request.postData.text;
             console.log('[CryptoDevTools Panel] 获取到请求体，长度:', requestBody.length);
         }
-
+    
         // 获取响应体
         console.log('[CryptoDevTools Panel] 开始获取响应体...');
         request.getContent((responseBody) => {
             console.log('[CryptoDevTools Panel] 响应体获取完成');
             console.log('[CryptoDevTools Panel] 响应体长度:', responseBody?.length || 0);
             console.log('[CryptoDevTools Panel] 响应体类型:', typeof responseBody);
-
+    
+            // 再次检查扩展 context 有效性
+            if (!chrome.runtime || chrome.runtime.id === undefined) {
+                console.warn('[CryptoDevTools Panel] 扩展 context 已失效，丢弃响应数据');
+                return;
+            }
+    
             const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-
+    
             // 发送网络数据到 background
             if (portRef.current && isConnectedRef.current) {
                 const message = {
@@ -241,14 +273,21 @@ export default function DevToolsPanel() {
                     responseBody: responseBody || null,
                     statusCode: request.response.status
                 };
-
+    
                 console.log('[CryptoDevTools Panel] 发送网络数据到 background：' + JSON.stringify(message));
-
-                portRef.current.postMessage(message);
-
-                console.log('[CryptoDevTools Panel] ✅ 网络数据已发送到 background');
+    
+                try {
+                    portRef.current.postMessage(message);
+                    console.log('[CryptoDevTools Panel] ✅ 网络数据已发送到 background');
+                } catch (error) {
+                    console.error('[CryptoDevTools Panel] 发送消息失败:', error);
+                    if (error.message.includes('Extension context invalidated')) {
+                        console.error('[CryptoDevTools Panel] 扩展 context 已失效');
+                        setConnectionStatus('invalid');
+                    }
+                }
             } else {
-                console.log('[CryptoDevTools Panel] ❌ 无法发送数据 - port或连接状态无效');
+                console.log('[CryptoDevTools Panel] ❌ 无法发送数据 - port 或连接状态无效');
                 console.log('[CryptoDevTools Panel] portRef.current:', !!portRef.current);
                 console.log('[CryptoDevTools Panel] isConnectedRef.current:', isConnectedRef.current);
             }
@@ -327,6 +366,12 @@ export default function DevToolsPanel() {
 
     // 解密数据
     const decryptData = async (requestId, dataType) => {
+        // 检查扩展 context 有效性
+        if (!chrome.runtime || chrome.runtime.id === undefined) {
+            console.error('[CryptoDevTools Panel] 扩展 context 已失效');
+            return;
+        }
+        
         // 使用 refs 检查连接状态
         if (!portRef.current || !isConnectedRef.current) {
             console.error('[CryptoDevTools Panel] 未连接到 background');
@@ -348,34 +393,59 @@ export default function DevToolsPanel() {
 
         console.log('[CryptoDevTools Panel] 发送解密请求');
         // 发送解密请求
-        portRef.current.postMessage({
-            type: 'REQUEST_DECRYPTION',
-            requestId,
-            data,
-            config,
-            isRequest: dataType === 'request'
-        });
+        try {
+            portRef.current.postMessage({
+                type: 'REQUEST_DECRYPTION',
+                requestId,
+                data,
+                config,
+                isRequest: dataType === 'request'
+            });
+        } catch (error) {
+            console.error('[CryptoDevTools Panel] 发送解密请求失败:', error);
+            if (error.message.includes('Extension context invalidated')) {
+                console.error('[CryptoDevTools Panel] 扩展 context 已失效');
+                setConnectionStatus('invalid');
+            }
+        }
     };
 
     const getMatchingConfig = (url) => {
         return new Promise((resolve) => {
+            // 检查扩展 context 有效性
+            if (!chrome.runtime || chrome.runtime.id === undefined) {
+                console.warn('[CryptoDevTools Panel] 扩展 context 已失效，无法获取配置');
+                resolve(null);
+                return;
+            }
+                
             // 使用 refs 检查连接状态
             if (!portRef.current || !isConnectedRef.current) {
                 console.log('[CryptoDevTools Panel] 无法获取配置 - 连接未建立');
                 resolve(null);
                 return;
             }
-
+    
             const messageId = 'config_check_' + Date.now();
-
+    
             // 发送配置检查请求
             console.log('[CryptoDevTools Panel] 发送配置检查请求:', url);
-            portRef.current.postMessage({
-                type: 'CHECK_CONFIG_MATCH',
-                url,
-                messageId
-            });
-
+            try {
+                portRef.current.postMessage({
+                    type: 'CHECK_CONFIG_MATCH',
+                    url,
+                    messageId
+                });
+            } catch (error) {
+                console.error('[CryptoDevTools Panel] 发送配置检查失败:', error);
+                if (error.message.includes('Extension context invalidated')) {
+                    console.error('[CryptoDevTools Panel] 扩展 context 已失效');
+                    setConnectionStatus('invalid');
+                }
+                resolve(null);
+                return;
+            }
+    
             // 临时监听器等待响应
             const tempListener = (message) => {
                 console.log('[CryptoDevTools Panel] 临时监听器收到消息:', message.type);
@@ -385,10 +455,10 @@ export default function DevToolsPanel() {
                     resolve(message.matchedConfig || null);
                 }
             };
-
+    
             portRef.current.onMessage.addListener(tempListener);
-
-            // 超时处理 - 延长到5秒
+    
+            // 超时处理 - 延长到 5 秒
             setTimeout(() => {
                 portRef.current.onMessage.removeListener(tempListener);
                 console.log('[CryptoDevTools Panel] 配置检查超时');
@@ -398,6 +468,12 @@ export default function DevToolsPanel() {
     };
 
     const refreshConfigs = () => {
+        // 检查扩展 context 有效性
+        if (!chrome.runtime || chrome.runtime.id === undefined) {
+            console.warn('[CryptoDevTools Panel] 扩展 context 已失效，无法刷新配置');
+            return;
+        }
+        
         // 使用 refs 检查连接状态
         if (!portRef.current || !isConnectedRef.current) {
             console.log('[CryptoDevTools Panel] 无法刷新配置 - 连接未建立');
@@ -405,9 +481,17 @@ export default function DevToolsPanel() {
         }
 
         console.log('[CryptoDevTools Panel] 发送配置刷新请求');
-        portRef.current.postMessage({
-            type: 'REFRESH_CONFIGURATION'
-        });
+        try {
+            portRef.current.postMessage({
+                type: 'REFRESH_CONFIGURATION'
+            });
+        } catch (error) {
+            console.error('[CryptoDevTools Panel] 发送配置刷新失败:', error);
+            if (error.message.includes('Extension context invalidated')) {
+                console.error('[CryptoDevTools Panel] 扩展 context 已失效');
+                setConnectionStatus('invalid');
+            }
+        }
     };
 
     const clearRequests = () => {

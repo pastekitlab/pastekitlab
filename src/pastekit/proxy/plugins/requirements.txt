@@ -1,0 +1,2 @@
+# Charles Plugin Python Dependencies
+websocket-client>=1.6.0

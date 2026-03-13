@@ -20,6 +20,8 @@
     "storage"
   ],
   "host_permissions": [
+    "http://127.0.0.1:8889/",
+    "http://localhost:8889/"
   ],
   "optional_host_permissions": [
   ],
@@ -38,7 +40,7 @@
     }
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' https: http:; frame-src 'self'; child-src 'self';"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' https: http: ws://127.0.0.1:8889 ws://localhost:8889; frame-src 'self'; child-src 'self';"
   },
   "background": {
     "service_worker": "background.js",
