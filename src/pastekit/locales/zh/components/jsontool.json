@@ -1,0 +1,11 @@
+{
+  "jsontool": {
+    "title": "JSON 格式化与压缩工具",
+    "format_json": "格式化",
+    "compress_json": "压缩",
+    "parsing_error": "JSON 解析错误",
+    "result": "结果",
+    "error_indicator": "—— 错误 ——",
+    "click_process": "点击\"处理\"查看结果"
+  }
+}

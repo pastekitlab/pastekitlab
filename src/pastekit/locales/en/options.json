@@ -1,0 +1,16 @@
+{
+  "options": {
+    "title": "PasteKitLab Settings",
+    "sidebar": {
+      "key_config": "Key Configuration",
+      "encryption_test": "Encryption/Decryption Test",
+      "signature_tool": "Signature Tool",
+      "encoding_tool": "Encoding Tool",
+      "mock_manager": "DNR Manager",
+      "request_list": "Request List",
+      "devtools_decryptor": "DevTools Decryptor",
+      "ai_prompts": "AI Prompts",
+      "about": "About"
+    }
+  }
+}

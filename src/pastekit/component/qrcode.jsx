@@ -137,18 +137,18 @@ export default function QRCodeComponent({
             <div className="flex flex-wrap items-center gap-4">
                 <div>
                     <label className="text-sm font-medium text-gray-700 mr-2">
-                        {t('components.qrcode.size_label')}:
+                        {t('qrcode.size_label')}:
                     </label>
                     <select 
                         value={qrSize}
                         onChange={(e) => handleSizeChange(Number(e.target.value))}
                         className="px-3 py-1 border rounded text-sm"
                     >
-                        <option value={100}>{t('components.qrcode.size_100')}</option>
-                        <option value={150}>{t('components.qrcode.size_150')}</option>
-                        <option value={200}>{t('components.qrcode.size_200')}</option>
-                        <option value={250}>{t('components.qrcode.size_250')}</option>
-                        <option value={300}>{t('components.qrcode.size_300')}</option>
+                        <option value={100}>{t('qrcode.size_100')}</option>
+                        <option value={150}>{t('qrcode.size_150')}</option>
+                        <option value={200}>{t('qrcode.size_200')}</option>
+                        <option value={250}>{t('qrcode.size_250')}</option>
+                        <option value={300}>{t('qrcode.size_300')}</option>
                     </select>
                 </div>
                 
@@ -156,7 +156,7 @@ export default function QRCodeComponent({
                     onClick={handleRegenerate}
                     className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors text-sm"
                 >
-                    {t('components.qrcode.regenerate')}
+                    {t('qrcode.regenerate')}
                 </button>
             </div>
 
@@ -189,16 +189,16 @@ export default function QRCodeComponent({
                             )}
                         </div>
                         <div className="mt-3 text-sm text-gray-600">
-                            {t('components.qrcode.scan_prompt')}
+                            {t('qrcode.scan_prompt')}
                         </div>
                         <div className="mt-1 text-xs text-gray-500 bg-gray-50 p-2 rounded break-all overflow-x-auto max-w-full">
-                            {t('components.qrcode.content_label')}: {content}
+                            {t('qrcode.content_label')}: {content}
                         </div>
                     </div>
                 ) : (
                     <div className="text-center text-gray-500 py-8 w-full">
                         <div className="text-4xl mb-2">📱</div>
-                        <div className="text-sm">{t('components.qrcode.enter_content')}</div>
+                        <div className="text-sm">{t('qrcode.enter_content')}</div>
                     </div>
                 )}
             </div>

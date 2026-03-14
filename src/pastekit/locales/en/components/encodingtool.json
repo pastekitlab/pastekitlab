@@ -1,0 +1,14 @@
+{
+  "encodingtool": {
+    "title": "Encoding Conversion Tool",
+    "operation": "Operation Type",
+    "encode": "Encode Conversion",
+    "decode": "Decode Conversion",
+    "input_encoding": "Input Encoding",
+    "output_encoding": "Output Encoding",
+    "input": "Input Text",
+    "input_placeholder": "Please enter text to convert...",
+    "output": "Output Result",
+    "output_placeholder": "Conversion result will be displayed here..."
+  }
+}

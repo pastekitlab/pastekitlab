@@ -53,7 +53,7 @@ export default function Dnrmanager({ t }) {
       setMockRules(rules);
     } catch (error) {
       console.error('加载 Mock 规则失败:', error);
-      toast.error(t('components.mockmanager.messages.load_failed'));
+      toast.error(t('mockmanager.messages.load_failed'));
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +82,7 @@ export default function Dnrmanager({ t }) {
     
     // 验证 URL 模式
     if (!formData.urlPattern.trim()) {
-      toast.error(t('components.mockmanager.messages.required_fields'));
+      toast.error(t('mockmanager.messages.required_fields'));
       return;
     }
     
@@ -93,7 +93,7 @@ export default function Dnrmanager({ t }) {
         : formData.urlPattern;
       new URL(testPattern);
     } catch (error) {
-      toast.error(t('components.mockmanager.messages.invalid_url_pattern'));
+      toast.error(t('mockmanager.messages.invalid_url_pattern'));
       return;
     }
 
@@ -146,8 +146,8 @@ export default function Dnrmanager({ t }) {
         
         // 成功保存后的提示
         toast.success(editingRule 
-          ? t('components.mockmanager.messages.updated_successfully') 
-          : t('components.mockmanager.messages.created_successfully')
+          ? t('mockmanager.messages.updated_successfully') 
+          : t('mockmanager.messages.created_successfully')
         );
         
         setIsDialogOpen(false);
@@ -155,11 +155,11 @@ export default function Dnrmanager({ t }) {
         loadMockRules();
         loadStatistics();
       } else {
-        toast.error(t('components.mockmanager.messages.operation_failed'));
+        toast.error(t('mockmanager.messages.operation_failed'));
       }
     } catch (error) {
       console.error('保存 Mock 规则失败:', error);
-      toast.error(t('components.mockmanager.messages.save_failed'));
+      toast.error(t('mockmanager.messages.save_failed'));
     }
   };
 
@@ -182,7 +182,7 @@ export default function Dnrmanager({ t }) {
   };
 
   const handleDelete = async (ruleId) => {
-    if (!confirm(t('components.mockmanager.messages.confirm_delete'))) {
+    if (!confirm(t('mockmanager.messages.confirm_delete'))) {
       return;
     }
 
@@ -193,15 +193,15 @@ export default function Dnrmanager({ t }) {
         const updatedRules = await MockStorageManager.loadMockRules();
         await DNRManager.registerDNRRules(updatedRules);
         
-        toast.success(t('components.mockmanager.messages.deleted_successfully'));
+        toast.success(t('mockmanager.messages.deleted_successfully'));
         loadMockRules();
         loadStatistics();
       } else {
-        toast.error(t('components.mockmanager.messages.delete_failed'));
+        toast.error(t('mockmanager.messages.delete_failed'));
       }
     } catch (error) {
       console.error('删除 Mock 规则失败:', error);
-      toast.error(t('components.mockmanager.messages.delete_failed'));
+      toast.error(t('mockmanager.messages.delete_failed'));
     }
   };
 
@@ -214,15 +214,15 @@ export default function Dnrmanager({ t }) {
         await DNRManager.registerDNRRules(updatedRules);
         
         toast.success(enabled 
-          ? t('components.mockmanager.messages.enabled_successfully')
-          : t('components.mockmanager.messages.disabled_successfully')
+          ? t('mockmanager.messages.enabled_successfully')
+          : t('mockmanager.messages.disabled_successfully')
         );
         loadMockRules();
         loadStatistics();
       }
     } catch (error) {
       console.error('切换规则状态失败:', error);
-      toast.error(t('components.mockmanager.messages.toggle_failed'));
+      toast.error(t('mockmanager.messages.toggle_failed'));
     }
   };
 
@@ -337,7 +337,7 @@ export default function Dnrmanager({ t }) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <span className="ml-2">{t('components.mockmanager.loading')}</span>
+        <span className="ml-2">{t('mockmanager.loading')}</span>
       </div>
     );
   }
@@ -346,16 +346,16 @@ export default function Dnrmanager({ t }) {
     <div className="space-y-6 w-full">
       {/* 标题和统计信息 */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">🎭 {t('components.mockmanager.title')}</h1>
+        <h1 className="text-2xl font-bold">🎭 {t('mockmanager.title')}</h1>
         <div className="flex gap-4 text-sm">
           <Badge variant="secondary">
-            {t('components.mockmanager.total_rules')}: {statistics.totalRules}
+            {t('mockmanager.total_rules')}: {statistics.totalRules}
           </Badge>
           <Badge variant="default">
-            {t('components.mockmanager.enabled_rules')}: {statistics.enabledRules}
+            {t('mockmanager.enabled_rules')}: {statistics.enabledRules}
           </Badge>
           <Badge variant="outline">
-            {t('components.mockmanager.data_entries')}: {statistics.dataEntries}
+            {t('mockmanager.data_entries')}: {statistics.dataEntries}
           </Badge>
         </div>
       </div>
@@ -365,45 +365,45 @@ export default function Dnrmanager({ t }) {
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
             <Button onClick={() => setIsDialogOpen(true)}>
-              ➕ {t('components.mockmanager.add_rule')}
+              ➕ {t('mockmanager.add_rule')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingRule ? t('components.mockmanager.edit_rule') : t('components.mockmanager.add_rule')}
+                {editingRule ? t('mockmanager.edit_rule') : t('mockmanager.add_rule')}
               </DialogTitle>
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="name">{t('components.mockmanager.rule_name')} *</Label>
+                <Label htmlFor="name">{t('mockmanager.rule_name')} *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder={t('components.mockmanager.rule_name_placeholder')}
+                  placeholder={t('mockmanager.rule_name_placeholder')}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="urlPattern">{t('components.mockmanager.url_pattern')} *</Label>
+                <Label htmlFor="urlPattern">{t('mockmanager.url_pattern')} *</Label>
                 <Input
                   id="urlPattern"
                   value={formData.urlPattern}
                   onChange={(e) => handleInputChange('urlPattern', e.target.value)}
-                  placeholder={t('components.mockmanager.url_pattern_placeholder')}
+                  placeholder={t('mockmanager.url_pattern_placeholder')}
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t('components.mockmanager.url_pattern_help')}
+                  {t('mockmanager.url_pattern_help')}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="method">{t('components.mockmanager.http_method')}</Label>
+                  <Label htmlFor="method">{t('mockmanager.http_method')}</Label>
                   <Select value={formData.method} onValueChange={(value) => handleInputChange('method', value)}>
                     <SelectTrigger>
                       <SelectValue />
@@ -417,15 +417,15 @@ export default function Dnrmanager({ t }) {
                 </div>
 
                 <div>
-                  <Label htmlFor="actionType">{t('components.mockmanager.action_type')}</Label>
+                  <Label htmlFor="actionType">{t('mockmanager.action_type')}</Label>
                   <Select value={formData.actionType} onValueChange={(value) => handleInputChange('actionType', value)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="redirect">{t('components.mockmanager.messages.action_redirect')}</SelectItem>
-                      <SelectItem value="block">{t('components.mockmanager.messages.action_block')}</SelectItem>
-                      <SelectItem value="allow">{t('components.mockmanager.messages.action_allow')}</SelectItem>
+                      <SelectItem value="redirect">{t('mockmanager.messages.action_redirect')}</SelectItem>
+                      <SelectItem value="block">{t('mockmanager.messages.action_block')}</SelectItem>
+                      <SelectItem value="allow">{t('mockmanager.messages.action_allow')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -433,21 +433,21 @@ export default function Dnrmanager({ t }) {
 
               {/* 资源类型选择 */}
               <div>
-                <Label>{t('components.mockmanager.resource_types')} ({t('components.mockmanager.messages.resource_types_selected', { count: formData.resourceTypes.length })})</Label>
+                <Label>{t('mockmanager.resource_types')} ({t('mockmanager.messages.resource_types_selected', { count: formData.resourceTypes.length })})</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   {[
-                    { value: 'main_frame', label: t('components.mockmanager.resource_type_main_frame') },
-                    { value: 'sub_frame', label: t('components.mockmanager.resource_type_sub_frame') },
-                    { value: 'stylesheet', label: t('components.mockmanager.resource_type_stylesheet') },
-                    { value: 'script', label: t('components.mockmanager.resource_type_script') },
-                    { value: 'image', label: t('components.mockmanager.resource_type_image') },
-                    { value: 'font', label: t('components.mockmanager.resource_type_font') },
-                    { value: 'xmlhttprequest', label: t('components.mockmanager.resource_type_xmlhttprequest') },
-                    { value: 'ping', label: t('components.mockmanager.resource_type_ping') },
-                    { value: 'media', label: t('components.mockmanager.resource_type_media') },
-                    { value: 'websocket', label: t('components.mockmanager.resource_type_websocket') },
-                    { value: 'webtransport', label: t('components.mockmanager.resource_type_webtransport') },
-                    { value: 'other', label: t('components.mockmanager.resource_type_other') }
+                    { value: 'main_frame', label: t('mockmanager.resource_type_main_frame') },
+                    { value: 'sub_frame', label: t('mockmanager.resource_type_sub_frame') },
+                    { value: 'stylesheet', label: t('mockmanager.resource_type_stylesheet') },
+                    { value: 'script', label: t('mockmanager.resource_type_script') },
+                    { value: 'image', label: t('mockmanager.resource_type_image') },
+                    { value: 'font', label: t('mockmanager.resource_type_font') },
+                    { value: 'xmlhttprequest', label: t('mockmanager.resource_type_xmlhttprequest') },
+                    { value: 'ping', label: t('mockmanager.resource_type_ping') },
+                    { value: 'media', label: t('mockmanager.resource_type_media') },
+                    { value: 'websocket', label: t('mockmanager.resource_type_websocket') },
+                    { value: 'webtransport', label: t('mockmanager.resource_type_webtransport') },
+                    { value: 'other', label: t('mockmanager.resource_type_other') }
                   ].map((type) => (
                     <div key={type.value} className="flex items-center space-x-2">
                       <input
@@ -472,7 +472,7 @@ export default function Dnrmanager({ t }) {
 
               {/* 优先级设置 */}
               <div>
-                <Label htmlFor="priority">{t('components.mockmanager.priority')}</Label>
+                <Label htmlFor="priority">{t('mockmanager.priority')}</Label>
                 <Input
                   id="priority"
                   type="number"
@@ -482,23 +482,23 @@ export default function Dnrmanager({ t }) {
                   onChange={(e) => handleInputChange('priority', parseInt(e.target.value))}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t('components.mockmanager.priority_help')}
+                  {t('mockmanager.priority_help')}
                 </p>
               </div>
 
               {/* 重定向 URL (仅当动作为 redirect 时显示) */}
               {formData.actionType === 'redirect' && (
                 <div>
-                  <Label htmlFor="redirectUrl">{t('components.mockmanager.redirect_url')} *</Label>
+                  <Label htmlFor="redirectUrl">{t('mockmanager.redirect_url')} *</Label>
                   <Input
                     id="redirectUrl"
                     value={formData.redirectUrl || ''}
                     onChange={(e) => handleInputChange('redirectUrl', e.target.value)}
-                    placeholder={t('components.mockmanager.redirect_url_placeholder')}
+                    placeholder={t('mockmanager.redirect_url_placeholder')}
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('components.mockmanager.redirect_url_help')}
+                    {t('mockmanager.redirect_url_help')}
                   </p>
                 </div>
               )}
@@ -510,7 +510,7 @@ export default function Dnrmanager({ t }) {
                     checked={formData.enabled}
                     onCheckedChange={(checked) => handleInputChange('enabled', checked)}
                   />
-                  <Label htmlFor="enabled">{t('components.mockmanager.enabled')}</Label>
+                  <Label htmlFor="enabled">{t('mockmanager.enabled')}</Label>
                 </div>
                 
                 <div className="flex gap-2">
@@ -532,13 +532,13 @@ export default function Dnrmanager({ t }) {
       {/* 规则列表 */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('components.mockmanager.rule_list')}</CardTitle>
+          <CardTitle>{t('mockmanager.rule_list')}</CardTitle>
         </CardHeader>
         <CardContent>
           {mockRules.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>{t('components.mockmanager.no_rules')}</p>
-              <p className="text-sm mt-1">{t('components.mockmanager.add_first_rule')}</p>
+              <p>{t('mockmanager.no_rules')}</p>
+              <p className="text-sm mt-1">{t('mockmanager.add_first_rule')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -549,27 +549,27 @@ export default function Dnrmanager({ t }) {
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h3 className="font-semibold">{rule.name}</h3>
                         <Badge variant={rule.enabled ? "default" : "secondary"}>
-                          {rule.enabled ? t('components.mockmanager.enabled') : t('components.mockmanager.disabled')}
+                          {rule.enabled ? t('mockmanager.enabled') : t('mockmanager.disabled')}
                         </Badge>
                         <Badge variant="outline">{rule.method}</Badge>
                         <Badge variant="outline">
-                          {rule.actionType === 'redirect' ? t('components.mockmanager.messages.action_redirect') : 
-                           rule.actionType === 'block' ? t('components.mockmanager.messages.action_block') : t('components.mockmanager.messages.action_allow')}
+                          {rule.actionType === 'redirect' ? t('mockmanager.messages.action_redirect') : 
+                           rule.actionType === 'block' ? t('mockmanager.messages.action_block') : t('mockmanager.messages.action_allow')}
                         </Badge>
-                        <Badge variant="outline">{t('components.mockmanager.priority')}: {rule.priority || 1}</Badge>
+                        <Badge variant="outline">{t('mockmanager.priority')}: {rule.priority || 1}</Badge>
                       </div>
                       
                       <p className="text-sm text-muted-foreground mb-2">
-                        <span className="font-medium">{t('components.mockmanager.url_pattern')}:</span> {rule.urlPattern}
+                        <span className="font-medium">{t('mockmanager.url_pattern')}:</span> {rule.urlPattern}
                       </p>
                       
                       <div className="flex gap-4 text-xs text-muted-foreground flex-wrap">
-                        <span>{t('components.mockmanager.url_pattern')}: {rule.urlPattern}</span>
-                        <span>{t('components.mockmanager.resource_types')}: {(rule.resourceTypes || ['xmlhttprequest']).join(', ')}</span>
+                        <span>{t('mockmanager.url_pattern')}: {rule.urlPattern}</span>
+                        <span>{t('mockmanager.resource_types')}: {(rule.resourceTypes || ['xmlhttprequest']).join(', ')}</span>
                         {rule.actionType === 'redirect' && (
-                          <span>{t('components.mockmanager.redirect_url')}: {rule.redirectUrl || '默认 Mock 服务器'}</span>
+                          <span>{t('mockmanager.redirect_url')}: {rule.redirectUrl || '默认 Mock 服务器'}</span>
                         )}
-                        <span>{t('components.mockmanager.created_at')}: {formatDate(rule.createdAt)}</span>
+                        <span>{t('mockmanager.created_at')}: {formatDate(rule.createdAt)}</span>
                       </div>
                     </div>
                     

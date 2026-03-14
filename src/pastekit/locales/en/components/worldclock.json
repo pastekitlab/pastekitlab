@@ -1,0 +1,9 @@
+{
+  "worldclock": {
+    "title": "World Clock",
+    "beijing": "Beijing",
+    "london": "London",
+    "sydney": "Sydney",
+    "new_york": "New York"
+  }
+}

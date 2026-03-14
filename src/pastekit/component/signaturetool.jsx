@@ -43,18 +43,18 @@ export default function SignatureTool({configs = [], className = ''}) {
 
     // 摘要算法选项
     const digestAlgorithms = [
-        {value: 'md5', label: t('components.signature.methods.md5')},
-        {value: 'sha1', label: t('components.signature.methods.sha1')},
-        {value: 'sha256', label: t('components.signature.methods.sha256')},
-        {value: 'sha512', label: t('components.signature.methods.sha512')}
+        {value: 'md5', label: t('signature.methods.md5')},
+        {value: 'sha1', label: t('signature.methods.sha1')},
+        {value: 'sha256', label: t('signature.methods.sha256')},
+        {value: 'sha512', label: t('signature.methods.sha512')}
     ];
 
     // 签名算法选项
     const signatureAlgorithms = [
-        {value: 'none', label: t('components.signature.algorithms.none')},
-        {value: 'hmac', label: t('components.signature.algorithms.hmac')},
-        {value: 'rsa', label: t('components.signature.algorithms.rsa')},
-        {value: 'sm2', label: t('components.signature.algorithms.sm2')}
+        {value: 'none', label: t('signature.algorithms.none')},
+        {value: 'hmac', label: t('signature.algorithms.hmac')},
+        {value: 'rsa', label: t('signature.algorithms.rsa')},
+        {value: 'sm2', label: t('signature.algorithms.sm2')}
     ];
 
     // 过滤出支持的RSA和SM2配置
@@ -120,7 +120,7 @@ export default function SignatureTool({configs = [], className = ''}) {
     // 签名函数
     const handleSign = async () => {
         if (!dataToSign.trim()) {
-            toast.error(t('components.signature.messages.enter_data'));
+            toast.error(t('signature.messages.enter_data'));
             return;
         }
 
@@ -139,7 +139,7 @@ export default function SignatureTool({configs = [], className = ''}) {
 
         // 对于需要配置的算法，检查配置
         if ((signatureAlgorithm === 'rsa' || signatureAlgorithm === 'sm2') && !selectedConfig) {
-            toast.error(t('components.signature.messages.select_config'));
+            toast.error(t('signature.messages.select_config'));
             return;
         }
 
@@ -210,7 +210,7 @@ export default function SignatureTool({configs = [], className = ''}) {
             console.log('签名结果已设置，值为:', result);
             console.log('结果类型:', typeof result);
             console.log('结果长度:', result.length);
-            toast.success(t('components.signature.messages.sign_success'));
+            toast.success(t('signature.messages.sign_success'));
 
             // 延迟检查状态更新
             setTimeout(() => {
@@ -218,7 +218,7 @@ export default function SignatureTool({configs = [], className = ''}) {
             }, 0);
         } catch (error) {
             console.error('签名失败:', error);
-            toast.error(t('components.signature.messages.sign_failed', {error: error.message}));
+            toast.error(t('signature.messages.sign_failed', {error: error.message}));
         } finally {
             setIsSigning(false);
         }
@@ -227,7 +227,7 @@ export default function SignatureTool({configs = [], className = ''}) {
     // 验签函数
     const handleVerify = async () => {
         if (!dataToSign.trim()) {
-            toast.error(t('components.signature.messages.enter_data'));
+            toast.error(t('signature.messages.enter_data'));
             return;
         }
 
@@ -277,13 +277,13 @@ export default function SignatureTool({configs = [], className = ''}) {
             setVerificationStatus(result);
 
             if (result) {
-                toast.success(t('components.signature.messages.verify_success'));
+                toast.success(t('signature.messages.verify_success'));
             } else {
-                toast.error(t('components.signature.messages.verify_failed'));
+                toast.error(t('signature.messages.verify_failed'));
             }
         } catch (error) {
             console.error('验签失败:', error);
-            toast.error(t('components.signature.messages.verify_failed_detail', {error: error.message}));
+            toast.error(t('signature.messages.verify_failed_detail', {error: error.message}));
             setVerificationStatus(false);
         } finally {
             setIsVerifying(false);
@@ -311,17 +311,17 @@ export default function SignatureTool({configs = [], className = ''}) {
         <div className={`space-y-6 ${className}`}>
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('components.signature.title')}</CardTitle>
+                    <CardTitle>{t('signature.title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {/* 待签名数据 */}
                     <div className="space-y-2">
-                        <Label htmlFor="dataToSign">{t('components.signature.data_to_sign')}</Label>
+                        <Label htmlFor="dataToSign">{t('signature.data_to_sign')}</Label>
                         <Textarea
                             id="dataToSign"
                             value={dataToSign}
                             onChange={(e) => setDataToSign(e.target.value)}
-                            placeholder={t('components.signature.enter_data')}
+                            placeholder={t('signature.enter_data')}
                             className="min-h-[100px]"
                         />
                     </div>
@@ -333,11 +333,11 @@ export default function SignatureTool({configs = [], className = ''}) {
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                                 <Label
-                                    className="text-base font-medium">{t('components.signature.digest_algorithm')}</Label>
+                                    className="text-base font-medium">{t('signature.digest_algorithm')}</Label>
                             </div>
                             <Select value={digestAlgorithm} onValueChange={setDigestAlgorithm}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={t('components.signature.select_digest')}/>
+                                    <SelectValue placeholder={t('signature.select_digest')}/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {digestAlgorithms.map(alg => (
@@ -354,11 +354,11 @@ export default function SignatureTool({configs = [], className = ''}) {
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                 <Label
-                                    className="text-base font-medium">{t('components.signature.signature_algorithm')}</Label>
+                                    className="text-base font-medium">{t('signature.signature_algorithm')}</Label>
                             </div>
                             <Select value={signatureAlgorithm} onValueChange={setSignatureAlgorithm}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder={t('components.signature.select_signature')}/>
+                                    <SelectValue placeholder={t('signature.select_signature')}/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {signatureAlgorithms.map(alg => (
@@ -374,17 +374,17 @@ export default function SignatureTool({configs = [], className = ''}) {
                     {/* 密钥输入区域 */}
                     {(signatureAlgorithm === 'hmac' || signatureAlgorithm === 'rsa' || signatureAlgorithm === 'sm2') && (
                         <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
-                            <h4 className="font-medium text-foreground">{t('components.signature.key_input')}</h4>
+                            <h4 className="font-medium text-foreground">{t('signature.key_input')}</h4>
 
                             {/* HMAC密钥输入 */}
                             {signatureAlgorithm === 'hmac' && (
                                 <div className="space-y-2">
-                                    <Label htmlFor="hmacKey">{t('components.signature.hmac_key')}</Label>
+                                    <Label htmlFor="hmacKey">{t('signature.hmac_key')}</Label>
                                     <Input
                                         id="hmacKey"
                                         value={hmacKey}
                                         onChange={(e) => setHmacKey(e.target.value)}
-                                        placeholder={t('components.signature.enter_hmac_key')}
+                                        placeholder={t('signature.enter_hmac_key')}
                                     />
                                 </div>
                             )}
@@ -393,7 +393,7 @@ export default function SignatureTool({configs = [], className = ''}) {
                             {(signatureAlgorithm === 'rsa' || signatureAlgorithm === 'sm2') && (
                                 <div className="space-y-2">
                                     <Label
-                                        htmlFor="signatureConfig">{t('components.signature.signature_config')}</Label>
+                                        htmlFor="signatureConfig">{t('signature.signature_config')}</Label>
                                     <Select
                                         value={selectedConfig}
                                         onValueChange={setSelectedConfig}
@@ -402,8 +402,8 @@ export default function SignatureTool({configs = [], className = ''}) {
                                         <SelectTrigger>
                                             <SelectValue placeholder={
                                                 asymmetricConfigs.length === 0
-                                                    ? t('components.signature.no_available_configs')
-                                                    : t('components.signature.please_select')
+                                                    ? t('signature.no_available_configs')
+                                                    : t('signature.please_select')
                                             }/>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -416,7 +416,7 @@ export default function SignatureTool({configs = [], className = ''}) {
                                     </Select>
                                     {asymmetricConfigs.length === 0 && (
                                         <p className="text-sm text-muted-foreground">
-                                            {t('components.signature.config_required_tip')}
+                                            {t('signature.config_required_tip')}
                                         </p>
                                     )}
                                 </div>
@@ -433,20 +433,20 @@ export default function SignatureTool({configs = [], className = ''}) {
                                     ((signatureAlgorithm === 'hmac' && !hmacKey.trim()) ||
                                         ((signatureAlgorithm === 'rsa' || signatureAlgorithm === 'sm2') && !selectedConfig)))}
                         >
-                            {isSigning ? t('components.signature.signing') : t('components.signature.sign')}
+                            {isSigning ? t('signature.signing') : t('signature.sign')}
                         </Button>
                         <Button
                             onClick={handleVerify}
                             variant="secondary"
                             disabled={isVerifying || (!signatureResult && !manualSignature.trim()) || !dataToSign.trim()}
                         >
-                            {isVerifying ? t('components.signature.verifying') : t('components.signature.verify')}
+                            {isVerifying ? t('signature.verifying') : t('signature.verify')}
                         </Button>
                         <Button
                             onClick={clearResults}
                             variant="outline"
                         >
-                            {t('components.signature.clear_results')}
+                            {t('signature.clear_results')}
                         </Button>
                     </div>
 
@@ -454,7 +454,7 @@ export default function SignatureTool({configs = [], className = ''}) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* 签名结果 */}
                         <div className="space-y-2">
-                            <Label>{t('components.signature.signature_result')}</Label>
+                            <Label>{t('signature.signature_result')}</Label>
                             <Textarea
                                 ref={textareaRef}
                                 defaultValue=""
@@ -467,16 +467,16 @@ export default function SignatureTool({configs = [], className = ''}) {
 
                         {/* 手动签名输入（用于验签） */}
                         <div className="space-y-2">
-                            <Label htmlFor="manualSignature">{t('components.signature.manual_signature')}</Label>
+                            <Label htmlFor="manualSignature">{t('signature.manual_signature')}</Label>
                             <Textarea
                                 id="manualSignature"
                                 value={manualSignature}
                                 onChange={(e) => setManualSignature(e.target.value)}
-                                placeholder={t('components.signature.enter_manual_signature')}
+                                placeholder={t('signature.enter_manual_signature')}
                                 className="min-h-[120px] font-mono text-sm"
                             />
                             <p className="text-sm text-muted-foreground">
-                                {t('components.signature.manual_signature_tip')}
+                                {t('signature.manual_signature_tip')}
                             </p>
                         </div>
                     </div>
@@ -485,15 +485,15 @@ export default function SignatureTool({configs = [], className = ''}) {
                     {/* 验签结果 */}
                     {verificationResult && (
                         <div className="space-y-2">
-                            <Label>{t('components.signature.verification_result')}</Label>
+                            <Label>{t('signature.verification_result')}</Label>
                             <div className={`p-3 rounded ${
                                 verificationStatus
                                     ? 'bg-green-100 text-green-800 border border-green-200'
                                     : 'bg-red-100 text-red-800 border border-red-200'
                             }`}>
                                 {verificationStatus
-                                    ? t('components.signature.verification_passed')
-                                    : t('components.signature.verification_failed')
+                                    ? t('signature.verification_passed')
+                                    : t('signature.verification_failed')
                                 }
                             </div>
                         </div>

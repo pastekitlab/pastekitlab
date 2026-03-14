@@ -1,0 +1,28 @@
+{
+  "aiprompts": {
+    "title": "🤖 AI 提示词管理",
+    "add_prompt": "添加提示词",
+    "edit_prompt": "编辑提示词",
+    "prompt_name": "提示词名称",
+    "prompt_template": "提示词模板",
+    "category": "分类",
+    "enter_name": "请输入提示词名称",
+    "enter_template": "请输入提示词模板",
+    "placeholder_help": "使用 {{content}} 作为内容占位符",
+    "copy_to_clipboard": "复制到剪贴板",
+    "categories": {
+      "general": "通用",
+      "coding": "编程",
+      "writing": "写作",
+      "translation": "翻译",
+      "analysis": "分析"
+    },
+    "messages": {
+      "save_success": "提示词保存成功",
+      "save_failed": "提示词保存失败",
+      "load_failed": "加载提示词失败",
+      "fill_fields": "请填写提示词名称和模板",
+      "delete_confirm": "确定要删除此提示词吗？"
+    }
+  }
+}

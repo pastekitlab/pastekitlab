@@ -57,7 +57,7 @@ export default function CronTool({cronExpr}) {
         <div>
             {isValidCron(cronExpr) && (
                 <div className="w-full border rounded p-4">
-                    <h3 className="text-lg font-bold mb-2">{t('components.cronetool.title')}</h3>
+                    <h3 className="text-lg font-bold mb-2">{t('cronetool.title')}</h3>
                     <div>
                         <p className="text-red-500">{error}</p>
                         <ul className="list-disc pl-5 space-y-1">

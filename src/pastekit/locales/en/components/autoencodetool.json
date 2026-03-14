@@ -1,0 +1,12 @@
+{
+  "autoencodetool": {
+    "title": "Auto Encoding/Decoding Tool",
+    "detected_format": "Detected input format",
+    "processing_error": "Processing error",
+    "encoding_result": "🔄 Encoding result (Plain text → {{format}})",
+    "decoding_result": "🔓 Decoding result ({{format}} → Plain text)",
+    "enter_content": "Enter content to view encoding/decoding results",
+    "support_desc": "Supports multiple encoding formats, encryption/decryption, and QR code generation",
+    "cannot_process": "Current format cannot process this content"
+  }
+}

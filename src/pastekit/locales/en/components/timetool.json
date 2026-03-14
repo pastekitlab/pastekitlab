@@ -1,0 +1,12 @@
+{
+  "timetool": {
+    "timestamp_s": "Timestamp(s)",
+    "timestamp_ms": "Timestamp(ms)",
+    "invalid_timestamp": "(Invalid timestamp)",
+    "cannot_parse": "(Cannot parse as time)",
+    "empty_content": "(Empty content)",
+    "date_format": "Date format",
+    "current_time": "Current time",
+    "current_timestamp_ms": "Current timestamp(ms)"
+  }
+}

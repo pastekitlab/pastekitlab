@@ -1,0 +1,12 @@
+{
+  "autoencodetool": {
+    "title": "自动编码解码工具",
+    "detected_format": "检测到输入格式",
+    "processing_error": "处理错误",
+    "encoding_result": "🔄 编码结果 (纯文本 → {{format}})",
+    "decoding_result": "🔓 解码结果 ({{format}} → 纯文本)",
+    "enter_content": "输入内容查看编码解码结果",
+    "support_desc": "支持多种编码格式、加解密和二维码生成",
+    "cannot_process": "当前格式无法处理此内容"
+  }
+}

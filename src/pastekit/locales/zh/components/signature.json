@@ -1,0 +1,59 @@
+{
+  "signature": {
+    "title": "🔏 签名工具",
+    "data_to_sign": "待签名数据",
+    "enter_data": "请输入要签名的数据...",
+    "digest_algorithm": "摘要算法",
+    "select_digest": "选择摘要算法",
+    "signature_algorithm": "签名算法",
+    "select_signature": "选择签名算法",
+    "key_input": "密钥输入",
+    "hmac_key": "HMAC 密钥",
+    "enter_hmac_key": "请输入 HMAC 密钥...",
+    "signature_config": "签名配置",
+    "select_config": "选择配置",
+    "please_select": "请选择配置",
+    "no_available_configs": "暂无可用配置",
+    "config_required_tip": "请先在密钥配置中添加 RSA 或 SM2 配置",
+    "sign": "签名",
+    "verify": "验签",
+    "clear_results": "清空结果",
+    "signing": "⏳ 签名中...",
+    "verifying": "⏳ 验签中...",
+    "signature_result": "签名结果",
+    "verification_result": "验签结果",
+    "verification_passed": "✅ 验签通过",
+    "verification_failed": "❌ 验签失败",
+    "manual_signature": "手动签名输入",
+    "enter_manual_signature": "请输入要验证的签名...",
+    "manual_signature_tip": "提示：可以粘贴已有的签名进行验证，或使用上方自动生成的签名",
+    "algorithms": {
+      "none": "无签名（仅摘要）",
+      "hmac": "HMAC",
+      "rsa": "RSA",
+      "sm2": "SM2"
+    },
+    "messages": {
+      "enter_data": "请输入待签名数据",
+      "select_method": "请选择签名方法",
+      "select_config": "请选择签名配置",
+      "sign_success": "签名成功",
+      "verify_success": "验签成功",
+      "verify_failed": "验签失败",
+      "sign_failed": "签名失败：{{error}}",
+      "verify_failed_detail": "验签失败：{{error}}"
+    },
+    "methods": {
+      "md5": "MD5",
+      "sha1": "SHA-1",
+      "sha256": "SHA-256",
+      "sha512": "SHA-512",
+      "hmac_md5": "HMAC-MD5",
+      "hmac_sha1": "HMAC-SHA1",
+      "hmac_sha256": "HMAC-SHA256",
+      "hmac_sha512": "HMAC-SHA512",
+      "rsa_sign": "RSA 签名",
+      "sm2_sign": "SM2 签名"
+    }
+  }
+}

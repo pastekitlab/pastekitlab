@@ -1,0 +1,19 @@
+{
+  "dnstool": {
+    "query_error": "DNS 查询错误",
+    "results_title": "📋 DNS 解析结果",
+    "record_type": "记录类型",
+    "ttl": "TTL",
+    "resolution_address": "解析地址",
+    "ipv4_records": "IPv4 记录",
+    "ipv6_records": "IPv6 记录",
+    "cname_records": "CNAME 记录",
+    "total_records": "总计：{{count}}条记录",
+    "found_records": "找到{{count}}条记录",
+    "no_records_found": "未找到域名\"{{domain}}\"的 DNS 记录",
+    "check_spelling": "请检查域名拼写是否正确",
+    "enter_domain": "输入域名开始 DNS 解析",
+    "example_domains": "示例：www.google.com 或 github.com",
+    "support_desc": "支持 A、AAAA 和 CNAME 记录查询"
+  }
+}

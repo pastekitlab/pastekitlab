@@ -1,0 +1,14 @@
+{
+  "qrcode": {
+    "size_label": "QR Code Size",
+    "size_100": "100×100",
+    "size_150": "150×150",
+    "size_200": "200×200",
+    "size_250": "250×250",
+    "size_300": "300×300",
+    "regenerate": "🔄 Regenerate",
+    "scan_prompt": "📱 Scan QR code to access content",
+    "content_label": "QR code content",
+    "enter_content": "Please enter content to generate QR code"
+  }
+}

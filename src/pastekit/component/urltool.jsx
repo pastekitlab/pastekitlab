@@ -117,7 +117,7 @@ export default function UrlTool({ content }) {
         try {
             return atob(str);
         } catch (e) {
-            throw new Error(t('components.urltool.base64_decode_failed') + ': ' + e.message);
+            throw new Error(t('urltool.base64_decode_failed') + ': ' + e.message);
         }
     };
 
@@ -126,7 +126,7 @@ export default function UrlTool({ content }) {
         try {
             return btoa(str);
         } catch (e) {
-            throw new Error(t('components.urltool.base64_encode_failed') + ': ' + e.message);
+            throw new Error(t('urltool.base64_encode_failed') + ': ' + e.message);
         }
     };
     
@@ -322,7 +322,7 @@ export default function UrlTool({ content }) {
                 {/* Error notification */}
                 {error && (
                     <div className="p-3 bg-red-100 text-red-800 rounded text-sm">
-                        <strong>{t('components.urltool.processing_error')}:</strong> {error}
+                        <strong>{t('urltool.processing_error')}:</strong> {error}
                     </div>
                 )}
 
@@ -409,8 +409,8 @@ export default function UrlTool({ content }) {
                 {!content && (
                     <div className="text-center text-gray-500 py-8">
                         <div className="text-4xl mb-2">🔗</div>
-                        <div>{t('components.urltool.enter_content')}</div>
-                        <div className="text-sm mt-1">{t('components.urltool.support_desc')}</div>
+                        <div>{t('urltool.enter_content')}</div>
+                        <div className="text-sm mt-1">{t('urltool.support_desc')}</div>
                     </div>
                 )}
             </div>

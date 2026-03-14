@@ -101,12 +101,12 @@ export default function KeyConfigManager({
   // Add new configuration
   const addConfig = async () => {
     if (!newConfigName.trim()) {
-      toast.error(t('components.keyconfigmanager.messages.enter_name'));
+      toast.error(t('keyconfigmanager.messages.enter_name'));
       return;
     }
 
     if (configs.some(c => c.name === newConfigName.trim())) {
-      toast.error(t('components.keyconfigmanager.messages.name_exists'));
+      toast.error(t('keyconfigmanager.messages.name_exists'));
       return;
     }
 
@@ -145,7 +145,7 @@ export default function KeyConfigManager({
       setNewConfigName('');
       setEditingConfig(newConfig);
       setIsDialogOpen(true);
-      toast.success(t('components.keyconfigmanager.messages.created'));
+      toast.success(t('keyconfigmanager.messages.created'));
     }
   };
 
@@ -170,18 +170,18 @@ export default function KeyConfigManager({
       setConfigs(updatedConfigs);
       setIsDialogOpen(false);
       setEditingConfig(null);
-      toast.success(t('components.keyconfigmanager.messages.saved'));
+      toast.success(t('keyconfigmanager.messages.saved'));
     }
   };
 
   // Delete configuration
   const deleteConfig = async (configName) => {
     if (configs.length <= 1) {
-      toast.error(t('components.keyconfigmanager.messages.min_configs'));
+      toast.error(t('keyconfigmanager.messages.min_configs'));
       return;
     }
 
-    if (confirm(`${t('components.keyconfigmanager.confirm_delete')} "${configName}" ${t('components.keyconfigmanager.confirm_delete_suffix')}?`)) {
+    if (confirm(`${t('keyconfigmanager.confirm_delete')} "${configName}" ${t('keyconfigmanager.confirm_delete_suffix')}?`)) {
       const updatedConfigs = configs.filter(c => c.name !== configName);
       const success = await saveConfigsToStorage(updatedConfigs);
       
@@ -197,7 +197,7 @@ export default function KeyConfigManager({
           }
         }
         
-        toast.success(t('components.keyconfigmanager.messages.deleted'));
+        toast.success(t('keyconfigmanager.messages.deleted'));
       }
     }
   };
@@ -250,7 +250,7 @@ export default function KeyConfigManager({
           <div className="bg-white p-4 rounded-lg shadow-lg">
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-              <span>{t('components.keyconfigmanager.messages.loading')}</span>
+              <span>{t('keyconfigmanager.messages.loading')}</span>
             </div>
           </div>
         </div>
@@ -260,7 +260,7 @@ export default function KeyConfigManager({
       <Card className="w-full h-full flex flex-col">
         <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center justify-between">
-            <span>🔐 {t('components.keyconfigmanager.title')}</span>
+            <span>🔐 {t('keyconfigmanager.title')}</span>
             <div className="flex gap-2">
 
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -273,13 +273,13 @@ export default function KeyConfigManager({
                       setNewConfigName('');
                     }}
                   >
-                    {t('components.keyconfigmanager.new_config')}
+                    {t('keyconfigmanager.new_config')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
                   <DialogHeader className="flex-shrink-0">
                     <DialogTitle>
-                      {editingConfig ? `${t('common.edit')} ${editingConfig.name}` : t('components.keyconfigmanager.create_config')}
+                      {editingConfig ? `${t('common.edit')} ${editingConfig.name}` : t('keyconfigmanager.create_config')}
                     </DialogTitle>
                   </DialogHeader>
                   
@@ -294,12 +294,12 @@ export default function KeyConfigManager({
                   ) : (
                     <div className="space-y-4 flex-1 overflow-y-auto pr-2">
                       <div>
-                        <Label htmlFor="newConfigName">{t('components.keyconfigmanager.config_name')}</Label>
+                        <Label htmlFor="newConfigName">{t('keyconfigmanager.config_name')}</Label>
                         <Input
                           id="newConfigName"
                           value={newConfigName}
                           onChange={(e) => setNewConfigName(e.target.value)}
-                          placeholder={t('components.keyconfigmanager.messages.enter_name')}
+                          placeholder={t('keyconfigmanager.messages.enter_name')}
                         />
                       </div>
                       <div className="flex justify-end gap-2">
@@ -320,9 +320,9 @@ export default function KeyConfigManager({
         <CardContent className="flex-1 flex flex-col overflow-hidden">
           <div className="space-y-4 flex-1 flex flex-col">
             <div className="flex justify-between items-center flex-shrink-0">
-              <h3 className="text-lg font-semibold">{t('components.keyconfigmanager.config_list')}</h3>
+              <h3 className="text-lg font-semibold">{t('keyconfigmanager.config_list')}</h3>
               <div className="text-sm text-muted-foreground">
-                {t('components.keyconfigmanager.total_configs', { count: configs.length })} {totalPages > 1 && `(${t('components.keyconfigmanager.page_info', { current: currentPage, total: totalPages })})`} {isLoading && `(${t('common.loading')})`}
+                {t('keyconfigmanager.total_configs', { count: configs.length })} {totalPages > 1 && `(${t('keyconfigmanager.page_info', { current: currentPage, total: totalPages })})`} {isLoading && `(${t('common.loading')})`}
               </div>
             </div>
             
@@ -353,16 +353,16 @@ export default function KeyConfigManager({
             <div className="mt-4 p-3 bg-muted rounded-lg flex-shrink-0">
               <div className="text-sm text-muted-foreground space-y-1">
                 <div>
-                  {t('components.keyconfigmanager.current_config')}: <span className="font-medium text-foreground">{selectedConfig}</span>
+                  {t('keyconfigmanager.current_config')}: <span className="font-medium text-foreground">{selectedConfig}</span>
                   <span className="mx-2">•</span>
-                  {t('components.keyconfigmanager.algorithm')}: <span className="font-medium text-foreground">
+                  {t('keyconfigmanager.algorithm')}: <span className="font-medium text-foreground">
                     {getCurrentConfig()?.algorithm || '未设置'}
                   </span>
                 </div>
                 <div>
-                  {t('components.keyconfigmanager.plaintext_encoding')}: <span className="font-medium">{getCurrentConfig()?.plainEncoding?.[0] || getCurrentConfig()?.plaintextEncoding || 'UTF-8'}</span>
+                  {t('keyconfigmanager.plaintext_encoding')}: <span className="font-medium">{getCurrentConfig()?.plainEncoding?.[0] || getCurrentConfig()?.plaintextEncoding || 'UTF-8'}</span>
                   <span className="mx-2">•</span>
-                  {t('components.keyconfigmanager.ciphertext_encoding')}: <span className="font-medium">{getCurrentConfig()?.cipherEncoding?.[0] || getCurrentConfig()?.ciphertextEncoding || 'BASE64'}</span>
+                  {t('keyconfigmanager.ciphertext_encoding')}: <span className="font-medium">{getCurrentConfig()?.cipherEncoding?.[0] || getCurrentConfig()?.ciphertextEncoding || 'BASE64'}</span>
                 </div>
                 {getCurrentConfig()?.algorithmType !== 'RSA' && getCurrentConfig()?.algorithm !== 'RSA' && (
                   <div>
@@ -377,11 +377,11 @@ export default function KeyConfigManager({
                             <span>N/A</span>
                           ) : (
                             <>
-                              {t('components.keyconfigmanager.mode')}: <span className="font-medium">{mode || 'CBC'}</span>
+                              {t('keyconfigmanager.mode')}: <span className="font-medium">{mode || 'CBC'}</span>
                               {NEED_PADDING_MODES.has(mode) && (
                                 <>
                                   <span className="mx-2">•</span>
-                                  {t('components.keyconfigmanager.padding')}: <span className="font-medium">{padding || 'PKCS5Padding'}</span>
+                                  {t('keyconfigmanager.padding')}: <span className="font-medium">{padding || 'PKCS5Padding'}</span>
                                 </>
                               )}
                             </>

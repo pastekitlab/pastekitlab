@@ -347,7 +347,7 @@ export default function OptionsPage() {
             
             {activeSection === 'devtools-decryptor' && (
               <div className="space-y-6 w-full">
-                <h1 className="text-2xl font-bold">DevTools 解密器配置</h1>
+                <h1 className="text-2xl font-bold">{t('options.sidebar.devtools_decryptor')}</h1>
                 <DevToolsDecryptorConfig 
                   configs={savedConfigs}
                   className="w-full"

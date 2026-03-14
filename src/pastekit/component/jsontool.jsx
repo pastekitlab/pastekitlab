@@ -209,7 +209,7 @@ export default function JsonTool({content}) {
 
     return (
         <div className="w-full max-w-4xl mx-auto p-4 border rounded">
-            <h2 className="text-xl font-bold mb-4">{t('components.jsontool.title')}</h2>
+            <h2 className="text-xl font-bold mb-4">{t('jsontool.title')}</h2>
 
             {/* Control buttons */}
             <div className="flex gap-2 mb-3">
@@ -217,20 +217,20 @@ export default function JsonTool({content}) {
                     onClick={() => handleModeChange('format')}
                     className={`px-3 py-1 rounded ${mode === 'format' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                 >
-                    {t('components.jsontool.format_json')}
+                    {t('jsontool.format_json')}
                 </button>
                 <button
                     onClick={() => handleModeChange('minify')}
                     className={`px-3 py-1 rounded ${mode === 'minify' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                 >
-                    {t('components.jsontool.compress_json')}
+                    {t('jsontool.compress_json')}
                 </button>
             </div>
 
             {/* Error notification */}
             {error && (
                 <div className="mt-2 p-3 bg-red-100 text-red-800 rounded text-sm font-mono">
-                    <strong>{t('components.jsontool.parsing_error')}:</strong>
+                    <strong>{t('jsontool.parsing_error')}:</strong>
                     Line {error.line}, Column {error.column}
                     <br/>
                     <span className="text-gray-600">Context: </span>
@@ -243,9 +243,9 @@ export default function JsonTool({content}) {
             )}
             {/* Output box */}
             <div className="mt-4">
-                <h3 className="font-medium mb-1">{t('components.jsontool.result')}:</h3>
+                <h3 className="font-medium mb-1">{t('jsontool.result')}:</h3>
                 <pre className="w-full h-40 p-2 bg-gray-100 border rounded overflow-auto font-mono text-sm">
-                    {output || (error ? t('components.jsontool.error_indicator') : t('components.jsontool.click_process'))}
+                    {output || (error ? t('jsontool.error_indicator') : t('jsontool.click_process'))}
                 </pre>
             </div>
         </div>

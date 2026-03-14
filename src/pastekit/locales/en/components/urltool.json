@@ -1,0 +1,7 @@
+{
+  "urltool": {
+    "processing_error": "Processing error",
+    "enter_content": "Enter URL or encoded content to view processing results",
+    "support_desc": "Supports URL encoding/decoding, Base64, and hexadecimal processing"
+  }
+}

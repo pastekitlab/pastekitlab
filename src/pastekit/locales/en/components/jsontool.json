@@ -1,0 +1,11 @@
+{
+  "jsontool": {
+    "title": "JSON Formatting & Compression Tool",
+    "format_json": "Format",
+    "compress_json": "Minify",
+    "parsing_error": "JSON parsing error",
+    "result": "Result",
+    "error_indicator": "—— Error ——",
+    "click_process": "Click \"Process\" to view results"
+  }
+}

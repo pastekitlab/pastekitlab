@@ -307,7 +307,7 @@ export default function DnsTool({ content }) {
                     <div className="space-y-4">
                         <div className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
                             <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-semibold text-gray-700">{t('components.dnstool.results_title')}</h4>
+                                <h4 className="font-semibold text-gray-700">{t('dnstool.results_title')}</h4>
                                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                                     🌐 {results.original}
                                 </span>
@@ -317,9 +317,9 @@ export default function DnsTool({ content }) {
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="bg-gray-100">
-                                            <th className="text-left py-2 px-3 font-medium text-gray-700">{t('components.dnstool.record_type')}</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-700">{t('components.dnstool.ttl')}</th>
-                                            <th className="text-left py-2 px-3 font-medium text-gray-700">{t('components.dnstool.resolution_address')}</th>
+                                            <th className="text-left py-2 px-3 font-medium text-gray-700">{t('dnstool.record_type')}</th>
+                                            <th className="text-left py-2 px-3 font-medium text-gray-700">{t('dnstool.ttl')}</th>
+                                            <th className="text-left py-2 px-3 font-medium text-gray-700">{t('dnstool.resolution_address')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -344,14 +344,14 @@ export default function DnsTool({ content }) {
                             
                             {/* Statistics */}
                             <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-500">
-                                <span>{t('components.dnstool.ipv4_records')}: {results.records.filter(r => r.type === 1).length}</span>
-                                <span>{t('components.dnstool.ipv6_records')}: {results.records.filter(r => r.type === 28).length}</span>
-                                <span>{t('components.dnstool.cname_records')}: {results.records.filter(r => r.type === 5).length}</span>
-                                <span>{t('components.dnstool.total_records', { count: results.records.length })}</span>
+                                <span>{t('dnstool.ipv4_records')}: {results.records.filter(r => r.type === 1).length}</span>
+                                <span>{t('dnstool.ipv6_records')}: {results.records.filter(r => r.type === 28).length}</span>
+                                <span>{t('dnstool.cname_records')}: {results.records.filter(r => r.type === 5).length}</span>
+                                <span>{t('dnstool.total_records', { count: results.records.length })}</span>
                             </div>
                             
                             <div className="mt-3 text-xs text-gray-500">
-                                {t('components.dnstool.found_records', { count: results.records.length })}
+                                {t('dnstool.found_records', { count: results.records.length })}
                             </div>
                         </div>
                     </div>
@@ -361,8 +361,8 @@ export default function DnsTool({ content }) {
                 {!results.isLoading && results.records.length === 0 && !results.error && results.original && (
                     <div className="text-center text-gray-500 py-8">
                         <div className="text-4xl mb-2">🔍</div>
-                        <div>{t('components.dnstool.no_records_found', { domain: results.original })}</div>
-                        <div className="text-sm mt-1">{t('components.dnstool.check_spelling')}</div>
+                        <div>{t('dnstool.no_records_found', { domain: results.original })}</div>
+                        <div className="text-sm mt-1">{t('dnstool.check_spelling')}</div>
                     </div>
                 )}
 
@@ -370,8 +370,8 @@ export default function DnsTool({ content }) {
                 {!content && (
                     <div className="text-center text-gray-500 py-8">
                         <div className="text-4xl mb-2">🌐</div>
-                        <div>{t('components.dnstool.enter_domain')}</div>
-                        <div className="text-sm mt-1">{t('components.dnstool.example_domains')}</div>
+                        <div>{t('dnstool.enter_domain')}</div>
+                        <div className="text-sm mt-1">{t('dnstool.example_domains')}</div>
                     </div>
                 )}
             </div>

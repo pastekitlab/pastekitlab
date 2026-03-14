@@ -89,7 +89,7 @@ export default function TimeTool({content}) {
             if (/^\d+$/.test(content) && (content.length === 10 || content.length === 13)) {
                 const formatted = formatTimestamp(+content);
                 return {
-                    display: formatted || t('components.timetool.invalid_timestamp'),
+                    display: formatted || t('timetool.invalid_timestamp'),
                     timestamp: +content,
                     type: 'timestamp-string',
                     showDate: true, // 显示日期格式
@@ -102,7 +102,7 @@ export default function TimeTool({content}) {
             if (timestamp !== null) {
                 const formatted = formatTimestamp(timestamp);
                 return {
-                    display: formatted || t('components.timetool.invalid_timestamp'),
+                    display: formatted || t('timetool.invalid_timestamp'),
                     timestamp: timestamp,
                     type: 'date-string',
                     showDate: false, // 不显示日期格式（因为输入就是日期）
@@ -111,7 +111,7 @@ export default function TimeTool({content}) {
             }
             
             return {
-                display: t('components.timetool.cannot_parse'),
+                display: t('timetool.cannot_parse'),
                 timestamp: null,
                 type: 'invalid',
                 showDate: false,
@@ -121,7 +121,7 @@ export default function TimeTool({content}) {
 
         // 其他类型
         return {
-            display: content != null ? String(content) : t('components.timetool.empty_content'),
+            display: content != null ? String(content) : t('timetool.empty_content'),
             timestamp: null,
             type: 'other',
             showDate: false,
@@ -143,18 +143,18 @@ export default function TimeTool({content}) {
             // 10位时间戳：显示秒级，同时计算对应的毫秒级
             const millisecondTimestamp = timestamp * 1000;
             return [
-                { label: t('components.timetool.timestamp_s'), value: timestamp },
-                { label: t('components.timetool.timestamp_ms'), value: millisecondTimestamp }
+                { label: t('timetool.timestamp_s'), value: timestamp },
+                { label: t('timetool.timestamp_ms'), value: millisecondTimestamp }
             ];
         } else if (clean.toString().length === 13) {
             // 13位时间戳：显示毫秒级，同时计算对应的秒级
             const secondTimestamp = Math.floor(timestamp / 1000);
             return [
-                { label: t('components.timetool.timestamp_ms'), value: timestamp },
-                { label: t('components.timetool.timestamp_s'), value: secondTimestamp }
+                { label: t('timetool.timestamp_ms'), value: timestamp },
+                { label: t('timetool.timestamp_s'), value: secondTimestamp }
             ];
         }
-        return [{ label: t('components.timetool.timestamp'), value: timestamp }];
+        return [{ label: t('timetool.timestamp'), value: timestamp }];
     };
 
     // 实时时间状态
@@ -217,7 +217,7 @@ export default function TimeTool({content}) {
                     {/* Parsing results - date format display */}
                     {result.showDate && (result.type !== 'other' && result.type !== 'invalid') && (
                         <div className="flex items-start gap-2">
-                            <span className="text-sm font-medium text-gray-600 w-32 text-right flex-shrink-0">{t('components.timetool.date_format')}:</span>
+                            <span className="text-sm font-medium text-gray-600 w-32 text-right flex-shrink-0">{t('timetool.date_format')}:</span>
                             <span className="text-sm font-mono break-all bg-blue-100 px-2 py-1 rounded flex-1 min-w-0">
                                 {result.display}
                             </span>
@@ -241,13 +241,13 @@ export default function TimeTool({content}) {
                     {/* Real-time current time information */}
                     <div className="pt-2 border-t border-gray-200">
                         <div className="flex items-start gap-2">
-                            <span className="text-sm font-medium text-gray-600 w-32 text-right flex-shrink-0">{t('components.timetool.current_time')}:</span>
+                            <span className="text-sm font-medium text-gray-600 w-32 text-right flex-shrink-0">{t('timetool.current_time')}:</span>
                             <span className="text-sm font-mono break-all bg-purple-100 px-2 py-1 rounded flex-1 min-w-0">
                                 {currentTimeInfo.formattedDate}
                             </span>
                         </div>
                         <div className="flex items-start gap-2 mt-1">
-                            <span className="text-sm font-medium text-gray-600 w-32 text-right flex-shrink-0">{t('components.timetool.current_timestamp_ms')}:</span>
+                            <span className="text-sm font-medium text-gray-600 w-32 text-right flex-shrink-0">{t('timetool.current_timestamp_ms')}:</span>
                             <span className="text-sm font-mono break-all bg-purple-100 px-2 py-1 rounded flex-1 min-w-0">
                                 {currentTimeInfo.timestamp}
                             </span>

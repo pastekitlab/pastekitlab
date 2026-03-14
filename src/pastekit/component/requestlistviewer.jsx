@@ -192,7 +192,7 @@ export default function RequestListViewer() {
                     {/* 左侧：标题和状态 */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                         <h1 className="text-lg font-bold text-gray-800 flex-shrink-0">
-                            {t('components.requestlist.title')}
+                            {t('requestlist.title')}
                         </h1>
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
@@ -202,14 +202,14 @@ export default function RequestListViewer() {
                                             connectionStatus === 'invalid' ? 'bg-purple-500' : 'bg-red-500'
                                 }`}></div>
                                 <span className="text-xs text-gray-600 whitespace-nowrap">
-                                    {connectionStatus === 'connected' ? t('components.requestlist.status_connected') :
-                                        connectionStatus === 'timeout' ? t('components.requestlist.status_timeout') :
-                                            connectionStatus === 'invalid' ? t('components.requestlist.status_invalid') : t('components.requestlist.status_disconnected')}
+                                    {connectionStatus === 'connected' ? t('requestlist.status_connected') :
+                                        connectionStatus === 'timeout' ? t('requestlist.status_timeout') :
+                                            connectionStatus === 'invalid' ? t('requestlist.status_invalid') : t('requestlist.status_disconnected')}
                                 </span>
                             </div>
                             
                             <Badge variant="secondary" className="text-xs px-2 py-1 h-auto">
-                                {t('components.requestlist.requests_count', { count: requests.length })}
+                                {t('requestlist.requests_count', { count: requests.length })}
                             </Badge>
                         </div>
                     </div>
@@ -219,7 +219,7 @@ export default function RequestListViewer() {
                         <div className="relative">
                             <Input
                                 type="text"
-                                placeholder={t('components.requestlist.search_placeholder')}
+                                placeholder={t('requestlist.search_placeholder')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-9 pr-8 py-1.5 text-sm"
@@ -247,7 +247,7 @@ export default function RequestListViewer() {
                             disabled={requests.length === 0}
                             className="text-xs px-3 py-1.5 h-auto"
                         >
-                            🗑️ {t('components.requestlist.clear_list')}
+                            🗑️ {t('requestlist.clear_list')}
                         </Button>
                     </div>
                 </div>
@@ -259,14 +259,14 @@ export default function RequestListViewer() {
                 <div className="w-1/2 flex flex-col min-w-0 max-w-full">
                     <Card className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                         <CardHeader className="py-3">
-                            <CardTitle className="text-lg">{t('components.requestlist.request_list_title')}</CardTitle>
+                            <CardTitle className="text-lg">{t('requestlist.request_list_title')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1 overflow-hidden px-4 pb-4" style={{ minHeight: 0 }}>
                             {filteredRequests.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
-                                    <p>{searchTerm ? t('components.requestlist.no_matching_requests') : t('components.requestlist.no_requests')}</p>
+                                    <p>{searchTerm ? t('requestlist.no_matching_requests') : t('requestlist.no_requests')}</p>
                                     <p className="text-sm mt-2">
-                                        {searchTerm ? t('components.requestlist.try_different_keywords') : t('components.requestlist.request_will_show_here')}
+                                        {searchTerm ? t('requestlist.try_different_keywords') : t('requestlist.request_will_show_here')}
                                     </p>
                                 </div>
                             ) : (
@@ -300,13 +300,13 @@ export default function RequestListViewer() {
                                                             </span>
                                                         </div>
                                                         <div className="mt-1 text-xs text-gray-500">
-                                                            {t('components.requestlist.status_code_label')} {request.statusCode} |
-                                                            {t('components.requestlist.time_label')} {request.timestamp ? new Date(parseInt(request.timestamp)).toLocaleTimeString() : '-'}
+                                                            {t('requestlist.status_code_label')} {request.statusCode} |
+                                                            {t('requestlist.time_label')} {request.timestamp ? new Date(parseInt(request.timestamp)).toLocaleTimeString() : '-'}
                                                             {request.plainRequestBody && (
-                                                                <span className="ml-2 text-green-600">✓ {t('components.panel.request_decrypted')}</span>
+                                                                <span className="ml-2 text-green-600">✓ {t('panel.request_decrypted')}</span>
                                                             )}
                                                             {request.plainResponseBody && (
-                                                                <span className="ml-2 text-green-600">✓ {t('components.panel.response_decrypted')}</span>
+                                                                <span className="ml-2 text-green-600">✓ {t('panel.response_decrypted')}</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -324,7 +324,7 @@ export default function RequestListViewer() {
                 <div className="w-1/2 flex flex-col min-w-0 max-w-full">
                     <Card className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                         <CardHeader className="py-3">
-                            <CardTitle className="text-lg">{t('components.requestlist.request_details_title')}</CardTitle>
+                            <CardTitle className="text-lg">{t('requestlist.request_details_title')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1 overflow-hidden px-4 pb-4" style={{ minHeight: 0 }}>
                             {selectedRequestId ? (
@@ -332,30 +332,30 @@ export default function RequestListViewer() {
                                     <div className="space-y-4">
                                         {/* 基本信息 */}
                                         <div className="bg-gray-50 rounded-lg p-3">
-                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.basic_info')}</h3>
+                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('requestlist.basic_info')}</h3>
                                             <div className="space-y-1 text-xs">
                                                 <div>
-                                                    <span className="font-medium text-gray-600">{t('components.requestlist.url_label')}</span>
+                                                    <span className="font-medium text-gray-600">{t('requestlist.url_label')}</span>
                                                     <span className="ml-2 text-sm text-gray-800 break-all whitespace-normal">
                                                         {getSelectedRequest()?.url}
                                                     </span>
                                                 </div>
                                                 <div className="flex gap-4 mt-2">
                                                     <div>
-                                                        <span className="font-medium text-gray-600">{t('components.requestlist.method_label')}</span>
+                                                        <span className="font-medium text-gray-600">{t('requestlist.method_label')}</span>
                                                         <Badge variant="outline" className="ml-2">
                                                             {getSelectedRequest()?.method}
                                                         </Badge>
                                                     </div>
                                                     <div>
-                                                        <span className="font-medium text-gray-600">{t('components.requestlist.status_code_label')}</span>
+                                                        <span className="font-medium text-gray-600">{t('requestlist.status_code_label')}</span>
                                                         <span className="ml-2 font-mono">
                                                             {getSelectedRequest()?.statusCode}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <span className="font-medium text-gray-600">{t('components.requestlist.time_label')}</span>
+                                                    <span className="font-medium text-gray-600">{t('requestlist.time_label')}</span>
                                                     <span className="ml-2 font-mono">
                                                         {getSelectedRequest()?.timestamp ? new Date(parseInt(getSelectedRequest()?.timestamp)).toLocaleString() : '-'}
                                                     </span>
@@ -365,16 +365,16 @@ export default function RequestListViewer() {
 
                                         {/* 请求体 */}
                                         <div>
-                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.request_encrypted')}</h3>
+                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('requestlist.request_encrypted')}</h3>
                                             <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
-                                                {getSelectedRequest()?.requestBody || t('components.requestlist.none')}
+                                                {getSelectedRequest()?.requestBody || t('requestlist.none')}
                                             </pre>
                                         </div>
 
                                         {/* 请求明文 */}
                                         {getSelectedRequest()?.plainRequestBody && (
                                             <div>
-                                                <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.request_decrypted')}</h3>
+                                                <h3 className="font-medium text-sm mb-2 text-gray-700">{t('requestlist.request_decrypted')}</h3>
                                                 <pre className="bg-green-50 border border-green-200 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
                                                     {getSelectedRequest()?.plainRequestBody}
                                                 </pre>
@@ -383,16 +383,16 @@ export default function RequestListViewer() {
 
                                         {/* 响应体 */}
                                         <div>
-                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.response_encrypted')}</h3>
+                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('requestlist.response_encrypted')}</h3>
                                             <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
-                                                {getSelectedRequest()?.responseBody || t('components.requestlist.none')}
+                                                {getSelectedRequest()?.responseBody || t('requestlist.none')}
                                             </pre>
                                         </div>
 
                                         {/* 响应明文 */}
                                         {getSelectedRequest()?.plainResponseBody && (
                                             <div>
-                                                <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.response_decrypted')}</h3>
+                                                <h3 className="font-medium text-sm mb-2 text-gray-700">{t('requestlist.response_decrypted')}</h3>
                                                 <pre className="bg-green-50 border border-green-200 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
                                                     {getSelectedRequest()?.plainResponseBody}
                                                 </pre>
@@ -401,18 +401,18 @@ export default function RequestListViewer() {
 
                                         {/* 解密配置信息 */}
                                         <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                                            <h4 className="font-medium text-xs text-blue-800 mb-2">{t('components.requestlist.decryption_config_info')}</h4>
+                                            <h4 className="font-medium text-xs text-blue-800 mb-2">{t('requestlist.decryption_config_info')}</h4>
                                             <div className="text-xs text-blue-700 space-y-1">
-                                                <div>{t('components.requestlist.config_name_label')} {getSelectedRequest()?.decryptionInfo?.config?.name || t('components.requestlist.unknown')}</div>
-                                                <div>{t('components.requestlist.algorithm_label')} {getSelectedRequest()?.decryptionInfo?.config?.algorithm || t('components.requestlist.unknown')}</div>
-                                                <div>{t('components.requestlist.domain_label')} {getSelectedRequest()?.decryptionInfo?.domainConfig?.domain || t('components.requestlist.unknown')}</div>
+                                                <div>{t('requestlist.config_name_label')} {getSelectedRequest()?.decryptionInfo?.config?.name || t('requestlist.unknown')}</div>
+                                                <div>{t('requestlist.algorithm_label')} {getSelectedRequest()?.decryptionInfo?.config?.algorithm || t('requestlist.unknown')}</div>
+                                                <div>{t('requestlist.domain_label')} {getSelectedRequest()?.decryptionInfo?.domainConfig?.domain || t('requestlist.unknown')}</div>
                                             </div>
                                         </div>
                                     </div>
                                 </ScrollArea>
                             ) : (
                                 <div className="text-center py-8 text-gray-500">
-                                    <p>{t('components.requestlist.select_request_for_details')}</p>
+                                    <p>{t('requestlist.select_request_for_details')}</p>
                                 </div>
                             )}
                         </CardContent>

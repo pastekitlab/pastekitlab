@@ -1,0 +1,32 @@
+{
+  "about": {
+    "title": "ℹ️ About PasteKitLab",
+    "features": "📋 Feature Introduction",
+    "security": "🛡️ Security Features",
+    "development": "👨‍💻 Development Information",
+    "usage_tips": "💡 Usage Tips",
+    "description": "PasteKitLab is a powerful Chrome extension that provides multiple practical tools:",
+    "features_list": [
+      "🔐 Data encryption/decryption (RSA/AES/SM4)",
+      "🔄 Encoding conversion (Base64/Hex/URL encoding, etc.)",
+      "🌐 IP address lookup and CIDR calculation",
+      "⏰ Timestamp conversion",
+      "🔗 URL processing tools",
+      "📝 JSON formatting",
+      "⏱️ Cron expression parsing"
+    ],
+    "security_features": [
+      "All encryption operations are completed in the local browser",
+      "Key information is stored locally only, never uploaded to servers",
+      "Supports Chinese cryptographic algorithms (SM2/SM3/SM4)",
+      "Compliant with modern Web security standards"
+    ],
+    "version": "Version",
+    "developer": "Developer",
+    "github": "GitHub",
+    "tips": [
+      "Please configure your encryption keys on the \"Key Configuration\" page, then verify functionality on the \"Encryption/Decryption Test\" page.",
+      "It is recommended to regularly backup your key information to avoid losing important data."
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "popup": {
+    "title": "PasteKitLab",
+    "placeholder": "请输入内容... 插件会根据内容智能解析",
+    "detected_format": "检测到格式:",
+    "default_ip": "默认 IP",
+    "formats": {
+      "ip": "IPv4 地址",
+      "ipv6": "IPv6 地址",
+      "cidr": "IPv4 子网",
+      "ipv6cidr": "IPv6 子网",
+      "domain": "域名",
+      "cron": "Cron 表达式",
+      "timestamp": "时间戳",
+      "datetime": "日期时间",
+      "json": "JSON",
+      "url": "URL",
+      "encrypted": "加密内容",
+      "encode": "编码格式"
+    }
+  }
+}

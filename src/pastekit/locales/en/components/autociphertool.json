@@ -1,0 +1,25 @@
+{
+  "autociphertool": {
+    "title": "🔍 Automatic Decryption Tool",
+    "error": {
+      "no_content": "No content to decrypt",
+      "no_configs": "No encryption configurations found. Please add configurations in Key Configuration Management first",
+      "invalid_config": "Invalid configuration",
+      "decrypt_failed": "Decryption failed or content unchanged",
+      "process_error": "Decryption process error",
+      "no_successful_decrypt": "Failed to successfully decrypt this content with any configuration"
+    },
+    "success": {
+      "title": "🔓 Decryption Success Results",
+      "label": "Success",
+      "message": "Decryption Successful"
+    },
+    "usage": {
+      "title": "Usage Instructions",
+      "instruction1": "The system will use all saved encryption configurations to attempt decryption sequentially",
+      "instruction2": "Only successful decryption results are displayed",
+      "instruction3": "Successful results are highlighted with green theme",
+      "tip": "Tip: Please ensure correct encryption configurations have been added in Key Configuration Management"
+    }
+  }
+}

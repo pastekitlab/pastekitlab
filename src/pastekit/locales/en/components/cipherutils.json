@@ -1,0 +1,6 @@
+{
+  "cipherutils": {
+    "unsupported_algorithm": "Unsupported encryption algorithm: {{algorithm}}",
+    "unsupported_decrypt_algorithm": "Unsupported decryption algorithm: {{algorithm}}"
+  }
+}

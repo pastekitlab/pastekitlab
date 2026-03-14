@@ -1,0 +1,19 @@
+{
+  "dnstool": {
+    "query_error": "DNS query error",
+    "results_title": "📋 DNS Resolution Results",
+    "record_type": "Record Type",
+    "ttl": "TTL",
+    "resolution_address": "Resolution Address",
+    "ipv4_records": "IPv4 records",
+    "ipv6_records": "IPv6 records",
+    "cname_records": "CNAME records",
+    "total_records": "Total: {{count}} records",
+    "found_records": "Found {{count}} records",
+    "no_records_found": "No DNS records found for domain \"{{domain}}\"",
+    "check_spelling": "Please check if the domain spelling is correct",
+    "enter_domain": "Enter domain name to start DNS resolution",
+    "example_domains": "Example: www.google.com or github.com",
+    "support_desc": "Supports A, AAAA, and CNAME record queries"
+  }
+}

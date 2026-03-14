@@ -36,12 +36,12 @@ export default function CipherTestComponent({
   const handleEncrypt = async () => {
     const config = getCurrentConfig();
     if (!config) {
-      toast.error(t('components.ciphertest.messages.select_valid_config'));
+      toast.error(t('ciphertest.messages.select_valid_config'));
       return;
     }
 
     if (!testText.trim()) {
-      toast.error(t('components.ciphertest.messages.enter_test_text'));
+      toast.error(t('ciphertest.messages.enter_test_text'));
       return;
     }
 
@@ -52,8 +52,8 @@ export default function CipherTestComponent({
       const supportedModes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR'];
       
       if (!supportedModes.includes(mode.toUpperCase())) {
-        throw new Error(t('components.ciphertest.messages.unsupported_mode', { 
-        type: t('components.ciphertest.encrypt'), 
+        throw new Error(t('ciphertest.messages.unsupported_mode', { 
+        type: t('ciphertest.encrypt'), 
         mode, 
         modes: supportedModes.join(', ') 
       }));
@@ -63,7 +63,7 @@ export default function CipherTestComponent({
       const adaptedConfig = adaptConfigForCipher(config);
       const result = CipherUtils.encrypt(testText, adaptedConfig);
       setEncryptResult(result);
-      toast.success(t('components.ciphertest.messages.encrypt_success'));
+      toast.success(t('ciphertest.messages.encrypt_success'));
       
       // 如果已经有解密结果，重新验证一致性
       if (decryptResult) {
@@ -72,7 +72,7 @@ export default function CipherTestComponent({
       }
     } catch (error) {
       console.error('Encryption failed:', error);
-      toast.error(t('components.ciphertest.messages.encrypt_failed', { error: error.message }));
+      toast.error(t('ciphertest.messages.encrypt_failed', { error: error.message }));
       setEncryptResult('');
     } finally {
       setIsTesting(false);
@@ -83,7 +83,7 @@ export default function CipherTestComponent({
   const handleDecrypt = async () => {
     const config = getCurrentConfig();
     if (!config) {
-      toast.error(t('components.ciphertest.messages.select_valid_config'));
+      toast.error(t('ciphertest.messages.select_valid_config'));
       return;
     }
 
@@ -99,8 +99,8 @@ export default function CipherTestComponent({
       const supportedModes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR'];
       
       if (!supportedModes.includes(mode.toUpperCase())) {
-        throw new Error(t('components.ciphertest.messages.unsupported_mode', { 
-          type: t('components.ciphertest.decrypt'), 
+        throw new Error(t('ciphertest.messages.unsupported_mode', { 
+          type: t('ciphertest.decrypt'), 
           mode, 
           modes: supportedModes.join(', ') 
         }));
@@ -113,10 +113,10 @@ export default function CipherTestComponent({
       setDecryptResult(result);
       
       // 解密成功提示
-      toast.success(t('components.ciphertest.messages.decrypt_success'));
+      toast.success(t('ciphertest.messages.decrypt_success'));
     } catch (error) {
       console.error('Decryption failed:', error);
-      toast.error(t('components.ciphertest.messages.decrypt_failed', { error: error.message }));
+      toast.error(t('ciphertest.messages.decrypt_failed', { error: error.message }));
       setDecryptResult('');
     } finally {
       setIsTesting(false);
@@ -127,12 +127,12 @@ export default function CipherTestComponent({
   const handleFullTest = async () => {
     const config = getCurrentConfig();
     if (!config) {
-      toast.error(t('components.ciphertest.messages.select_valid_config'));
+      toast.error(t('ciphertest.messages.select_valid_config'));
       return;
     }
 
     if (!testText.trim()) {
-      toast.error(t('components.ciphertest.messages.enter_test_text'));
+      toast.error(t('ciphertest.messages.enter_test_text'));
       return;
     }
 
@@ -143,8 +143,8 @@ export default function CipherTestComponent({
       const supportedModes = ['CBC', 'ECB', 'CFB', 'OFB', 'CTR'];
       
       if (!supportedModes.includes(mode.toUpperCase())) {
-        throw new Error(t('components.ciphertest.messages.unsupported_mode', { 
-          type: t('components.ciphertest.full_test'), 
+        throw new Error(t('ciphertest.messages.unsupported_mode', { 
+          type: t('ciphertest.full_test'), 
           mode, 
           modes: supportedModes.join(', ') 
         }));
@@ -165,25 +165,25 @@ export default function CipherTestComponent({
       const isMatch = normalizeString(decrypted) === normalizeString(testText);
       
       if (isMatch) {
-        toast.success(t('components.ciphertest.messages.full_test_pass'));
+        toast.success(t('ciphertest.messages.full_test_pass'));
         // 在完整测试中显示一致性提示
-        console.log(t('components.ciphertest.result_consistent'));
+        console.log(t('ciphertest.result_consistent'));
       } else {
-        toast.warning(t('components.ciphertest.messages.full_test_mismatch'));
+        toast.warning(t('ciphertest.messages.full_test_mismatch'));
         // 输出详细调试信息
-        console.log(t('components.ciphertest.debug_info') + ':');
-        console.log(t('components.ciphertest.original_text') + ':', JSON.stringify(testText));
-        console.log(t('components.ciphertest.decrypt_result') + ':', JSON.stringify(decrypted));
-        console.log(t('components.ciphertest.original_length') + ':', testText.length);
-        console.log(t('components.ciphertest.decrypted_length') + ':', decrypted.length);
-        console.log(t('components.ciphertest.strict_comparison_result') + ':', decrypted === testText);
-        console.log(t('components.ciphertest.normalized_comparison_result') + ':', isMatch);
+        console.log(t('ciphertest.debug_info') + ':');
+        console.log(t('ciphertest.original_text') + ':', JSON.stringify(testText));
+        console.log(t('ciphertest.decrypt_result') + ':', JSON.stringify(decrypted));
+        console.log(t('ciphertest.original_length') + ':', testText.length);
+        console.log(t('ciphertest.decrypted_length') + ':', decrypted.length);
+        console.log(t('ciphertest.strict_comparison_result') + ':', decrypted === testText);
+        console.log(t('ciphertest.normalized_comparison_result') + ':', isMatch);
         
         // 字符级别的比较
         if (testText.length === decrypted.length) {
           for (let i = 0; i < testText.length; i++) {
             if (testText.charCodeAt(i) !== decrypted.charCodeAt(i)) {
-              console.log(`${t('components.ciphertest.character_diff_position')} ${i}: ${t('components.ciphertest.original_text')}=${testText.charCodeAt(i)}('${testText[i]}'), ${t('components.ciphertest.decrypted_text')}=${decrypted.charCodeAt(i)}('${decrypted[i]}')`);
+              console.log(`${t('ciphertest.character_diff_position')} ${i}: ${t('ciphertest.original_text')}=${testText.charCodeAt(i)}('${testText[i]}'), ${t('ciphertest.decrypted_text')}=${decrypted.charCodeAt(i)}('${decrypted[i]}')`);
               break;
             }
           }
@@ -191,7 +191,7 @@ export default function CipherTestComponent({
       }
     } catch (error) {
       console.error('Full test failed:', error);
-      toast.error(t('components.ciphertest.messages.test_failed', { error: error.message }));
+      toast.error(t('ciphertest.messages.test_failed', { error: error.message }));
       setEncryptResult('');
       setDecryptResult('');
     } finally {
@@ -249,7 +249,7 @@ export default function CipherTestComponent({
     }
     
     setIsTesting(true);
-    toast.info(t('components.ciphertest.edge_test') + '...');
+    toast.info(t('ciphertest.edge_test') + '...');
     
     const results = [];
     const adaptedConfig = adaptConfigForCipher(config);
@@ -274,7 +274,7 @@ export default function CipherTestComponent({
           error: error.message,
           match: false
         });
-        console.error(`${t('components.ciphertest.testing_case')} '${testCase}' ${t('components.ciphertest.failed')}:`, error.message);
+        console.error(`${t('ciphertest.testing_case')} '${testCase}' ${t('ciphertest.failed')}:`, error.message);
       }
     }
     
@@ -282,7 +282,7 @@ export default function CipherTestComponent({
     const totalCount = results.length;
     
     toast[successCount === totalCount ? 'success' : 'warning'](
-      t('components.ciphertest.messages.boundary_test_complete', { 
+      t('ciphertest.messages.boundary_test_complete', { 
         success: successCount, 
         total: totalCount 
       })
@@ -324,10 +324,10 @@ export default function CipherTestComponent({
       <Card className="w-full flex-1 flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            {t('components.ciphertest.title')}
+            {t('ciphertest.title')}
             {currentConfig && (
               <span className="text-sm font-normal text-muted-foreground">
-                ({t('components.ciphertest.current_config')}: {currentConfig.name})
+                ({t('ciphertest.current_config')}: {currentConfig.name})
               </span>
             )}
           </CardTitle>
@@ -336,10 +336,10 @@ export default function CipherTestComponent({
           {/* 配置选择器 */}
           {showConfigSelector && configs.length > 0 && (
             <div className="space-y-2">
-              <Label>{t('components.ciphertest.select_config')}</Label>
+              <Label>{t('ciphertest.select_config')}</Label>
               <Select value={testConfig} onValueChange={setTestConfig}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t('components.ciphertest.please_select')} />
+                  <SelectValue placeholder={t('ciphertest.please_select')} />
                 </SelectTrigger>
                 <SelectContent>
                   {configs.map(config => (
@@ -357,24 +357,24 @@ export default function CipherTestComponent({
               
               {currentConfig && (
                 <div className="text-sm text-muted-foreground p-2 bg-muted rounded">
-                  <div>{t('components.ciphertest.algorithm')}: {currentConfig.algorithm || t('components.keyconfigmanager.messages.loading')}</div>
-                  <div>{t('components.ciphertest.plaintext_encoding')}: {currentConfig.plainEncoding?.join(',') || 'UTF8'}</div>
-                  <div>{t('components.ciphertest.ciphertext_encoding')}: {currentConfig.cipherEncoding?.join(',') || 'BASE64'}</div>
+                  <div>{t('ciphertest.algorithm')}: {currentConfig.algorithm || t('keyconfigmanager.messages.loading')}</div>
+                  <div>{t('ciphertest.plaintext_encoding')}: {currentConfig.plainEncoding?.join(',') || 'UTF8'}</div>
+                  <div>{t('ciphertest.ciphertext_encoding')}: {currentConfig.cipherEncoding?.join(',') || 'BASE64'}</div>
                   {currentConfig.algorithmType !== 'RSA' && (
                     <div>
-                      {t('components.ciphertest.mode')}: {currentConfig.mode || currentConfig.algorithm?.split('/')[1] || 'CBC'}
+                      {t('ciphertest.mode')}: {currentConfig.mode || currentConfig.algorithm?.split('/')[1] || 'CBC'}
                       {currentConfig.padding && ` / ${currentConfig.padding}`}
                     </div>
                   )}
                   {/* GCM 模式特殊提示 */}
                   {((currentConfig.mode || currentConfig.algorithm?.split('/')[1] || '').toUpperCase() === 'GCM') && (
                     <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 rounded text-xs">
-                      {t('components.ciphertest.gcm_warning')}
+                      {t('ciphertest.gcm_warning')}
                     </div>
                   )}
                   {/* 调试信息 */}
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-xs">{t('components.ciphertest.debug_info')}</summary>
+                    <summary className="cursor-pointer text-xs">{t('ciphertest.debug_info')}</summary>
                     <pre className="text-xs mt-1 p-2 bg-background rounded overflow-x-auto">
 {JSON.stringify({
   name: currentConfig.name,
@@ -399,12 +399,12 @@ export default function CipherTestComponent({
           {/* 测试输入区域 */}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="testText">{t('components.ciphertest.test_text')}</Label>
+              <Label htmlFor="testText">{t('ciphertest.test_text')}</Label>
               <Textarea
                 id="testText"
                 value={testText}
                 onChange={(e) => setTestText(e.target.value)}
-                placeholder={t('components.ciphertest.enter_test_text')}
+                placeholder={t('ciphertest.enter_test_text')}
                 rows={3}
               />
             </div>
@@ -415,7 +415,7 @@ export default function CipherTestComponent({
                 disabled={isTesting || !currentConfig}
                 variant="secondary"
               >
-                {isTesting ? t('components.ciphertest.encrypting') : t('components.ciphertest.encrypt')}
+                {isTesting ? t('ciphertest.encrypting') : t('ciphertest.encrypt')}
               </Button>
               
               <Button 
@@ -423,7 +423,7 @@ export default function CipherTestComponent({
                 disabled={isTesting || !currentConfig}
                 variant="secondary"
               >
-                {isTesting ? t('components.ciphertest.decrypting') : t('components.ciphertest.decrypt')}
+                {isTesting ? t('ciphertest.decrypting') : t('ciphertest.decrypt')}
               </Button>
               
               <Button 
@@ -431,7 +431,7 @@ export default function CipherTestComponent({
                 disabled={isTesting || !currentConfig}
                 variant="default"
               >
-                {isTesting ? t('components.ciphertest.testing') : t('components.ciphertest.full_test')}
+                {isTesting ? t('ciphertest.testing') : t('ciphertest.full_test')}
               </Button>
               
               <Button 
@@ -440,7 +440,7 @@ export default function CipherTestComponent({
                 variant="outline"
                 size="sm"
               >
-                {t('components.ciphertest.edge_test')}
+                {t('ciphertest.edge_test')}
               </Button>
               
               <Button 
@@ -448,7 +448,7 @@ export default function CipherTestComponent({
                 variant="outline"
                 disabled={!encryptResult && !decryptResult}
               >
-                {t('components.ciphertest.clear_results')}
+                {t('ciphertest.clear_results')}
               </Button>
             </div>
           </div>
@@ -458,15 +458,15 @@ export default function CipherTestComponent({
             {/* 加密结果 */}
             <div className="space-y-2 flex flex-col h-full">
               <Label className="flex items-center gap-2 flex-shrink-0">
-                {t('components.ciphertest.messages.encryption_result')}
+                {t('ciphertest.messages.encryption_result')}
                 {encryptResult && (
-                  <span className="text-xs text-green-600">{t('components.ciphertest.encrypted')}</span>
+                  <span className="text-xs text-green-600">{t('ciphertest.encrypted')}</span>
                 )}
               </Label>
               <Textarea
                 value={encryptResult}
                 readOnly
-                placeholder={t('components.ciphertest.encrypt_result_placeholder')}
+                placeholder={t('ciphertest.encrypt_result_placeholder')}
                 className="font-mono text-sm bg-muted flex-1 min-h-[120px] w-full resize-none"
               />
             </div>
@@ -474,15 +474,15 @@ export default function CipherTestComponent({
             {/* 解密结果 */}
             <div className="space-y-2 flex flex-col h-full">
               <Label className="flex items-center gap-2 flex-shrink-0">
-                {t('components.ciphertest.messages.decryption_result')}
+                {t('ciphertest.messages.decryption_result')}
                 {decryptResult && (
-                  <span className="text-xs text-green-600">{t('components.ciphertest.decrypted')}</span>
+                  <span className="text-xs text-green-600">{t('ciphertest.decrypted')}</span>
                 )}
               </Label>
               <Textarea
                 value={decryptResult}
                 readOnly
-                placeholder={t('components.ciphertest.decrypt_result_placeholder')}
+                placeholder={t('ciphertest.decrypt_result_placeholder')}
                 className="font-mono text-sm bg-muted flex-1 min-h-[120px] w-full resize-none"
               />
               
@@ -494,19 +494,19 @@ export default function CipherTestComponent({
                     : 'bg-red-100 text-red-800 border border-red-200'
                 }`}>
                   {normalizeString(decryptResult) === normalizeString(testText) 
-                    ? t('components.ciphertest.result_consistent') 
-                    : t('components.ciphertest.result_inconsistent')
+                    ? t('ciphertest.result_consistent') 
+                    : t('ciphertest.result_inconsistent')
                   }
                   {/* 详细比较信息 */}
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-xs">{t('components.ciphertest.detailed_comparison')}</summary>
+                    <summary className="cursor-pointer text-xs">{t('ciphertest.detailed_comparison')}</summary>
                     <div className="text-xs mt-1 space-y-1 max-w-full overflow-hidden">
-                      <div className="truncate">{t('components.ciphertest.strict_comparison')}: {decryptResult === testText ? '✅ ' + t('components.ciphertest.equal') : '❌ ' + t('components.ciphertest.not_equal')}</div>
-                      <div className="truncate">{t('components.ciphertest.normalized_comparison')}: {normalizeString(decryptResult) === normalizeString(testText) ? '✅ ' + t('components.ciphertest.equal') : '❌ ' + t('components.ciphertest.not_equal')}</div>
-                      <div className="truncate">{t('components.ciphertest.original_length')}: {testText.length} {t('components.ciphertest.characters')}</div>
-                      <div className="truncate">{t('components.ciphertest.decrypted_length')}: {decryptResult.length} {t('components.ciphertest.characters')}</div>
-                      <div className="truncate">{t('components.ciphertest.original_preview')}: "{testText.substring(0, 50)}{testText.length > 50 ? '...' : ''}"</div>
-                      <div className="truncate">{t('components.ciphertest.decrypted_preview')}: "{decryptResult.substring(0, 50)}{decryptResult.length > 50 ? '...' : ''}"</div>
+                      <div className="truncate">{t('ciphertest.strict_comparison')}: {decryptResult === testText ? '✅ ' + t('ciphertest.equal') : '❌ ' + t('ciphertest.not_equal')}</div>
+                      <div className="truncate">{t('ciphertest.normalized_comparison')}: {normalizeString(decryptResult) === normalizeString(testText) ? '✅ ' + t('ciphertest.equal') : '❌ ' + t('ciphertest.not_equal')}</div>
+                      <div className="truncate">{t('ciphertest.original_length')}: {testText.length} {t('ciphertest.characters')}</div>
+                      <div className="truncate">{t('ciphertest.decrypted_length')}: {decryptResult.length} {t('ciphertest.characters')}</div>
+                      <div className="truncate">{t('ciphertest.original_preview')}: "{testText.substring(0, 50)}{testText.length > 50 ? '...' : ''}"</div>
+                      <div className="truncate">{t('ciphertest.decrypted_preview')}: "{decryptResult.substring(0, 50)}{decryptResult.length > 50 ? '...' : ''}"</div>
                     </div>
                   </details>
                 </div>
@@ -518,22 +518,22 @@ export default function CipherTestComponent({
           {encryptResult && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm flex-shrink-0">
               <div className="bg-muted p-3 rounded">
-                <div className="text-muted-foreground">{t('components.ciphertest.original_size')}</div>
-                <div className="font-medium">{testText.length} {t('components.ciphertest.characters')}</div>
+                <div className="text-muted-foreground">{t('ciphertest.original_size')}</div>
+                <div className="font-medium">{testText.length} {t('ciphertest.characters')}</div>
               </div>
               <div className="bg-muted p-3 rounded">
-                <div className="text-muted-foreground">{t('components.ciphertest.ciphertext_size')}</div>
-                <div className="font-medium">{encryptResult.length} {t('components.ciphertest.characters')}</div>
+                <div className="text-muted-foreground">{t('ciphertest.ciphertext_size')}</div>
+                <div className="font-medium">{encryptResult.length} {t('ciphertest.characters')}</div>
               </div>
               <div className="bg-muted p-3 rounded">
-                <div className="text-muted-foreground">{t('components.ciphertest.compression_ratio')}</div>
+                <div className="text-muted-foreground">{t('ciphertest.compression_ratio')}</div>
                 <div className="font-medium">
                   {Math.round((encryptResult.length / testText.length) * 100)}%
                 </div>
               </div>
               <div className="bg-muted p-3 rounded">
-                <div className="text-muted-foreground">{t('components.ciphertest.test_status')}</div>
-                <div className="font-medium text-green-600">{t('components.ciphertest.completed')}</div>
+                <div className="text-muted-foreground">{t('ciphertest.test_status')}</div>
+                <div className="font-medium text-green-600">{t('ciphertest.completed')}</div>
               </div>
             </div>
           )}

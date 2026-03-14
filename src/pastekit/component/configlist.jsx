@@ -25,7 +25,7 @@ export default function ConfigList({
   if (currentConfigs.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        {t('components.keyconfigmanager.no_configs')}
+        {t('keyconfigmanager.no_configs')}
       </div>
     );
   }
@@ -35,12 +35,12 @@ export default function ConfigList({
       <table className="w-full">
         <thead className="bg-muted sticky top-0">
           <tr>
-            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('components.keyconfigmanager.config_name')}</th>
-            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('components.keyconfigmanager.algorithm')}</th>
-            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('components.keyconfigmanager.plaintext_encoding')}</th>
-            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('components.keyconfigmanager.ciphertext_encoding')}</th>
-            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('components.keyconfigmanager.mode')}/{t('components.keyconfigmanager.padding')}</th>
-            <th className="text-center py-3 px-4 font-semibold text-sm border-b">{t('components.keyconfigmanager.actions')}</th>
+            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('keyconfigmanager.config_name')}</th>
+            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('keyconfigmanager.algorithm')}</th>
+            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('keyconfigmanager.plaintext_encoding')}</th>
+            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('keyconfigmanager.ciphertext_encoding')}</th>
+            <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('keyconfigmanager.mode')}/{t('keyconfigmanager.padding')}</th>
+            <th className="text-center py-3 px-4 font-semibold text-sm border-b">{t('keyconfigmanager.actions')}</th>
           </tr>
         </thead>
         <style jsx>{`
@@ -123,7 +123,7 @@ function ConfigRow({ config, isSelected, rowIndex, onSelect, onEdit, onDelete, i
               onDelete(config.name);
             }}
             disabled={!isDeletable}
-            tooltip={isDeletable ? t('common.delete') : t('components.keyconfigmanager.messages.min_configs')}
+            tooltip={isDeletable ? t('common.delete') : t('keyconfigmanager.messages.min_configs')}
           />
         </div>
       </td>

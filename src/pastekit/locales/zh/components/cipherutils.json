@@ -1,0 +1,6 @@
+{
+  "cipherutils": {
+    "unsupported_algorithm": "不支持的加密算法：{{algorithm}}",
+    "unsupported_decrypt_algorithm": "不支持的解密算法：{{algorithm}}"
+  }
+}

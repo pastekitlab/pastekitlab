@@ -481,17 +481,17 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                   {t('devtoolsdecryptor.total_configs', { count: filteredData.length })} ({t('devtoolsdecryptor.page_info', { current: currentPage, total: totalPages || 1 })})
                 </div>
                 {/* 每页数量选择器 */}
-                <Select 
+                <Select
                   value={itemsPerPage.toString()} 
                   onValueChange={(value) => setItemsPerPage(Number(value))}
                 >
-                  <SelectTrigger className="w-[100px]">
+                  <SelectTrigger className="w-[120px]">
                     <SelectValue placeholder={t('devtoolsdecryptor.items_per_page')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">5 {t('common.items')}/{t('common.page')}</SelectItem>
-                    <SelectItem value="10">10 {t('common.items')}/{t('common.page')}</SelectItem>
-                    <SelectItem value="20">20 {t('common.items')}/{t('common.page')}</SelectItem>
+                    <SelectItem value="5">{t('page')} 5 {t('items')}</SelectItem>
+                    <SelectItem value="10">{t('page')} 10 {t('items')}</SelectItem>
+                    <SelectItem value="20">{t('page')} 20 {t('items')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

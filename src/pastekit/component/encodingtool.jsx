@@ -201,7 +201,7 @@ export default function EncodingTool({ className = '' }) {
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🔤 {t('components.encodingtool.title') || '编码转换工具'}
+            🔤 {t('encodingtool.title') || '编码转换工具'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -209,7 +209,7 @@ export default function EncodingTool({ className = '' }) {
           <div className="flex gap-4 items-center">
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
-                {t('components.encodingtool.operation') || '操作类型'}
+                {t('encodingtool.operation') || '操作类型'}
               </label>
               <Select value={operation} onValueChange={setOperation}>
                 <SelectTrigger>
@@ -217,10 +217,10 @@ export default function EncodingTool({ className = '' }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="encode">
-                    {t('components.encodingtool.encode') || '编码'}
+                    {t('encodingtool.encode') || '编码'}
                   </SelectItem>
                   <SelectItem value="decode">
-                    {t('components.encodingtool.decode') || '解码'}
+                    {t('encodingtool.decode') || '解码'}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -228,7 +228,7 @@ export default function EncodingTool({ className = '' }) {
             
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
-                {t('components.encodingtool.input_encoding') || '输入编码'}
+                {t('encodingtool.input_encoding') || '输入编码'}
               </label>
               <Select value={inputEncoding} onValueChange={setInputEncoding}>
                 <SelectTrigger>
@@ -246,7 +246,7 @@ export default function EncodingTool({ className = '' }) {
             
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">
-                {t('components.encodingtool.output_encoding') || '输出编码'}
+                {t('encodingtool.output_encoding') || '输出编码'}
               </label>
               <Select value={outputEncoding} onValueChange={setOutputEncoding}>
                 <SelectTrigger>
@@ -299,12 +299,12 @@ export default function EncodingTool({ className = '' }) {
           {/* 输入区域 */}
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              {t('components.encodingtool.input') || '输入文本'}
+              {t('encodingtool.input') || '输入文本'}
             </label>
             <Textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={`${t('components.encodingtool.input_placeholder') || '请输入要转换的文本...'} (${encodingNames[inputEncoding]})`}
+              placeholder={`${t('encodingtool.input_placeholder') || '请输入要转换的文本...'} (${encodingNames[inputEncoding]})`}
               className="min-h-[120px] font-mono text-sm"
             />
           </div>
@@ -312,12 +312,12 @@ export default function EncodingTool({ className = '' }) {
           {/* 输出区域 */}
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              {t('components.encodingtool.output') || '输出结果'}
+              {t('encodingtool.output') || '输出结果'}
             </label>
             <Textarea
               value={outputText}
               readOnly
-              placeholder={`${t('components.encodingtool.output_placeholder') || '转换结果将显示在这里...'} (${encodingNames[outputEncoding]})`}
+              placeholder={`${t('encodingtool.output_placeholder') || '转换结果将显示在这里...'} (${encodingNames[outputEncoding]})`}
               className="min-h-[120px] font-mono text-sm bg-muted"
             />
           </div>

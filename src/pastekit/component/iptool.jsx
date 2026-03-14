@@ -366,13 +366,13 @@ export default function IpTool({ content, showMyIp = true }) {
     return (
         <div className="w-full border rounded p-4 space-y-4">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold">{t('components.iptool.title')}</h3>
+                <h3 className="text-lg font-bold">{t('iptool.title')}</h3>
             </div>
             
             {/* Error notification */}
             {error && (
                 <div className="p-3 bg-red-100 text-red-800 rounded text-sm">
-                    <strong>{t('components.iptool.processing_error')}:</strong> {error}
+                    <strong>{t('iptool.processing_error')}:</strong> {error}
                 </div>
             )}
 
@@ -386,9 +386,9 @@ export default function IpTool({ content, showMyIp = true }) {
                         <div className="space-y-4">
                             <div className="border rounded-lg p-4 bg-blue-50 shadow-sm">
                                 <div className="flex items-center justify-between mb-3">
-                                    <h4 className="font-semibold text-gray-700">{t('components.iptool.ipv4_info')}</h4>
+                                    <h4 className="font-semibold text-gray-700">{t('iptool.ipv4_info')}</h4>
                                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                        {t('components.iptool.query_results')}
+                                        {t('iptool.query_results')}
                                     </span>
                                 </div>
                                 {results.ipInfo.error ? (
@@ -398,35 +398,35 @@ export default function IpTool({ content, showMyIp = true }) {
                                 ) : (
                                     <div className="grid grid-cols-2 gap-3 text-sm">
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.ip_address')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.ip_address')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.ipAddress}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.country')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.country')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.countryName}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.province')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.province')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.regionName}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.city')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.city')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.cityName}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.latitude')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.latitude')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.latitude}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.longitude')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.longitude')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.longitude}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.isp')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.isp')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.isp}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.organization')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.organization')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.organization}</span>
                                         </div>
                                     </div>
@@ -440,9 +440,9 @@ export default function IpTool({ content, showMyIp = true }) {
                         <div className="space-y-4">
                             <div className="border rounded-lg p-4 bg-purple-50 shadow-sm">
                                 <div className="flex items-center justify-between mb-3">
-                                    <h4 className="font-semibold text-gray-700">{t('components.iptool.ipv6_info')}</h4>
+                                    <h4 className="font-semibold text-gray-700">{t('iptool.ipv6_info')}</h4>
                                     <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                        {t('components.iptool.query_results')}
+                                        {t('iptool.query_results')}
                                     </span>
                                 </div>
                                 {results.ipInfo.error ? (
@@ -452,35 +452,35 @@ export default function IpTool({ content, showMyIp = true }) {
                                 ) : (
                                     <div className="grid grid-cols-2 gap-3 text-sm">
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.ip_address')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.ip_address')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.ipAddress}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.country')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.country')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.countryName}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.province')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.province')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.regionName}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.city')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.city')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.cityName}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.latitude')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.latitude')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.latitude}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.longitude')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.longitude')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.longitude}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.isp')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.isp')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.isp}</span>
                                         </div>
                                         <div className="flex">
-                                            <span className="w-16 text-right text-gray-600 mr-2">{t('components.iptool.organization')}:</span>
+                                            <span className="w-16 text-right text-gray-600 mr-2">{t('iptool.organization')}:</span>
                                             <span className="font-medium flex-1 min-w-0 truncate">{results.ipInfo.organization}</span>
                                         </div>
                                     </div>
@@ -493,8 +493,8 @@ export default function IpTool({ content, showMyIp = true }) {
                     {results.type === 'invalid' && !error && (
                         <div className="text-center text-gray-500 py-6">
                             <div className="text-3xl mb-2">❌</div>
-                            <div className="font-medium">{t('components.iptool.invalid_input')}</div>
-                            <div className="text-sm mt-1 text-gray-400">{t('components.iptool.example')} 221.111.111.111 {t('components.iptool.or')} 2001:db8::1 {t('components.iptool.or')} 192.168.1.0/24</div>
+                            <div className="font-medium">{t('iptool.invalid_input')}</div>
+                            <div className="text-sm mt-1 text-gray-400">{t('iptool.example')} 221.111.111.111 {t('iptool.or')} 2001:db8::1 {t('iptool.or')} 192.168.1.0/24</div>
                         </div>
                     )}
                 </>
@@ -505,9 +505,9 @@ export default function IpTool({ content, showMyIp = true }) {
                 <div className="space-y-4">
                     <div className="border rounded p-3 bg-green-50">
                         <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm text-gray-700">{t('components.iptool.ipv4_subnet')}</h4>
+                            <h4 className="font-medium text-sm text-gray-700">{t('iptool.ipv4_subnet')}</h4>
                             <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                {t('components.iptool.ipv4_cidr')}
+                                {t('iptool.ipv4_cidr')}
                             </span>
                         </div>
                         {results.cidrInfo.error ? (
@@ -516,14 +516,14 @@ export default function IpTool({ content, showMyIp = true }) {
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-3 text-xs">
-                                <div><strong>{t('components.iptool.network_address')}:</strong> {results.cidrInfo.networkAddress}</div>
-                                <div><strong>{t('components.iptool.subnet_mask')}:</strong> {results.cidrInfo.subnetMask}</div>
-                                <div><strong>{t('components.iptool.cidr_prefix')}:</strong> /{results.cidrInfo.prefixLength}</div>
-                                <div><strong>{t('components.iptool.total_ips')}:</strong> {results.cidrInfo.totalIPCount}</div>
-                                <div><strong>{t('components.iptool.available_ips')}:</strong> {results.cidrInfo.usableIPCount}</div>
-                                <div><strong>{t('components.iptool.start_ip')}:</strong> {results.cidrInfo.startIP}</div>
-                                <div><strong>{t('components.iptool.end_ip')}:</strong> {results.cidrInfo.endIP}</div>
-                                <div><strong>{t('components.iptool.broadcast_address')}:</strong> {results.cidrInfo.broadcastAddress}</div>
+                                <div><strong>{t('iptool.network_address')}:</strong> {results.cidrInfo.networkAddress}</div>
+                                <div><strong>{t('iptool.subnet_mask')}:</strong> {results.cidrInfo.subnetMask}</div>
+                                <div><strong>{t('iptool.cidr_prefix')}:</strong> /{results.cidrInfo.prefixLength}</div>
+                                <div><strong>{t('iptool.total_ips')}:</strong> {results.cidrInfo.totalIPCount}</div>
+                                <div><strong>{t('iptool.available_ips')}:</strong> {results.cidrInfo.usableIPCount}</div>
+                                <div><strong>{t('iptool.start_ip')}:</strong> {results.cidrInfo.startIP}</div>
+                                <div><strong>{t('iptool.end_ip')}:</strong> {results.cidrInfo.endIP}</div>
+                                <div><strong>{t('iptool.broadcast_address')}:</strong> {results.cidrInfo.broadcastAddress}</div>
                             </div>
                         )}
                     </div>
@@ -535,9 +535,9 @@ export default function IpTool({ content, showMyIp = true }) {
                 <div className="space-y-4">
                     <div className="border rounded p-3 bg-indigo-50">
                         <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm text-gray-700">{t('components.iptool.ipv6_subnet')}</h4>
+                            <h4 className="font-medium text-sm text-gray-700">{t('iptool.ipv6_subnet')}</h4>
                             <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
-                                {t('components.iptool.ipv6_cidr')}
+                                {t('iptool.ipv6_cidr')}
                             </span>
                         </div>
                         {results.cidrInfo.error ? (
@@ -546,10 +546,10 @@ export default function IpTool({ content, showMyIp = true }) {
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-3 text-xs">
-                                <div className="break-all"><strong>{t('components.iptool.network_address')}:</strong> {results.cidrInfo.networkAddress}</div>
-                                <div><strong>{t('components.iptool.cidr_prefix')}:</strong> /{results.cidrInfo.prefixLength}</div>
-                                <div><strong>{t('components.iptool.total_addresses')}:</strong> {results.cidrInfo.totalAddresses}</div>
-                                <div><strong>{t('components.iptool.available_addresses')}:</strong> {results.cidrInfo.usableAddresses}</div>
+                                <div className="break-all"><strong>{t('iptool.network_address')}:</strong> {results.cidrInfo.networkAddress}</div>
+                                <div><strong>{t('iptool.cidr_prefix')}:</strong> /{results.cidrInfo.prefixLength}</div>
+                                <div><strong>{t('iptool.total_addresses')}:</strong> {results.cidrInfo.totalAddresses}</div>
+                                <div><strong>{t('iptool.available_addresses')}:</strong> {results.cidrInfo.usableAddresses}</div>
                             </div>
                         )}
                     </div>
@@ -559,8 +559,8 @@ export default function IpTool({ content, showMyIp = true }) {
             {results.type === 'invalid' && !error && (
                 <div className="text-center text-gray-500 py-8">
                     <div className="text-4xl mb-2">❌</div>
-                    <div>{t('components.iptool.invalid_input')}</div>
-                    <div className="text-sm mt-1">{t('components.iptool.example')} 221.111.111.111 {t('components.iptool.or')} 2001:db8::1 {t('components.iptool.or')} 192.168.1.0/24 {t('components.iptool.or')} 2001:db8::/32</div>
+                    <div>{t('iptool.invalid_input')}</div>
+                    <div className="text-sm mt-1">{t('iptool.example')} 221.111.111.111 {t('iptool.or')} 2001:db8::1 {t('iptool.or')} 192.168.1.0/24 {t('iptool.or')} 2001:db8::/32</div>
                 </div>
             )}
             {/* Local IP display */}
@@ -568,9 +568,9 @@ export default function IpTool({ content, showMyIp = true }) {
                 <div className="space-y-4">
                     <div className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm">
                         <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold text-gray-700">{t('components.iptool.local_ip')}</h4>
+                            <h4 className="font-semibold text-gray-700">{t('iptool.local_ip')}</h4>
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                {t('components.iptool.auto_acquired')}
+                                {t('iptool.auto_acquired')}
                             </span>
                         </div>
 
@@ -584,7 +584,7 @@ export default function IpTool({ content, showMyIp = true }) {
                                     {myIpInfo.ipAddress}
                                 </div>
                                 <div className="text-xs text-gray-600">
-                                    {t('components.iptool.ipv_version', { version: myIpInfo.ipVersion })}
+                                    {t('iptool.ipv_version', { version: myIpInfo.ipVersion })}
                                 </div>
                             </div>
                         )}
@@ -596,8 +596,8 @@ export default function IpTool({ content, showMyIp = true }) {
             {!content && !myIpInfo && !isFetchingMyIp && (
                 <div className="text-center text-gray-500 py-8">
                     <div className="text-4xl mb-2">🌐</div>
-                    <div>{t('components.iptool.auto_querying')}</div>
-                    <div className="text-sm mt-1">{t('components.iptool.support_desc')}</div>
+                    <div>{t('iptool.auto_querying')}</div>
+                    <div className="text-sm mt-1">{t('iptool.support_desc')}</div>
                 </div>
             )}
         </div>

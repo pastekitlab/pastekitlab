@@ -139,17 +139,17 @@ function BasicConfigEditor({ config, onUpdateConfig, t }) {
   return (
     <div className="space-y-4">
       <div className="pb-2 border-b">
-        <h3 className="text-lg font-semibold">{t('components.keyconfigmanager.base_config')}</h3>
+        <h3 className="text-lg font-semibold">{t('keyconfigmanager.base_config')}</h3>
       </div>
       
       <div className="space-y-3">
         <div>
-          <Label htmlFor="configName">{t('components.keyconfigmanager.config_name')} *</Label>
+          <Label htmlFor="configName">{t('keyconfigmanager.config_name')} *</Label>
           <Input
             id="configName"
             value={config.name}
             onChange={(e) => onUpdateConfig(prev => ({ ...prev, name: e.target.value }))}
-            placeholder={t('components.keyconfigmanager.messages.enter_name')}
+            placeholder={t('keyconfigmanager.messages.enter_name')}
           />
         </div>
         
@@ -184,7 +184,7 @@ function KeyConfigEditor({ config, onUpdateConfig, showGenerateButton, onGenerat
   return (
     <div className="space-y-4">
       <div className="pb-2 border-b">
-        <h3 className="text-lg font-semibold">{t('components.keyconfigmanager.key_config')}</h3>
+        <h3 className="text-lg font-semibold">{t('keyconfigmanager.key_config')}</h3>
       </div>
       
       {config.algorithmType === 'RSA' || config.algorithmType === 'SM2' ? (
@@ -253,12 +253,12 @@ function AsymmetricModeEditor({ config, onUpdateConfig, onGenerateKeys, showGene
   return (
     <>
       <div>
-        <Label>{t('components.keyconfigmanager.public_key')} *</Label>
+        <Label>{t('keyconfigmanager.public_key')} *</Label>
         <div className="flex gap-2">
           <Textarea
             value={config.publicKey?.value || ''}
             onChange={(e) => updatePublicKeyValue(e.target.value)}
-            placeholder={t('components.keyconfigmanager.public_key')}
+            placeholder={t('keyconfigmanager.public_key')}
             className="font-mono text-sm flex-1"
             rows={6}
           />
@@ -281,12 +281,12 @@ function AsymmetricModeEditor({ config, onUpdateConfig, onGenerateKeys, showGene
       </div>
 
       <div>
-        <Label>{t('components.keyconfigmanager.private_key')} *</Label>
+        <Label>{t('keyconfigmanager.private_key')} *</Label>
         <div className="flex gap-2">
           <Textarea
             value={config.privateKey?.value || ''}
             onChange={(e) => updatePrivateKeyValue(e.target.value)}
-            placeholder={t('components.keyconfigmanager.private_key')}
+            placeholder={t('keyconfigmanager.private_key')}
             className="font-mono text-sm flex-1"
             rows={6}
           />
@@ -311,8 +311,8 @@ function AsymmetricModeEditor({ config, onUpdateConfig, onGenerateKeys, showGene
       {showGenerateButton && (
         <Button variant="success" onClick={onGenerateKeys} className="w-full">
           🔑 {config.algorithmType === 'SM2' 
-            ? t('components.keyconfigmanager.generate_sm2_keys') 
-            : t('components.keyconfigmanager.generate_keys')}
+            ? t('keyconfigmanager.generate_sm2_keys') 
+            : t('keyconfigmanager.generate_keys')}
         </Button>
       )}
     </>
@@ -342,12 +342,12 @@ function SymmetricModeEditor({ config, onUpdateConfig, t }) {
   return (
     <>
       <div>
-        <Label>{t('components.keyconfigmanager.key')} *</Label>
+        <Label>{t('keyconfigmanager.key')} *</Label>
         <div className="flex gap-2">
           <Input
             value={config.key?.value || ''}
             onChange={(e) => updateKeyValueLocal(e.target.value)}
-            placeholder={t('components.keyconfigmanager.key')}
+            placeholder={t('keyconfigmanager.key')}
             className="flex-1"
           />
           <Select 
@@ -369,12 +369,12 @@ function SymmetricModeEditor({ config, onUpdateConfig, t }) {
       </div>
 
       <div>
-        <Label>{t('components.keyconfigmanager.iv')}</Label>
+        <Label>{t('keyconfigmanager.iv')}</Label>
         <div className="flex gap-2">
           <Input
             value={config.iv?.value || ''}
             onChange={(e) => updateIvValueLocal(e.target.value)}
-            placeholder={`${t('components.keyconfigmanager.iv')} (${t('common.optional')})`}
+            placeholder={`${t('keyconfigmanager.iv')} (${t('common.optional')})`}
             className="flex-1"
           />
           <Select 
@@ -415,12 +415,12 @@ function EncodingSettingsEditor({
   return (
     <div className="space-y-4">
       <div className="pb-2 border-b">
-        <h3 className="text-lg font-semibold">{t('components.keyconfigmanager.encoding_settings')}</h3>
+        <h3 className="text-lg font-semibold">{t('keyconfigmanager.encoding_settings')}</h3>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>{t('components.keyconfigmanager.plaintext_encoding')}</Label>
+          <Label>{t('keyconfigmanager.plaintext_encoding')}</Label>
           <div className="space-y-2">
             {/* 复合编码显示 */}
             <div className="flex flex-wrap gap-2 min-h-[36px] p-2 border rounded bg-gray-50">
@@ -436,14 +436,14 @@ function EncodingSettingsEditor({
                   </button>
                 </div>
               )) || (
-                <span className="text-gray-400 text-sm">{t('components.keyconfigmanager.no_encodings_selected')}</span>
+                <span className="text-gray-400 text-sm">{t('keyconfigmanager.no_encodings_selected')}</span>
               )}
             </div>
             
             {/* 编码选择器 */}
             <Select onValueChange={onAddPlainEncoding}>
               <SelectTrigger>
-                <SelectValue placeholder={t('common.add') + ' ' + t('components.keyconfigmanager.plaintext_encoding')} />
+                <SelectValue placeholder={t('common.add') + ' ' + t('keyconfigmanager.plaintext_encoding')} />
               </SelectTrigger>
               <SelectContent>
                 {PLAINTEXT_ENCODING_OPTIONS.map(option => {
@@ -461,13 +461,13 @@ function EncodingSettingsEditor({
             
             {/* 说明文字 */}
             <div className="text-xs text-gray-500">
-              {t('components.keyconfigmanager.support_compound_encoding')}
+              {t('keyconfigmanager.support_compound_encoding')}
             </div>
           </div>
         </div>
         
         <div>
-          <Label>{t('components.keyconfigmanager.ciphertext_encoding')}</Label>
+          <Label>{t('keyconfigmanager.ciphertext_encoding')}</Label>
           <div className="space-y-2">
             {/* 复合编码显示 */}
             <div className="flex flex-wrap gap-2 min-h-[36px] p-2 border rounded bg-gray-50">
@@ -483,14 +483,14 @@ function EncodingSettingsEditor({
                   </button>
                 </div>
               )) || (
-                <span className="text-gray-400 text-sm">{t('components.keyconfigmanager.no_encodings_selected')}</span>
+                <span className="text-gray-400 text-sm">{t('keyconfigmanager.no_encodings_selected')}</span>
               )}
             </div>
             
             {/* 编码选择器 */}
             <Select onValueChange={onAddCipherEncoding}>
               <SelectTrigger>
-                <SelectValue placeholder={t('common.add') + ' ' + t('components.keyconfigmanager.ciphertext_encoding')} />
+                <SelectValue placeholder={t('common.add') + ' ' + t('keyconfigmanager.ciphertext_encoding')} />
               </SelectTrigger>
               <SelectContent>
                 {CIPHERTEXT_ENCODING_OPTIONS.map(option => (
@@ -506,18 +506,18 @@ function EncodingSettingsEditor({
             
             {/* 说明文字 */}
             <div className="text-xs text-gray-500">
-              {t('components.keyconfigmanager.support_compound_encoding')}
+              {t('keyconfigmanager.support_compound_encoding')}
             </div>
           </div>
         </div>
       </div>
       
       <div className="p-4 bg-muted rounded-lg">
-        <h4 className="font-medium mb-2">{t('components.keyconfigmanager.encoding_explanation')}</h4>
+        <h4 className="font-medium mb-2">{t('keyconfigmanager.encoding_explanation')}</h4>
         <ul className="text-sm space-y-1 text-muted-foreground">
-          <li>• <strong>{t('components.keyconfigmanager.plaintext_encoding')}</strong>: {t('components.keyconfigmanager.plaintext_encoding_desc')}</li>
-          <li>• <strong>{t('components.keyconfigmanager.ciphertext_encoding')}</strong>: {t('components.keyconfigmanager.ciphertext_encoding_desc')}</li>
-          <li>• <strong>{t('components.keyconfigmanager.key_iv_encoding')}</strong>: {t('components.keyconfigmanager.key_iv_encoding_desc')}</li>
+          <li>• <strong>{t('keyconfigmanager.plaintext_encoding')}</strong>: {t('keyconfigmanager.plaintext_encoding_desc')}</li>
+          <li>• <strong>{t('keyconfigmanager.ciphertext_encoding')}</strong>: {t('keyconfigmanager.ciphertext_encoding_desc')}</li>
+          <li>• <strong>{t('keyconfigmanager.key_iv_encoding')}</strong>: {t('keyconfigmanager.key_iv_encoding_desc')}</li>
         </ul>
       </div>
     </div>
@@ -532,7 +532,7 @@ function ActionButtons({ onDelete, onCancel, onSave, t }) {
     <div className="flex justify-between sticky bottom-0 bg-background pt-4 pb-2">
       <div className="flex gap-2">
         <Button variant="destructive" onClick={onDelete}>
-          🗑️ {t('components.keyconfigmanager.delete_config')}
+          🗑️ {t('keyconfigmanager.delete_config')}
         </Button>
       </div>
       
@@ -541,7 +541,7 @@ function ActionButtons({ onDelete, onCancel, onSave, t }) {
           {t('common.cancel')}
         </Button>
         <Button onClick={onSave}>
-          {t('components.keyconfigmanager.save_config')}
+          {t('keyconfigmanager.save_config')}
         </Button>
       </div>
     </div>

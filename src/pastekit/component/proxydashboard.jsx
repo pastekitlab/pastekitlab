@@ -65,10 +65,10 @@ export default function ProxyDashboard() {
             {/* 头部 */}
             <div className="mb-6">
                 <h2 className="text-2xl font-bold mb-2">
-                    📱 {t('components.proxydashboard.title')}
+                    📱 {t('proxydashboard.title')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                    {t('components.proxydashboard.description')}
+                    {t('proxydashboard.description')}
                 </p>
             </div>
             

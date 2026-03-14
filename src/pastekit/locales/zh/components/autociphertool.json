@@ -1,0 +1,25 @@
+{
+  "autociphertool": {
+    "title": "🔍 自动解密工具",
+    "error": {
+      "no_content": "没有可解密的内容",
+      "no_configs": "没有找到任何加密配置，请先在密钥配置管理中添加配置",
+      "invalid_config": "配置无效",
+      "decrypt_failed": "解密失败或内容未发生变化",
+      "process_error": "解密过程出错",
+      "no_successful_decrypt": "未能使用任何配置成功解密该内容"
+    },
+    "success": {
+      "title": "🔓 解密成功结果",
+      "label": "成功",
+      "message": "解密成功"
+    },
+    "usage": {
+      "title": "使用说明",
+      "instruction1": "系统将使用所有保存的加密配置依次尝试解密",
+      "instruction2": "只显示成功解密的结果",
+      "instruction3": "成功结果以绿色主题突出显示",
+      "tip": "提示：请确保已在密钥配置管理中添加了正确的加密配置"
+    }
+  }
+}

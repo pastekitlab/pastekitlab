@@ -19,7 +19,7 @@ const AutoCipherTool = ({ content = '' }) => {
         setConfigs(allConfigs);
       } catch (err) {
         console.error('加载配置失败:', err);
-        setError(t('components.autociphertool.error.no_configs'));
+        setError(t('autociphertool.error.no_configs'));
       }
     };
     loadConfigs();
@@ -50,12 +50,12 @@ const AutoCipherTool = ({ content = '' }) => {
   // 自动解密函数
   const autoDecrypt = async () => {
     if (!content.trim()) {
-      setError(t('components.autociphertool.error.no_content'));
+      setError(t('autociphertool.error.no_content'));
       return;
     }
 
     if (configs.length === 0) {
-      setError(t('components.autociphertool.error.no_configs'));
+      setError(t('autociphertool.error.no_configs'));
       return;
     }
 
@@ -74,7 +74,7 @@ const AutoCipherTool = ({ content = '' }) => {
           results.push({
             configName: config.name,
             success: false,
-            error: t('components.autociphertool.error.invalid_config'),
+            error: t('autociphertool.error.invalid_config'),
             plaintext: null
           });
           continue;
@@ -125,7 +125,7 @@ const AutoCipherTool = ({ content = '' }) => {
           results.push({
             configName: config.name,
             success: false,
-            error: t('components.autociphertool.error.decrypt_failed'),
+            error: t('autociphertool.error.decrypt_failed'),
             plaintext: null
           });
         }
@@ -134,7 +134,7 @@ const AutoCipherTool = ({ content = '' }) => {
         results.push({
           configName: config.name,
           success: false,
-          error: err.message || t('components.autociphertool.error.process_error'),
+          error: err.message || t('autociphertool.error.process_error'),
           plaintext: null
         });
       }
@@ -146,7 +146,7 @@ const AutoCipherTool = ({ content = '' }) => {
     // 检查是否有成功的解密
     const successfulResults = results.filter(r => r.success);
     if (successfulResults.length === 0) {
-      setError(t('components.autociphertool.error.no_successful_decrypt'));
+      setError(t('autociphertool.error.no_successful_decrypt'));
     }
   };
 
@@ -161,7 +161,7 @@ const AutoCipherTool = ({ content = '' }) => {
 
   return (
     <div className="w-full border rounded p-4 space-y-4 h-full">
-      <h3 className="text-lg font-bold">{t('components.autociphertool.title')}</h3>
+      <h3 className="text-lg font-bold">{t('autociphertool.title')}</h3>
       
       <div className="space-y-4">
 
@@ -176,7 +176,7 @@ const AutoCipherTool = ({ content = '' }) => {
       {successfulResults.length > 0 && (
         <div className="space-y-4 flex-1">
           <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-            {t('components.autociphertool.success.title')} ({successfulResults.length} {t('common.items')})
+            {t('autociphertool.success.title')} ({successfulResults.length} {t('common.items')})
           </div>
           
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -192,12 +192,12 @@ const AutoCipherTool = ({ content = '' }) => {
                     )}
                   </div>
                   <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded font-medium">
-                    {t('components.autociphertool.success.label')}
+                    {t('autociphertool.success.label')}
                   </span>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-green-700">{t('components.autociphertool.success.message')}</div>
+                  <div className="text-sm font-medium text-green-700">{t('autociphertool.success.message')}</div>
                   <div className="bg-white border border-green-200 rounded p-3">
                     <pre className="whitespace-pre-wrap break-words text-sm max-w-full overflow-hidden">
                       {result.plaintext}
@@ -212,13 +212,13 @@ const AutoCipherTool = ({ content = '' }) => {
 
       {/* 使用说明 */}
       <div className="border rounded p-3 bg-gray-50">
-        <h4 className="font-medium text-sm mb-2 text-gray-700">{t('components.autociphertool.usage.title')}</h4>
+        <h4 className="font-medium text-sm mb-2 text-gray-700">{t('autociphertool.usage.title')}</h4>
         <div className="space-y-1 text-sm text-gray-600">
-          <div>• {t('components.autociphertool.usage.instruction1')}</div>
-          <div>• {t('components.autociphertool.usage.instruction2')}</div>
-          <div>• {t('components.autociphertool.usage.instruction3')}</div>
+          <div>• {t('autociphertool.usage.instruction1')}</div>
+          <div>• {t('autociphertool.usage.instruction2')}</div>
+          <div>• {t('autociphertool.usage.instruction3')}</div>
           <div className="mt-2 pt-2 border-t text-xs">
-            <strong>{t('common.tip')}:</strong> {t('components.autociphertool.usage.tip')}
+            <strong>{t('common.tip')}:</strong> {t('autociphertool.usage.tip')}
           </div>
         </div>
       </div>

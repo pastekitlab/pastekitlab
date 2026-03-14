@@ -82,26 +82,26 @@ const WorldClock = () => {
 
     return (
         <div className="px-3 py-1 bg-blue-50 border-b h-24">
-            <div className="text-xs font-medium text-gray-700 mb-1">{t('components.worldclock.title')}</div>
+            <div className="text-xs font-medium text-gray-700 mb-1">{t('worldclock.title')}</div>
             <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center">
                     <span className="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
-                    <span className="text-gray-600 w-16">{t('components.worldclock.new_york')}:</span>
+                    <span className="text-gray-600 w-16">{t('worldclock.new_york')}:</span>
                     <span className="font-mono">{timeData.newYork}</span>
                 </div>
                 <div className="flex items-center">
                     <span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
-                    <span className="text-gray-600 w-16">{t('components.worldclock.beijing')}:</span>
+                    <span className="text-gray-600 w-16">{t('worldclock.beijing')}:</span>
                     <span className="font-mono">{timeData.beijing}</span>
                 </div>
                 <div className="flex items-center">
                     <span className="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
-                    <span className="text-gray-600 w-16">{t('components.worldclock.london')}:</span>
+                    <span className="text-gray-600 w-16">{t('worldclock.london')}:</span>
                     <span className="font-mono">{timeData.london}</span>
                 </div>
                 <div className="flex items-center">
                     <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                    <span className="text-gray-600 w-16">{t('components.worldclock.sydney')}:</span>
+                    <span className="text-gray-600 w-16">{t('worldclock.sydney')}:</span>
                     <span className="font-mono">{timeData.sydney}</span>
                 </div>
 

@@ -556,7 +556,7 @@ export default function DevToolsPanel() {
                     {/* 左侧：标题和状态 */}
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                         <h1 className="text-lg font-bold text-gray-800 flex-shrink-0">
-                            {t('components.panel.title')}
+                            {t('panel.title')}
                         </h1>
                         <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
@@ -566,14 +566,14 @@ export default function DevToolsPanel() {
                                             connectionStatus === 'invalid' ? 'bg-purple-500' : 'bg-red-500'
                                 }`}></div>
                                 <span className="text-xs text-gray-600 whitespace-nowrap">
-                  {connectionStatus === 'connected' ? t('components.panel.status_connected') :
-                      connectionStatus === 'timeout' ? t('components.panel.status_timeout') :
-                          connectionStatus === 'invalid' ? t('components.panel.status_invalid') : t('components.panel.status_disconnected')}
+                  {connectionStatus === 'connected' ? t('panel.status_connected') :
+                      connectionStatus === 'timeout' ? t('panel.status_timeout') :
+                          connectionStatus === 'invalid' ? t('panel.status_invalid') : t('panel.status_disconnected')}
                 </span>
                             </div>
                             
                             <span className="text-xs text-gray-600 whitespace-nowrap">
-                {t('components.panel.requests_count', {count: requests.length})}
+                {t('panel.requests_count', {count: requests.length})}
               </span>
                         </div>
                     </div>
@@ -583,7 +583,7 @@ export default function DevToolsPanel() {
                         <div className="relative">
                             <input
                                 type="text"
-                                placeholder={t('components.panel.search_placeholder')}
+                                placeholder={t('panel.search_placeholder')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
@@ -611,7 +611,7 @@ export default function DevToolsPanel() {
                             disabled={!isConnected}
                             className="text-xs px-3 py-1.5 h-auto"
                         >
-                            🔄 {t('components.panel.refresh_configs')}
+                            🔄 {t('panel.refresh_configs')}
                         </Button>
                         <Button
                             variant="outline"
@@ -620,7 +620,7 @@ export default function DevToolsPanel() {
                             disabled={requests.length === 0}
                             className="text-xs px-3 py-1.5 h-auto"
                         >
-                            🗑️ {t('components.panel.clear_requests')}
+                            🗑️ {t('panel.clear_requests')}
                         </Button>
                     </div>
                 </div>
@@ -632,14 +632,14 @@ export default function DevToolsPanel() {
                 <div className="w-1/2 flex flex-col h-full">
                     <Card className="flex-1 flex flex-col h-full">
                         <CardHeader>
-                            <CardTitle>{t('components.panel.requests')}</CardTitle>
+                            <CardTitle>{t('panel.requests')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1 overflow-hidden">
                             {filteredRequests.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
-                                    <p>{searchTerm ? t('components.panel.no_matching_requests') : t('components.panel.no_requests')}</p>
+                                    <p>{searchTerm ? t('panel.no_matching_requests') : t('panel.no_requests')}</p>
                                     <p className="text-sm mt-2">
-                                        {searchTerm ? t('components.panel.try_different_keywords') : t('components.panel.make_request_tip')}
+                                        {searchTerm ? t('panel.try_different_keywords') : t('panel.make_request_tip')}
                                     </p>
                                 </div>
                             ) : (
@@ -671,13 +671,13 @@ export default function DevToolsPanel() {
                                 </span>
                                                             </div>
                                                             <div className="mt-1 text-xs text-gray-500">
-                                                                {t('components.panel.status')}: {request.statusCode} |
-                                                                {t('components.panel.time')}: {new Date(request.timestamp).toLocaleTimeString()}
+                                                                {t('panel.status')}: {request.statusCode} |
+                                                                {t('panel.time')}: {new Date(request.timestamp).toLocaleTimeString()}
                                                                 <span className="text-xs text-gray-500 ml-2">
-                                {request.plainRequestBody ? t('components.panel.request_decrypted') : t('components.panel.request_not_decrypted')}
+                                {request.plainRequestBody ? t('panel.request_decrypted') : t('panel.request_not_decrypted')}
                               </span>
                                                                 <span className="text-xs text-gray-500 ml-2">
-                                {request.plainResponseBody ? t('components.panel.response_decrypted') : t('components.panel.response_not_decrypted')}
+                                {request.plainResponseBody ? t('panel.response_decrypted') : t('panel.response_not_decrypted')}
                               </span>
                                                             </div>
                                                         </div>
@@ -697,7 +697,7 @@ export default function DevToolsPanel() {
                 <div className="w-1/2 flex flex-col h-full">
                     <Card className="flex-1 flex flex-col h-full">
                         <CardHeader>
-                            <CardTitle>{t('components.panel.details')}</CardTitle>
+                            <CardTitle>{t('panel.details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1 overflow-hidden">
                             {selectedRequestId ? (
@@ -706,10 +706,10 @@ export default function DevToolsPanel() {
                                         <div className="grid grid-cols-1 gap-6">
                                             {/* 基本信息 */}
                                             <div className="bg-gray-50 rounded-lg p-4">
-                                                <h3 className="font-medium text-lg mb-3">{t('components.panel.basic_info')}</h3>
+                                                <h3 className="font-medium text-lg mb-3">{t('panel.basic_info')}</h3>
                                                 <div className="space-y-2 text-sm">
                                                     <div>
-                                                        <span className="font-medium text-gray-700">{t('components.panel.request_id')}:</span>
+                                                        <span className="font-medium text-gray-700">{t('panel.request_id')}:</span>
                                                         <span className="ml-2 font-mono bg-gray-100 px-2 py-1 rounded">
                             {selectedRequestId}
                           </span>
@@ -723,14 +723,14 @@ export default function DevToolsPanel() {
                                             {/* 请求信息 */}
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
-                                                    <h3 className="font-medium text-lg border-b pb-2">{t('components.panel.request_info')}</h3>
+                                                    <h3 className="font-medium text-lg border-b pb-2">{t('panel.request_info')}</h3>
                                                     <Button 
                                                         variant="ghost" 
                                                         size="sm"
                                                         onClick={() => setRequestHeadersCollapsed(!requestHeadersCollapsed)}
                                                         className="text-sm"
                                                     >
-                                                        {requestHeadersCollapsed ? t('components.panel.expand_request_headers') : t('components.panel.collapse_request_headers')}
+                                                        {requestHeadersCollapsed ? t('panel.expand_request_headers') : t('panel.collapse_request_headers')}
                                                     </Button>
                                                 </div>
 
@@ -739,15 +739,15 @@ export default function DevToolsPanel() {
                                                     <div>
                                                         <h4 className="font-medium mb-2 flex items-center">
                                                             <span className="mr-2">📋</span>
-                                                            {t('components.panel.request_headers')}
+                                                            {t('panel.request_headers')}
                                                         </h4>
                                                         <div className="bg-gray-50 p-3 rounded text-sm  overflow-y-auto">
                                                             {requests.find(r => r.requestId === selectedRequestId)?.requestHeaders?.length > 0 ? (
                                                                 <table className="w-full text-left">
                                                                     <thead>
                                                                         <tr className="border-b">
-                                                                            <th className="py-1 px-2 font-medium">{t('components.panel.header_name')}</th>
-                                                                            <th className="py-1 px-2 font-medium">{t('components.panel.header_value')}</th>
+                                                                            <th className="py-1 px-2 font-medium">{t('panel.header_name')}</th>
+                                                                            <th className="py-1 px-2 font-medium">{t('panel.header_value')}</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -760,7 +760,7 @@ export default function DevToolsPanel() {
                                                                     </tbody>
                                                                 </table>
                                                             ) : (
-                                                                <span className="text-gray-500 italic">{t('components.panel.no_request_headers')}</span>
+                                                                <span className="text-gray-500 italic">{t('panel.no_request_headers')}</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -770,11 +770,11 @@ export default function DevToolsPanel() {
                                                 <div>
                                                     <h4 className="font-medium mb-2 flex items-center max-h-32">
                                                         <span className="mr-2">🔒</span>
-                                                        {t('components.panel.request_body')}
+                                                        {t('panel.request_body')}
                                                     </h4>
                                                     <div
                                                         className="bg-gray-100 p-3 rounded text-sm overflow-scroll">
-                          {requests.find(r => r.requestId === selectedRequestId)?.requestBody || t('components.panel.no_request_body')}
+                          {requests.find(r => r.requestId === selectedRequestId)?.requestBody || t('panel.no_request_body')}
                         </div>
                                                 </div>
 
@@ -782,11 +782,11 @@ export default function DevToolsPanel() {
                                                 <div>
                                                     <h4 className="font-medium mb-2 flex items-center">
                                                         <span className="mr-2">🔓</span>
-                                                        {t('components.panel.plain_request_body')}
+                                                        {t('panel.plain_request_body')}
                                                     </h4>
                                                     <pre
                                                         className="bg-green-50 border border-green-200 p-3 rounded text-sm overflow-auto ">
-                          {requests.find(r => r.requestId === selectedRequestId)?.plainRequestBody || t('components.panel.no_decryption_result')}
+                          {requests.find(r => r.requestId === selectedRequestId)?.plainRequestBody || t('panel.no_decryption_result')}
                         </pre>
                                                 </div>
                                             </div>
@@ -794,14 +794,14 @@ export default function DevToolsPanel() {
                                             {/* 响应信息 */}
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
-                                                    <h3 className="font-medium text-lg border-b pb-2">{t('components.panel.response_info')}</h3>
+                                                    <h3 className="font-medium text-lg border-b pb-2">{t('panel.response_info')}</h3>
                                                     <Button 
                                                         variant="ghost" 
                                                         size="sm"
                                                         onClick={() => setResponseHeadersCollapsed(!responseHeadersCollapsed)}
                                                         className="text-sm"
                                                     >
-                                                        {responseHeadersCollapsed ? t('components.panel.expand_response_headers') : t('components.panel.collapse_response_headers')}
+                                                        {responseHeadersCollapsed ? t('panel.expand_response_headers') : t('panel.collapse_response_headers')}
                                                     </Button>
                                                 </div>
 
@@ -810,15 +810,15 @@ export default function DevToolsPanel() {
                                                     <div>
                                                         <h4 className="font-medium mb-2 flex items-center">
                                                             <span className="mr-2">📋</span>
-                                                            {t('components.panel.response_headers')}
+                                                            {t('panel.response_headers')}
                                                         </h4>
                                                         <div className="bg-gray-50 p-3 rounded text-sm max-h-200 overflow-y-auto">
                                                             {requests.find(r => r.requestId === selectedRequestId)?.responseHeaders?.length > 0 ? (
                                                                 <table className="w-full text-left">
                                                                     <thead>
                                                                         <tr className="border-b">
-                                                                            <th className="py-1 px-2 font-medium">{t('components.panel.header_name')}</th>
-                                                                            <th className="py-1 px-2 font-medium">{t('components.panel.header_value')}</th>
+                                                                            <th className="py-1 px-2 font-medium">{t('panel.header_name')}</th>
+                                                                            <th className="py-1 px-2 font-medium">{t('panel.header_value')}</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -831,7 +831,7 @@ export default function DevToolsPanel() {
                                                                     </tbody>
                                                                 </table>
                                                             ) : (
-                                                                <span className="text-gray-500 italic">{t('components.panel.no_response_headers')}</span>
+                                                                <span className="text-gray-500 italic">{t('panel.no_response_headers')}</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -841,11 +841,11 @@ export default function DevToolsPanel() {
                                                 <div>
                                                     <h4 className="font-medium mb-2 flex items-center max-h-32">
                                                         <span className="mr-2">🔒</span>
-                                                        {t('components.panel.response_body')}
+                                                        {t('panel.response_body')}
                                                     </h4>
                                                     <div
                                                         className="bg-gray-100 p-3 rounded text-sm overflow-scroll max-h-32">
-                          {requests.find(r => r.requestId === selectedRequestId)?.responseBody || t('components.panel.no_response_body')}
+                          {requests.find(r => r.requestId === selectedRequestId)?.responseBody || t('panel.no_response_body')}
                         </div>
                                                 </div>
 
@@ -853,22 +853,22 @@ export default function DevToolsPanel() {
                                                 <div>
                                                     <h4 className="font-medium mb-2 flex items-center">
                                                         <span className="mr-2">🔓</span>
-                                                        {t('components.panel.plain_response_body')}
+                                                        {t('panel.plain_response_body')}
                                                     </h4>
                                                     <pre
                                                         className="bg-green-50 border border-green-200 p-3 rounded text-sm overflow-auto ">
-                          {requests.find(r => r.requestId === selectedRequestId)?.plainResponseBody || t('components.panel.no_decryption_result')}
+                          {requests.find(r => r.requestId === selectedRequestId)?.plainResponseBody || t('panel.no_decryption_result')}
                         </pre>
                                                 </div>
                                             </div>
 
                                             {/* 解密配置信息 */}
                                             <div className="bg-blue-50 border border-blue-200 rounded p-4">
-                                                <h4 className="font-medium mb-2 text-blue-800">{t('components.panel.decryption_config_info')}</h4>
+                                                <h4 className="font-medium mb-2 text-blue-800">{t('panel.decryption_config_info')}</h4>
                                                 <div className="text-sm text-blue-700">
-                                                    <div>{t('components.panel.config_name')}: {requests.find(r => r.requestId === selectedRequestId)?.requestConfig?.name || t('components.panel.unknown')}</div>
-                                                    <div>{t('components.panel.algorithm')}: {requests.find(r => r.requestId === selectedRequestId)?.requestConfig?.algorithm || t('components.panel.unknown')}</div>
-                                                    <div>{t('components.panel.domain')}: {requests.find(r => r.requestId === selectedRequestId)?.domainConfig?.domain || t('components.panel.unknown')}</div>
+                                                    <div>{t('panel.config_name')}: {requests.find(r => r.requestId === selectedRequestId)?.requestConfig?.name || t('panel.unknown')}</div>
+                                                    <div>{t('panel.algorithm')}: {requests.find(r => r.requestId === selectedRequestId)?.requestConfig?.algorithm || t('panel.unknown')}</div>
+                                                    <div>{t('panel.domain')}: {requests.find(r => r.requestId === selectedRequestId)?.domainConfig?.domain || t('panel.unknown')}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -876,7 +876,7 @@ export default function DevToolsPanel() {
                                 </div>
                             ) : (
                                 <div className="text-center py-8 text-gray-500">
-                                    <p>{t('components.panel.select_request_for_details')}</p>
+                                    <p>{t('panel.select_request_for_details')}</p>
                                 </div>
                             )}
                         </CardContent>

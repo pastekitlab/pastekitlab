@@ -1,0 +1,12 @@
+{
+  "timetool": {
+    "timestamp_s": "时间戳 (秒)",
+    "timestamp_ms": "时间戳 (毫秒)",
+    "invalid_timestamp": "(无效时间戳)",
+    "cannot_parse": "(无法解析为时间)",
+    "empty_content": "(空内容)",
+    "date_format": "日期格式",
+    "current_time": "当前时间",
+    "current_timestamp_ms": "当前时间戳 (毫秒)"
+  }
+}

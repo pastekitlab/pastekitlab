@@ -1,0 +1,16 @@
+{
+  "proxydashboard": {
+    "title": "📱 Mobile Proxy Request Dashboard",
+    "description": "Real-time monitoring and display of HTTPS requests from mobile APPs, automatic decryption of encrypted data",
+    "status_connected": "✓ Connected",
+    "status_disconnected": "✗ Disconnected",
+    "total_requests": "{{count}} requests total",
+    "search_placeholder": "Search URL...",
+    "clear": "Clear",
+    "export": "Export",
+    "no_requests": {
+      "title": "No request data",
+      "desc": "Operate in the mobile APP, requests will be displayed here"
+    }
+  }
+}

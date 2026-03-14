@@ -1,0 +1,22 @@
+{
+  "popup": {
+    "title": "PasteKitLab",
+    "placeholder": "Please enter content... The plugin will intelligently parse based on content",
+    "detected_format": "Detected format:",
+    "default_ip": "Default IP",
+    "formats": {
+      "ip": "IPv4 Address",
+      "ipv6": "IPv6 Address",
+      "cidr": "IPv4 Subnet",
+      "ipv6cidr": "IPv6 Subnet",
+      "domain": "Domain",
+      "cron": "Cron Expression",
+      "timestamp": "Timestamp",
+      "datetime": "Date Time",
+      "json": "JSON",
+      "url": "URL",
+      "encrypted": "Encrypted Content",
+      "encode": "Encoding Format"
+    }
+  }
+}

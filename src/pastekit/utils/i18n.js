@@ -297,6 +297,7 @@ export function tSync(key, params = {}) {
   
   // 如果还在初始化阶段或者没有翻译数据，返回键名作为后备
   if (isInitializing || Object.keys(translations).length === 0) {
+    console.warn(`[I18N tSync] Returning key as fallback for: ${key}`);
     return key;
   }
   
@@ -354,14 +355,38 @@ async function getTranslations(language) {
   }
   
   try {
-    // 动态导入对应的翻译文件
-    let translations;
-    if (language === 'zh') {
-      const zhModule = await import('../locales/zh.json');
-      translations = zhModule.default || zhModule;
-    } else {
-      const enModule = await import('../locales/en.json');
-      translations = enModule.default || enModule;
+    // 动态导入主翻译文件和组件翻译文件
+    let translations = {};
+    
+    // 加载主翻译文件（common, popup, options）
+    const mainFiles = ['common', 'popup', 'options'];
+    for (const file of mainFiles) {
+      try {
+        const module = await import(`../locales/${language}/${file}.json`);
+        const moduleData = module.default || module;
+        translations = { ...translations, ...moduleData };
+      } catch (error) {
+        console.warn(`Failed to load main translation file ${language}/${file}.json:`, error);
+      }
+    }
+    
+    // 加载组件翻译文件
+    const componentFiles = [
+      'worldclock', 'iptool', 'timetool', 'jsontool', 'encodetool', 'autoencodetool',
+      'urltool', 'cronetool', 'dnstool', 'proxydashboard', 'panel',
+      'keyconfigmanager', 'ciphertest', 'about', 'cipherutils', 'qrcode',
+      'autociphertool', 'signature', 'aiprompts', 'encodingtool', 'requestlist',
+      'devtoolsdecryptor', 'dnrmanager'
+    ];
+    
+    for (const file of componentFiles) {
+      try {
+        const module = await import(`../locales/${language}/components/${file}.json`);
+        const moduleData = module.default || module;
+        translations = { ...translations, ...moduleData };
+      } catch (error) {
+        console.warn(`Failed to load component translation file ${language}/components/${file}.json:`, error);
+      }
     }
     
     // 验证翻译对象结构

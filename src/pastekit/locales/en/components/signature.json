@@ -1,0 +1,59 @@
+{
+  "signature": {
+    "title": "🔏 Signature Tool",
+    "data_to_sign": "Data to Sign",
+    "enter_data": "Please enter data to sign...",
+    "digest_algorithm": "Digest Algorithm",
+    "select_digest": "Select Digest Algorithm",
+    "signature_algorithm": "Signature Algorithm",
+    "select_signature": "Select Signature Algorithm",
+    "key_input": "Key Input",
+    "hmac_key": "HMAC Key",
+    "enter_hmac_key": "Please enter HMAC key...",
+    "signature_config": "Signature Configuration",
+    "select_config": "Select Configuration",
+    "please_select": "Please select configuration",
+    "no_available_configs": "No available configurations",
+    "config_required_tip": "Please add RSA or SM2 configurations in Key Configuration first",
+    "sign": "Sign",
+    "verify": "Verify",
+    "clear_results": "Clear Results",
+    "signing": "⏳ Signing...",
+    "verifying": "⏳ Verifying...",
+    "signature_result": "Signature Result",
+    "verification_result": "Verification Result",
+    "verification_passed": "✅ Verification Passed",
+    "verification_failed": "❌ Verification Failed",
+    "manual_signature": "Manual Signature Input",
+    "enter_manual_signature": "Please enter signature to verify...",
+    "manual_signature_tip": "Tip: You can paste existing signatures for verification, or use the auto-generated signature above",
+    "algorithms": {
+      "none": "None (Digest Only)",
+      "hmac": "HMAC",
+      "rsa": "RSA",
+      "sm2": "SM2"
+    },
+    "messages": {
+      "enter_data": "Please enter data to sign",
+      "select_method": "Please select signature method",
+      "select_config": "Please select signature configuration",
+      "sign_success": "Signature successful",
+      "verify_success": "Verification successful",
+      "verify_failed": "Verification failed",
+      "sign_failed": "Signature failed: {{error}}",
+      "verify_failed_detail": "Verification failed: {{error}}"
+    },
+    "methods": {
+      "md5": "MD5",
+      "sha1": "SHA-1",
+      "sha256": "SHA-256",
+      "sha512": "SHA-512",
+      "hmac_md5": "HMAC-MD5",
+      "hmac_sha1": "HMAC-SHA1",
+      "hmac_sha256": "HMAC-SHA256",
+      "hmac_sha512": "HMAC-SHA512",
+      "rsa_sign": "RSA Signature",
+      "sm2_sign": "SM2 Signature"
+    }
+  }
+}
