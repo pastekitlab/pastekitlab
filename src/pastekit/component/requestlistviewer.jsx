@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTranslation } from '../utils/i18n';
+import { ProxyWebSocketClient } from '../proxy/ws-client.js';
+import { performDecryption } from '../proxy/utils/decryptor.js';
+import { StorageUtils } from '../utils/storageutils.js';
 
 /**
  * 请求列表展示组件 - 用于 Options 页面
@@ -18,6 +21,14 @@ export default function RequestListViewer() {
     const [isConnected, setIsConnected] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('disconnected');
     
+    // WebSocket 客户端
+    const wsClientRef = useRef(null);
+    const statusCheckIntervalRef = useRef(null);
+    
+    // 配置存储
+    const decryptionConfigsRef = useRef([]);
+    const keyConfigsRef = useRef([]);
+    
     const portRef = useRef(null);
     const isConnectedRef = useRef(false);
     const requestsRef = useRef([]);
@@ -25,17 +36,35 @@ export default function RequestListViewer() {
     // 初始化连接
     useEffect(() => {
         console.log('[RequestList Viewer] 组件挂载，初始化连接');
-        initializeConnection();
+        loadConfigurations();
+        initializeWebSocket();
 
         return () => {
             // 组件卸载时清理连接
             if (portRef.current) {
                 try {
                     portRef.current.disconnect();
-                    console.log('[RequestList Viewer] 连接已断开');
+                    console.log('[RequestList Viewer] Port 连接已断开');
                 } catch (error) {
-                    console.error('[RequestList Viewer] 断开连接失败:', error);
+                    console.error('[RequestList Viewer] 断开 Port 连接失败:', error);
                 }
+            }
+            
+            // 清理 WebSocket 连接
+            if (wsClientRef.current) {
+                try {
+                    wsClientRef.current.disconnect();
+                    console.log('[RequestList Viewer] WebSocket 连接已断开');
+                } catch (error) {
+                    console.error('[RequestList Viewer] 断开 WebSocket 失败:', error);
+                }
+            }
+            
+            // 清理状态检查定时器
+            if (statusCheckIntervalRef.current) {
+                clearInterval(statusCheckIntervalRef.current);
+                statusCheckIntervalRef.current = null;
+                console.log('[RequestList Viewer] 状态检查定时器已清理');
             }
         };
     }, []);
@@ -45,117 +74,293 @@ export default function RequestListViewer() {
         requestsRef.current = requests;
     }, [requests]);
 
-    const initializeConnection = () => {
+    // 加载配置（解密配置和密钥配置）
+    const loadConfigurations = async () => {
         try {
-            console.log('[RequestList Viewer] 开始初始化连接');
-
-            if (!chrome.runtime) {
-                console.error('[RequestList Viewer] Chrome 扩展上下文无效');
-                setConnectionStatus('invalid');
-                return;
+            console.log('[RequestList Viewer] 开始加载配置');
+            
+            // 从 chrome.storage 加载解密配置
+            const decryptionResult = await StorageUtils.getItem(['decryptionConfigs']);
+            let rawDecryptionConfigs = decryptionResult.decryptionConfigs || [];
+            
+            if (typeof rawDecryptionConfigs === 'string') {
+                rawDecryptionConfigs = JSON.parse(rawDecryptionConfigs);
             }
-
-            // 建立与 background 的连接
-            const port = chrome.runtime.connect({
-                name: 'options-request-viewer'
+            
+            decryptionConfigsRef.current = Array.isArray(rawDecryptionConfigs) ? rawDecryptionConfigs : [];
+            
+            // 从 chrome.storage 加载密钥配置
+            const keyResult = await StorageUtils.getItem(['keyConfigs']);
+            let rawKeyConfigs = keyResult.keyConfigs || [];
+            
+            if (typeof rawKeyConfigs === 'string') {
+                rawKeyConfigs = JSON.parse(rawKeyConfigs);
+            }
+            
+            keyConfigsRef.current = Array.isArray(rawKeyConfigs) ? rawKeyConfigs : [];
+            
+            console.log('[RequestList Viewer] 配置加载完成:', {
+                decryptionConfigs: decryptionConfigsRef.current.length,
+                keyConfigs: keyConfigsRef.current.length
             });
-            portRef.current = port;
-
-            console.log('[RequestList Viewer] 已创建 port 连接');
-
-            port.onMessage.addListener(handleMessage);
-
-            port.onDisconnect.addListener(() => {
-                console.log('[RequestList Viewer] 连接断开');
-                setIsConnected(false);
-                setConnectionStatus('disconnected');
-                
-                // 检查是否需要重连
-                setTimeout(() => {
-                    if (chrome.runtime && chrome.runtime.id !== undefined) {
-                        console.log('[RequestList Viewer] 尝试重新连接');
-                        initializeConnection();
-                    }
-                }, 3000);
-            });
-
-            // 等待连接确认
-            setTimeout(() => {
-                if (isConnectedRef.current) {
-                    console.log('[RequestList Viewer] ✅ 连接已建立');
-                } else {
-                    console.warn('[RequestList Viewer] ⚠️ 连接超时');
-                    setConnectionStatus('timeout');
-                }
-            }, 5000);
-
         } catch (error) {
-            console.error('[RequestList Viewer] 连接初始化失败:', error);
-            if (error.message.includes('Extension context invalidated')) {
-                setConnectionStatus('invalid');
+            console.error('[RequestList Viewer] 加载配置失败:', error);
+        }
+    };
+
+    // 根据域名查找匹配的解密配置
+    const findMatchingConfig = (url) => {
+        try {
+            if (!Array.isArray(decryptionConfigsRef.current) || decryptionConfigsRef.current.length === 0) {
+                return null;
             }
+            
+            let hostname;
+            try {
+                const urlObj = new URL(url);
+                hostname = urlObj.hostname.toLowerCase();
+            } catch (urlError) {
+                console.error('[RequestList Viewer] URL 解析失败:', url, urlError);
+                return null;
+            }
+            
+            const matchedConfig = decryptionConfigsRef.current.find(config => {
+                if (!config || !config.enabled) {
+                    return false;
+                }
+                
+                const configDomain = (config.domain || '').toLowerCase().replace(/^www\./, '');
+                const requestDomain = hostname.replace(/^www\./, '');
+                
+                return configDomain === requestDomain || 
+                       (configDomain && requestDomain.endsWith('.' + configDomain));
+            });
+            
+            return matchedConfig || null;
+        } catch (error) {
+            console.error('[RequestList Viewer] 匹配配置失败:', error);
+            return null;
         }
     };
 
-    const handleMessage = (message) => {
-        console.log('[RequestList Viewer] 收到消息:', message.type);
-
-        switch (message.type) {
-            case 'CONNECTION_CONFIRMED':
-                setIsConnected(true);
-                isConnectedRef.current = true;
-                setConnectionStatus('connected');
-                console.log('[RequestList Viewer] ✅ 连接已确认');
-                break;
-
-            case 'DECRYPTION_RESULT':
-                handleDecryptionResult(message);
-                break;
-
-            default:
-                console.log('[RequestList Viewer] 未知消息类型:', message.type);
-        }
+    // 根据名称查找密钥配置
+    const findKeyConfigByName = (name) => {
+        if (!name) return null;
+        return keyConfigsRef.current.find(config => config.name === name) || null;
     };
 
-    const handleDecryptionResult = (message) => {
-        const { requestId, request } = message;
+    // 初始化 WebSocket 连接
+    const initializeWebSocket = () => {
+        try {
+            const wsUrl = 'ws://127.0.0.1:8889/ws';
+            console.log('[RequestList Viewer] 🔄 正在连接到 WebSocket:', wsUrl);
+            
+            // 创建 WebSocket 客户端
+            wsClientRef.current = new ProxyWebSocketClient(wsUrl);
+            
 
-        if (request) {
-            const requestForDisplay = {
-                requestId: requestId,
-                url: request.url,
-                method: request.method,
-                requestHeaders: request.requestHeaders || [],
-                responseHeaders: request.responseHeaders || [],
-                requestBody: request.requestBody,
-                responseBody: request.responseBody,
-                plainRequestBody: request.plainRequestBody,
-                plainResponseBody: request.plainResponseBody,
-                statusCode: request.statusCode,
-                timestamp: request.timestamp || Date.now(),
-                decryptionInfo: {
-                    config: request.requestConfig,
-                    domainConfig: request.domainConfig
+            // 注册消息处理器（用于处理代理请求等）
+            wsClientRef.current.on('proxy-request', async (message) => {
+                console.log('[RequestList Viewer] 收到代理请求:', message.url);
+                await handleProxyRequest(message);
+            });
+            
+            wsClientRef.current.on('REQUEST', async (message) => {
+                console.log('[RequestList Viewer] 收到 REQUEST:', message.url);
+                await handleProxyRequest(message);
+            });
+            
+            wsClientRef.current.on('RESPONSE', async (message) => {
+                console.log('[RequestList Viewer] 收到 RESPONSE:', message.url);
+                await handleProxyRequest(message);
+            });
+
+            // 更新连接状态的函数
+            const updateConnectionStatus = () => {
+                const isConnected = wsClientRef.current?.isConnected() || false;
+                console.log('[RequestList Viewer] 📊 检查连接状态：isConnected =', isConnected);
+                
+                setIsConnected(isConnected);
+                isConnectedRef.current = isConnected;
+                
+                if (isConnected) {
+                    setConnectionStatus('connected');
+                } else {
+                    setConnectionStatus('disconnected');
                 }
             };
-
-            console.log('[RequestList Viewer] 添加请求:', requestForDisplay);
             
-            setRequests(prevRequests => {
-                // 检查是否已存在
-                const existingIndex = prevRequests.findIndex(req => req.requestId === requestId);
-                if (existingIndex >= 0) {
-                    // 更新现有请求
-                    const updated = [...prevRequests];
-                    updated[existingIndex] = requestForDisplay;
-                    return updated.sort((a, b) => a.timestamp - b.timestamp); // 时间升序
-                } else {
-                    // 添加新请求
-                    return [...prevRequests, requestForDisplay].sort((a, b) => a.timestamp - b.timestamp); // 时间升序
-                }
+            // 启动定时器，定期检查连接状态
+            statusCheckIntervalRef.current = setInterval(() => {
+                updateConnectionStatus();
+            }, 500); // 每 500ms 检查一次
+            
+            // 连接到服务器
+            wsClientRef.current.connect().catch(error => {
+                console.error('[RequestList Viewer] 连接失败:', error);
+                updateConnectionStatus();
             });
+            
+            // 延迟发送域名配置
+            setTimeout(() => {
+                updateConnectionStatus();
+                sendDomainConfig();
+            }, 1000);
+            
+        } catch (error) {
+            console.error('[RequestList Viewer] 初始化 WebSocket 失败:', error);
+            setConnectionStatus('error');
+            setIsConnected(false);
+            isConnectedRef.current = false;
         }
     };
+
+    // 发送域名配置到代理服务器
+    const sendDomainConfig = () => {
+        console.log('[RequestList Viewer] 📤 准备发送域名配置');
+        
+        if (!wsClientRef.current) {
+            console.warn('[RequestList Viewer] ⚠️ WebSocket 客户端不存在，跳过发送');
+            return;
+        }
+        
+        if (!wsClientRef.current.isConnected()) {
+            console.warn('[RequestList Viewer] ⚠️ WebSocket 未连接，跳过发送');
+            return;
+        }
+        
+        try {
+            const enabledDomains = decryptionConfigsRef.current
+                .filter(config => config.enabled && config.decryptionEnabled !== false)
+                .map(config => config.domain)
+                .filter(domain => domain);
+            
+            console.log('[RequestList Viewer] 📋 启用解密的域名列表:', enabledDomains);
+            console.log('[RequestList Viewer] 🔢 域名数量:', enabledDomains.length);
+            
+            if (enabledDomains.length === 0) {
+                console.log('[RequestList Viewer] ℹ️ 没有启用解密的域名，但仍发送空列表');
+            }
+            
+            const message = {
+                msgType: 'domain',
+                domain: enabledDomains
+            };
+            
+            console.log('[RequestList Viewer] 📤 发送消息:', JSON.stringify(message));
+            
+            const success = wsClientRef.current.send('domain', message);
+            
+            if (success) {
+                console.log('[RequestList Viewer] ✅ 域名配置发送成功');
+            } else {
+                console.warn('[RequestList Viewer] ⚠️ 域名配置发送失败');
+            }
+        } catch (error) {
+            console.error('[RequestList Viewer] ❌ 发送域名配置失败:', error);
+        }
+    };
+
+    // 处理来自代理的请求
+    const handleProxyRequest = async (requestData) => {
+        if (!requestData || !requestData.url) {
+            console.log('[RequestList Viewer] 无效消息:', JSON.stringify(requestData));
+            return;
+        }
+        
+        console.log('[RequestList Viewer] 处理代理请求:', requestData.url);
+        
+        // 查找匹配的配置
+        const matchedConfig = findMatchingConfig(requestData.url);
+        if (!matchedConfig) {
+            console.log('[RequestList Viewer] URL 不匹配任何配置，跳过');
+            return;
+        }
+        
+        let plainRequestBody = null;
+        let plainResponseBody = null;
+        let decryptError = null;
+        let requestKeyConfig = null;
+        let responseKeyConfig = null;
+        
+        // 只有在启用解密功能时才尝试解密
+        if (matchedConfig.decryptionEnabled !== false) {
+            // 查找密钥配置
+            requestKeyConfig = findKeyConfigByName(matchedConfig.requestKeyConfigName);
+            responseKeyConfig = findKeyConfigByName(matchedConfig.responseKeyConfigName);
+            
+            if (!requestKeyConfig || !responseKeyConfig) {
+                console.warn('[RequestList Viewer] 未找到匹配的密钥配置');
+                decryptError = '未找到匹配的密钥配置';
+            } else {
+                try {
+                    // 执行解密
+                    const result = await performDecryption({
+                        requestBody: requestData.requestBody || requestData.body,
+                        responseBody: requestData.responseBody || requestData.body,
+                        requestKeyConfig,
+                        responseKeyConfig
+                    });
+                    plainRequestBody = result.plainRequestBody;
+                    plainResponseBody = result.plainResponseBody;
+                    decryptError = result.error;
+                    console.log('[RequestList Viewer] ✅ 解密成功');
+                } catch (decryptErr) {
+                    console.error('[RequestList Viewer] 解密失败:', decryptErr);
+                    decryptError = decryptErr.message;
+                }
+            }
+        }
+        
+        // 构建完整的请求对象
+        const fullRequest = {
+            requestId: requestData.eventId || requestData.timestamp?.toString() || Date.now().toString(),
+            url: requestData.url,
+            method: requestData.method,
+            requestHeaders: requestData.headers || {},
+            responseHeaders: requestData.headers || {},
+            requestBody: requestData.body || requestData.requestBody,
+            responseBody: requestData.body || requestData.responseBody,
+            plainRequestBody: plainRequestBody,
+            plainResponseBody: plainResponseBody,
+            statusCode: requestData.statusCode,
+            timestamp: requestData.timestamp || Date.now(),
+            requestConfig: requestKeyConfig,
+            responseConfig: responseKeyConfig,
+            domainConfig: matchedConfig,
+            decryptionSkipped: matchedConfig.decryptionEnabled === false
+        };
+        
+        // 添加到请求列表
+        setRequests(prevRequests => {
+            const existingIndex = prevRequests.findIndex(req => req.requestId === fullRequest.requestId);
+            if (existingIndex >= 0) {
+                const updated = [...prevRequests];
+                updated[existingIndex] = fullRequest;
+                return updated.sort((a, b) => a.timestamp - b.timestamp);
+            } else {
+                return [...prevRequests, fullRequest].sort((a, b) => a.timestamp - b.timestamp);
+            }
+        });
+        
+        console.log('[RequestList Viewer] 已添加请求到列表:', fullRequest.requestId);
+    };
+
+    // 监听配置变化
+    useEffect(() => {
+        const handleStorageChange = (changes, areaName) => {
+            // 配置变化后重新发送域名配置
+            setTimeout(() => {
+                sendDomainConfig();
+            }, 1000);
+        };
+        
+        chrome.storage.onChanged.addListener(handleStorageChange);
+        
+        return () => {
+            chrome.storage.onChanged.removeListener(handleStorageChange);
+        };
+    }, []);
 
     // 过滤请求列表
     const filteredRequests = useMemo(() => {

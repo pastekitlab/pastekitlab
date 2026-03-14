@@ -8,7 +8,7 @@ export class ProxyWebSocketClient {
         this.url = url;
         this.ws = null;
         this.reconnectTimer = null;
-        this.reconnectInterval = 5000; // 5 秒重连间隔
+        this.reconnectInterval = 2000; // 5 秒重连间隔
         this.messageHandlers = new Map();
         this.connected = false;
     }
