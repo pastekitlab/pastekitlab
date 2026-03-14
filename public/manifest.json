@@ -32,7 +32,7 @@
       },
       "description": "Open PasteKitLab popup"
     },
-    "open-options": {
+    "open-options-page": {
       "suggested_key": {
         "default": "Alt+Shift+Z"
       },

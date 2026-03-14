@@ -358,7 +358,8 @@ export default function DevToolsPanel() {
                 const getRequestFingerprint = (req) => {
                     const bodyStr = req.requestBody ? JSON.stringify(req.requestBody) : '';
                     const headerStr = req.requestHeaders ? JSON.stringify(req.requestHeaders) : '';
-                    return `${req.method}|${req.url}|${bodyStr}|${headerStr}`;
+                    const timestamp = req.timestamp || Date.now();
+                    return `${req.method}|${req.url}|${bodyStr}|${headerStr}|${timestamp}`;
                 };
                 
                 const currentFingerprint = getRequestFingerprint(request);

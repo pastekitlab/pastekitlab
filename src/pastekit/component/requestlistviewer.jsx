@@ -148,10 +148,10 @@ export default function RequestListViewer() {
                     // 更新现有请求
                     const updated = [...prevRequests];
                     updated[existingIndex] = requestForDisplay;
-                    return updated.sort((a, b) => b.timestamp - a.timestamp);
+                    return updated.sort((a, b) => a.timestamp - b.timestamp); // 时间升序
                 } else {
                     // 添加新请求
-                    return [...prevRequests, requestForDisplay].sort((a, b) => b.timestamp - a.timestamp);
+                    return [...prevRequests, requestForDisplay].sort((a, b) => a.timestamp - b.timestamp); // 时间升序
                 }
             });
         }
@@ -177,7 +177,7 @@ export default function RequestListViewer() {
     const clearRequests = () => {
         setRequests([]);
         setSelectedRequestId(null);
-        setSearchTerm('');
+        // setSearchTerm('');  // 不清空搜索框
     };
 
     const getSelectedRequest = () => {
@@ -186,92 +186,91 @@ export default function RequestListViewer() {
 
     return (
         <div className="flex flex-col h-full bg-gray-50">
-            {/* 顶部状态栏 */}
-            <div className="bg-white border-b p-4 shadow-sm">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-800">
-                            🔍 请求监控列表
+            {/* 顶部吸题状态栏 */}
+            <div className="sticky top-0 z-50 bg-white border-b shadow-sm">
+                <div className="flex items-center justify-between p-3 gap-3">
+                    {/* 左侧：标题和状态 */}
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <h1 className="text-lg font-bold text-gray-800 flex-shrink-0">
+                            {t('components.requestlist.title')}
                         </h1>
-                        <div className="flex items-center gap-4 mt-1">
+                        <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
-                                <div className={`w-3 h-3 rounded-full ${
+                                <div className={`w-2.5 h-2.5 rounded-full ${
                                     connectionStatus === 'connected' ? 'bg-green-500' :
                                         connectionStatus === 'timeout' ? 'bg-yellow-500' :
                                             connectionStatus === 'invalid' ? 'bg-purple-500' : 'bg-red-500'
                                 }`}></div>
-                                <span className="text-sm text-gray-600">
-                                    {connectionStatus === 'connected' ? '已连接' :
-                                        connectionStatus === 'timeout' ? '连接超时' :
-                                            connectionStatus === 'invalid' ? '上下文失效' : '未连接'}
+                                <span className="text-xs text-gray-600 whitespace-nowrap">
+                                    {connectionStatus === 'connected' ? t('components.requestlist.status_connected') :
+                                        connectionStatus === 'timeout' ? t('components.requestlist.status_timeout') :
+                                            connectionStatus === 'invalid' ? t('components.requestlist.status_invalid') : t('components.requestlist.status_disconnected')}
                                 </span>
                             </div>
                             
-                            <Badge variant="secondary">
-                                请求数：{requests.length}
+                            <Badge variant="secondary" className="text-xs px-2 py-1 h-auto">
+                                {t('components.requestlist.requests_count', { count: requests.length })}
                             </Badge>
                         </div>
                     </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={clearRequests}
-                            disabled={requests.length === 0}
-                        >
-                            🗑️ 清空列表
-                        </Button>
-                    </div>
-                </div>
-            </div>
-                  
-            {/* 搜索区域 */}
-            <div className="bg-white border-b p-3">
-                <div className="flex items-center gap-3">
-                    <div className="relative flex-1 max-w-md">
-                        <Input
-                            type="text"
-                            placeholder="搜索 URL、请求 ID 或方法..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4"
-                        />
-                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                            🔍
+                    
+                    {/* 中间：搜索框 */}
+                    <div className="flex-1 max-w-md">
+                        <div className="relative">
+                            <Input
+                                type="text"
+                                placeholder={t('components.requestlist.search_placeholder')}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-9 pr-8 py-1.5 text-sm"
+                            />
+                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                                🔍
+                            </div>
+                            {searchTerm && (
+                                <button
+                                    onClick={() => setSearchTerm('')}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                                >
+                                    ✕
+                                </button>
+                            )}
                         </div>
                     </div>
-                    <div className="text-sm text-gray-600">
-                        显示：{filteredRequests.length} / {requests.length}
-                    </div>
-                    {searchTerm && (
+                    
+                    {/* 右侧：操作按钮 */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            onClick={() => setSearchTerm('')}
+                            onClick={clearRequests}
+                            disabled={requests.length === 0}
+                            className="text-xs px-3 py-1.5 h-auto"
                         >
-                            ✕ 清除
+                            🗑️ {t('components.requestlist.clear_list')}
                         </Button>
-                    )}
+                    </div>
                 </div>
             </div>
                   
             {/* 主要内容区域 */}
-            <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+            <div className="flex-1 flex gap-4 p-4 overflow-hidden min-w-0 max-w-full">
                 {/* 请求列表面板 */}
-                <div className="w-1/2 flex flex-col">
-                    <Card className="flex-1 flex flex-col h-full">
+                <div className="w-1/2 flex flex-col min-w-0 max-w-full">
+                    <Card className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                         <CardHeader className="py-3">
-                            <CardTitle className="text-lg">请求列表</CardTitle>
+                            <CardTitle className="text-lg">{t('components.requestlist.request_list_title')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex-1 overflow-hidden px-4 pb-4">
+                        <CardContent className="flex-1 overflow-hidden px-4 pb-4" style={{ minHeight: 0 }}>
                             {filteredRequests.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
-                                    <p>{searchTerm ? '没有找到匹配的请求' : '暂无请求'}</p>
+                                    <p>{searchTerm ? t('components.requestlist.no_matching_requests') : t('components.requestlist.no_requests')}</p>
                                     <p className="text-sm mt-2">
-                                        {searchTerm ? '尝试更换关键词搜索' : '发起网络请求后将在此展示'}
+                                        {searchTerm ? t('components.requestlist.try_different_keywords') : t('components.requestlist.request_will_show_here')}
                                     </p>
                                 </div>
                             ) : (
-                                <ScrollArea className="h-full pr-2">
+                                <ScrollArea className="h-full pr-2" style={{ maxWidth: '100%' }}>
                                     <div className="space-y-2">
                                         {filteredRequests.map((request) => (
                                             <div
@@ -288,7 +287,7 @@ export default function RequestListViewer() {
                                                         <div className="flex items-center space-x-2">
                                                             <Badge 
                                                                 variant="outline" 
-                                                                className={`text-xs ${
+                                                                className={`text-xs flex-shrink-0 ${
                                                                     request.method === 'GET' ? 'bg-green-100 text-green-800' :
                                                                         request.method === 'POST' ? 'bg-blue-100 text-blue-800' :
                                                                             'bg-gray-100 text-gray-800'
@@ -296,18 +295,18 @@ export default function RequestListViewer() {
                                                             >
                                                                 {request.method}
                                                             </Badge>
-                                                            <span className="text-sm font-medium truncate block">
+                                                            <span className="text-sm font-medium break-all whitespace-normal">
                                                                 {request.url}
                                                             </span>
                                                         </div>
                                                         <div className="mt-1 text-xs text-gray-500">
-                                                            状态：{request.statusCode} |
-                                                            时间：{new Date(request.timestamp).toLocaleTimeString()}
+                                                            {t('components.requestlist.status_code_label')} {request.statusCode} |
+                                                            {t('components.requestlist.time_label')} {request.timestamp ? new Date(parseInt(request.timestamp)).toLocaleTimeString() : '-'}
                                                             {request.plainRequestBody && (
-                                                                <span className="ml-2 text-green-600">✓ 请求已解密</span>
+                                                                <span className="ml-2 text-green-600">✓ {t('components.panel.request_decrypted')}</span>
                                                             )}
                                                             {request.plainResponseBody && (
-                                                                <span className="ml-2 text-green-600">✓ 响应已解密</span>
+                                                                <span className="ml-2 text-green-600">✓ {t('components.panel.response_decrypted')}</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -322,43 +321,43 @@ export default function RequestListViewer() {
                 </div>
 
                 {/* 详情面板 */}
-                <div className="w-1/2 flex flex-col">
-                    <Card className="flex-1 flex flex-col h-full">
+                <div className="w-1/2 flex flex-col min-w-0 max-w-full">
+                    <Card className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                         <CardHeader className="py-3">
-                            <CardTitle className="text-lg">请求详情</CardTitle>
+                            <CardTitle className="text-lg">{t('components.requestlist.request_details_title')}</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex-1 overflow-hidden px-4 pb-4">
+                        <CardContent className="flex-1 overflow-hidden px-4 pb-4" style={{ minHeight: 0 }}>
                             {selectedRequestId ? (
-                                <ScrollArea className="h-full pr-2">
+                                <ScrollArea className="h-full pr-2" style={{ maxWidth: '100%' }}>
                                     <div className="space-y-4">
                                         {/* 基本信息 */}
                                         <div className="bg-gray-50 rounded-lg p-3">
-                                            <h3 className="font-medium text-sm mb-2 text-gray-700">基本信息</h3>
+                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.basic_info')}</h3>
                                             <div className="space-y-1 text-xs">
                                                 <div>
-                                                    <span className="font-medium text-gray-600">URL:</span>
-                                                    <span className="ml-2 text-gray-800 break-all">
+                                                    <span className="font-medium text-gray-600">{t('components.requestlist.url_label')}</span>
+                                                    <span className="ml-2 text-sm text-gray-800 break-all whitespace-normal">
                                                         {getSelectedRequest()?.url}
                                                     </span>
                                                 </div>
                                                 <div className="flex gap-4 mt-2">
                                                     <div>
-                                                        <span className="font-medium text-gray-600">方法:</span>
+                                                        <span className="font-medium text-gray-600">{t('components.requestlist.method_label')}</span>
                                                         <Badge variant="outline" className="ml-2">
                                                             {getSelectedRequest()?.method}
                                                         </Badge>
                                                     </div>
                                                     <div>
-                                                        <span className="font-medium text-gray-600">状态码:</span>
+                                                        <span className="font-medium text-gray-600">{t('components.requestlist.status_code_label')}</span>
                                                         <span className="ml-2 font-mono">
                                                             {getSelectedRequest()?.statusCode}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <span className="font-medium text-gray-600">时间:</span>
+                                                    <span className="font-medium text-gray-600">{t('components.requestlist.time_label')}</span>
                                                     <span className="ml-2 font-mono">
-                                                        {new Date(getSelectedRequest()?.timestamp).toLocaleString()}
+                                                        {getSelectedRequest()?.timestamp ? new Date(parseInt(getSelectedRequest()?.timestamp)).toLocaleString() : '-'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -366,17 +365,17 @@ export default function RequestListViewer() {
 
                                         {/* 请求体 */}
                                         <div>
-                                            <h3 className="font-medium text-sm mb-2 text-gray-700">🔒 请求密文</h3>
-                                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-48">
-                                                {getSelectedRequest()?.requestBody || '无'}
+                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.request_encrypted')}</h3>
+                                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
+                                                {getSelectedRequest()?.requestBody || t('components.requestlist.none')}
                                             </pre>
                                         </div>
 
                                         {/* 请求明文 */}
                                         {getSelectedRequest()?.plainRequestBody && (
                                             <div>
-                                                <h3 className="font-medium text-sm mb-2 text-gray-700">🔓 请求明文</h3>
-                                                <pre className="bg-green-50 border border-green-200 p-3 rounded text-xs overflow-auto max-h-48">
+                                                <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.request_decrypted')}</h3>
+                                                <pre className="bg-green-50 border border-green-200 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
                                                     {getSelectedRequest()?.plainRequestBody}
                                                 </pre>
                                             </div>
@@ -384,17 +383,17 @@ export default function RequestListViewer() {
 
                                         {/* 响应体 */}
                                         <div>
-                                            <h3 className="font-medium text-sm mb-2 text-gray-700">🔒 响应密文</h3>
-                                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-48">
-                                                {getSelectedRequest()?.responseBody || '无'}
+                                            <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.response_encrypted')}</h3>
+                                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
+                                                {getSelectedRequest()?.responseBody || t('components.requestlist.none')}
                                             </pre>
                                         </div>
 
                                         {/* 响应明文 */}
                                         {getSelectedRequest()?.plainResponseBody && (
                                             <div>
-                                                <h3 className="font-medium text-sm mb-2 text-gray-700">🔓 响应明文</h3>
-                                                <pre className="bg-green-50 border border-green-200 p-3 rounded text-xs overflow-auto max-h-48">
+                                                <h3 className="font-medium text-sm mb-2 text-gray-700">{t('components.requestlist.response_decrypted')}</h3>
+                                                <pre className="bg-green-50 border border-green-200 p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-48">
                                                     {getSelectedRequest()?.plainResponseBody}
                                                 </pre>
                                             </div>
@@ -402,18 +401,18 @@ export default function RequestListViewer() {
 
                                         {/* 解密配置信息 */}
                                         <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                                            <h4 className="font-medium text-xs text-blue-800 mb-2">解密配置信息</h4>
+                                            <h4 className="font-medium text-xs text-blue-800 mb-2">{t('components.requestlist.decryption_config_info')}</h4>
                                             <div className="text-xs text-blue-700 space-y-1">
-                                                <div>配置名称：{getSelectedRequest()?.decryptionInfo?.config?.name || '未知'}</div>
-                                                <div>算法：{getSelectedRequest()?.decryptionInfo?.config?.algorithm || '未知'}</div>
-                                                <div>域名：{getSelectedRequest()?.decryptionInfo?.domainConfig?.domain || '未知'}</div>
+                                                <div>{t('components.requestlist.config_name_label')} {getSelectedRequest()?.decryptionInfo?.config?.name || t('components.requestlist.unknown')}</div>
+                                                <div>{t('components.requestlist.algorithm_label')} {getSelectedRequest()?.decryptionInfo?.config?.algorithm || t('components.requestlist.unknown')}</div>
+                                                <div>{t('components.requestlist.domain_label')} {getSelectedRequest()?.decryptionInfo?.domainConfig?.domain || t('components.requestlist.unknown')}</div>
                                             </div>
                                         </div>
                                     </div>
                                 </ScrollArea>
                             ) : (
                                 <div className="text-center py-8 text-gray-500">
-                                    <p>请选择一个请求查看详情</p>
+                                    <p>{t('components.requestlist.select_request_for_details')}</p>
                                 </div>
                             )}
                         </CardContent>

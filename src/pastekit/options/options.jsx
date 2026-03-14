@@ -7,9 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup } from '@/components/ui/radio-group';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { StorageUtils } from '../utils/storageutils.js';
 import KeyConfigManager from '../component/keyconfigmanager.jsx';
 import CipherTestComponent from '../component/ciphertest.jsx';
@@ -30,8 +32,8 @@ const getMenuItems = (t) => [
   { id: 'signature-tool', label: t('options.sidebar.signature_tool'), icon: 'pen-tool' },
   { id: 'encoding-tool', label: t('options.sidebar.encoding_tool') || '编解码工具', icon: 'text' },
   { id: 'mock-manager', label: t('options.sidebar.mock_manager'), icon: 'theater-masks' },
-  { id: 'request-list', label: '请求列表', icon: 'list' },
-  { id: 'devtools-decryptor', label: 'DevTools 解密器', icon: 'shield' },
+  { id: 'request-list', label: t('options.sidebar.request_list') || '请求列表', icon: 'list' },
+  { id: 'devtools-decryptor', label: t('options.sidebar.devtools_decryptor') || 'DevTools 解密器', icon: 'shield' },
   { id: 'ai-prompts', label: t('options.sidebar.ai_prompts'), icon: 'message-circle' },
   { id: 'about', label: t('options.sidebar.about'), icon: 'info' }
 ];
@@ -39,6 +41,8 @@ const getMenuItems = (t) => [
 export default function OptionsPage() {
   const [t, currentLanguage, isReady] = useTranslation();
   const [activeSection, setActiveSection] = useState('key-config');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // 侧边栏折叠状态
+  const [showLanguageDialog, setShowLanguageDialog] = useState(false); // 语言选择弹窗
   const [currentConfig, setCurrentConfig] = useState(null);
   const [savedConfigs, setSavedConfigs] = useState([]);
   const [testData, setTestData] = useState({
@@ -62,6 +66,40 @@ export default function OptionsPage() {
     };
     
     initializeTranslations();
+  }, []);
+
+  // 页面加载时恢复上次的 activeSection
+  useEffect(() => {
+    const restoreActiveSection = async () => {
+      try {
+        const result = await chrome.storage.local.get(['lastActiveSection']);
+        if (result.lastActiveSection) {
+          console.log('[Options Page] 恢复上次的 menu:', result.lastActiveSection);
+          setActiveSection(result.lastActiveSection);
+        }
+      } catch (error) {
+        console.error('[Options Page] 恢复 activeSection 失败:', error);
+      }
+    };
+    
+    restoreActiveSection();
+  }, []);
+
+  // 页面加载时恢复侧边栏折叠状态
+  useEffect(() => {
+    const restoreSidebarState = async () => {
+      try {
+        const result = await chrome.storage.local.get(['sidebarCollapsed']);
+        if (result.sidebarCollapsed !== undefined) {
+          console.log('[Options Page] 恢复侧边栏状态:', result.sidebarCollapsed ? '折叠' : '展开');
+          setSidebarCollapsed(result.sidebarCollapsed);
+        }
+      } catch (error) {
+        console.error('[Options Page] 恢复侧边栏状态失败:', error);
+      }
+    };
+    
+    restoreSidebarState();
   }, []);
 
   // 页面加载时获取保存的配置
@@ -123,6 +161,47 @@ export default function OptionsPage() {
     setCurrentConfig(config);
   };
 
+  // 处理 menu 点击，保存当前选中的 section
+  const handleMenuClick = (sectionId) => {
+    console.log('[Options Page] 切换 menu:', sectionId);
+    setActiveSection(sectionId);
+    
+    // 保存到 chrome storage
+    try {
+      chrome.storage.local.set({ lastActiveSection: sectionId }, () => {
+        console.log('[Options Page] 已保存 lastActiveSection:', sectionId);
+      });
+    } catch (error) {
+      console.error('[Options Page] 保存 lastActiveSection 失败:', error);
+    }
+  };
+
+  // 切换侧边栏折叠状态
+  const toggleSidebar = () => {
+    const newState = !sidebarCollapsed;
+    console.log('[Options Page] 切换侧边栏:', newState ? '折叠' : '展开');
+    setSidebarCollapsed(newState);
+    
+    // 保存到 chrome storage
+    try {
+      chrome.storage.local.set({ sidebarCollapsed: newState }, () => {
+        console.log('[Options Page] 已保存 sidebarCollapsed:', newState);
+      });
+    } catch (error) {
+      console.error('[Options Page] 保存 sidebarCollapsed 失败:', error);
+    }
+  };
+
+  // 打开语言选择弹窗
+  const openLanguageDialog = () => {
+    setShowLanguageDialog(true);
+  };
+
+  // 关闭语言选择弹窗
+  const closeLanguageDialog = () => {
+    setShowLanguageDialog(false);
+  };
+
   // 当翻译未准备好时显示加载状态
   if (!isReady || isLoading) {
     return (
@@ -143,50 +222,76 @@ export default function OptionsPage() {
     <SidebarProvider>
       <div className="flex w-full h-screen bg-gray-50">
         {/* Sidebar */}
-        <Sidebar className="border-r bg-white" variant="sidebar">
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <div className="p-4">
-                  <LanguageSwitcher variant="vertical" />
+        <Sidebar className={`border-r bg-white transition-all duration-300 ${sidebarCollapsed ? 'w-[70px]' : 'w-[240px]'}`} variant="sidebar">
+          <SidebarContent className="flex flex-col h-full">
+            {/* 顶部语言切换按钮 */}
+            <div className={`p-4 border-b ${sidebarCollapsed ? 'flex justify-center' : ''}`}>
+              {!sidebarCollapsed && <LanguageSwitcher variant="vertical" />}
+              {sidebarCollapsed && (
+                <div 
+                  className="text-2xl cursor-pointer hover:opacity-70 transition-opacity" 
+                  title="语言切换 (Language)"
+                  onClick={openLanguageDialog}
+                >
+                  🌐
                 </div>
-                <Separator className="my-2" />
-              </SidebarGroupContent>
-            </SidebarGroup>
+              )}
+            </div>
             
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton 
-                        isActive={activeSection === item.id}
-                        onClick={() => setActiveSection(item.id)}
-                      >
-                        <span className="mr-2">
-                          {item.icon === 'key' && '🔐'}
-                          {item.icon === 'test-tube' && '🧪'}
-                          {item.icon === 'pen-tool' && '✍️'}
-                          {item.icon === 'text' && '🔤'}
-                          {item.icon === 'theater-masks' && '🎭'}
-                          {item.icon === 'list' && '📋'}
-                          {item.icon === 'shield' && '🛡️'}
-                          {item.icon === 'message-circle' && '💬'}
-                          {item.icon === 'info' && 'ℹ️'}
-                        </span>
-                        {item.label}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+            {/* 折叠/展开按钮 */}
+            <div className="border-b p-2 bg-gray-50">
+              <button
+                onClick={toggleSidebar}
+                className="w-full p-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                title={sidebarCollapsed ? '展开菜单' : '折叠菜单'}
+              >
+                {sidebarCollapsed ? (
+                  <span className="text-xl">➡️</span>
+                ) : (
+                  <span className="text-xl">⬅️</span>
+                )}
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto">
+              <SidebarGroup>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {menuItems.map((item) => (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton 
+                          isActive={activeSection === item.id}
+                          onClick={() => handleMenuClick(item.id)}
+                          className="relative"
+                          title={sidebarCollapsed ? item.label : undefined}
+                        >
+                          <span className={`${sidebarCollapsed ? 'mx-auto text-xl' : 'mr-2 text-base'}`}>
+                            {item.icon === 'key' && '🔐'}
+                            {item.icon === 'test-tube' && '🧪'}
+                            {item.icon === 'pen-tool' && '✍️'}
+                            {item.icon === 'text' && '🔤'}
+                            {item.icon === 'theater-masks' && '🎭'}
+                            {item.icon === 'list' && '📋'}
+                            {item.icon === 'shield' && '🛡️'}
+                            {item.icon === 'message-circle' && '💬'}
+                            {item.icon === 'info' && 'ℹ️'}
+                          </span>
+                          {!sidebarCollapsed && (
+                            <span>{item.label}</span>
+                          )}
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </div>
           </SidebarContent>
         </Sidebar>
 
         {/* Main Content */}
         <SidebarInset>
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-hidden p-6">
             {activeSection === 'key-config' && (
               <KeyConfigManager 
                 onConfigChange={handleConfigChange}
@@ -236,9 +341,7 @@ export default function OptionsPage() {
             )}
             
             {activeSection === 'request-list' && (
-              <div className="h-full overflow-hidden">
-                <RequestListViewer />
-              </div>
+              <RequestListViewer />
             )}
             
             {activeSection === 'devtools-decryptor' && (
@@ -267,6 +370,41 @@ export default function OptionsPage() {
       </div>
       
       <Toaster />
+      
+      {/* 语言选择弹窗 */}
+      <Dialog open={showLanguageDialog} onOpenChange={closeLanguageDialog}>
+        <DialogContent className="sm:max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle>选择语言 / Select Language</DialogTitle>
+            <DialogDescription>
+              请选择界面显示语言
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <RadioGroup 
+              value={currentLanguage} 
+              onValueChange={(value) => {
+                switchLanguage(value);
+                closeLanguageDialog();
+              }}
+              className="flex flex-col space-y-3"
+            >
+              <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer" onClick={() => switchLanguage('en')}>
+                <input type="radio" checked={currentLanguage === 'en'} readOnly className="w-4 h-4" />
+                <Label htmlFor="lang-en-dialog" className="cursor-pointer text-base font-medium">
+                  English
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer" onClick={() => switchLanguage('zh')}>
+                <input type="radio" checked={currentLanguage === 'zh'} readOnly className="w-4 h-4" />
+                <Label htmlFor="lang-zh-dialog" className="cursor-pointer text-base font-medium">
+                  中文
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }

@@ -73,7 +73,8 @@ const MAX_PROCESSED_REQUESTS = 1000;
 function getRequestFingerprint(request) {
     const bodyStr = request.requestBody ? JSON.stringify(request.requestBody) : '';
     const headerStr = request.requestHeaders ? JSON.stringify(request.requestHeaders) : '';
-    return `${request.method}|${request.url}|${bodyStr}|${headerStr}`;
+    const timestamp = request.timestamp || Date.now();
+    return `${request.method}|${request.url}|${bodyStr}|${headerStr}|${timestamp}`;
 }
 
 // WebSocket 客户端连接（用于连接代理服务器）
@@ -235,6 +236,20 @@ function setupMessageListeners() {
             handleOptionsRequestViewerConnection(port);
         } else {
             console.log('[CryptoDevTools Background] 未知端口类型:', port.name);
+        }
+    });
+
+    // 监听快捷键命令
+    chrome.commands.onCommand.addListener((command) => {
+        console.log('[CryptoDevTools Background] 收到快捷键命令:', command);
+        
+        if (command === 'open-options-page') {
+            // 打开 Options 页面
+            chrome.tabs.create({
+                url: chrome.runtime.getURL('options.html')
+            }, (tab) => {
+                console.log('[CryptoDevTools Background] Options 页面已打开:', tab.id);
+            });
         }
     });
 
@@ -481,34 +496,54 @@ function findMatchingConfig(url) {
         console.log('[CryptoDevTools Background] 当前配置列表类型:', typeof decryptionConfigs);
         console.log('[CryptoDevTools Background] 当前配置列表:', decryptionConfigs);
 
-        // 确保 decryptionConfigs 是数组
+        // 确保 decryptionConfigs 是数组且不为空
         if (!Array.isArray(decryptionConfigs)) {
             console.log('[CryptoDevTools Background] 配置列表不是数组，当前值:', decryptionConfigs);
             return null;
         }
+        
+        if (decryptionConfigs.length === 0) {
+            console.warn('[CryptoDevTools Background] 配置列表为空，可能还未加载完成');
+            return null;
+        }
 
-        const urlObj = new URL(url);
-        const hostname = urlObj.hostname;
+        // 解析 URL
+        let hostname;
+        try {
+            const urlObj = new URL(url);
+            hostname = urlObj.hostname.toLowerCase(); // 转为小写
+        } catch (urlError) {
+            console.error('[CryptoDevTools Background] URL 解析失败:', url, urlError);
+            return null;
+        }
 
         console.log('[CryptoDevTools Background] 请求主机名:', hostname);
 
         const matchedConfig = decryptionConfigs.find(config => {
-            console.log(`[CryptoDevTools Background] 检查配置: ${config.domain} (enabled: ${config.enabled})`);
+            if (!config) {
+                console.log('[CryptoDevTools Background] 配置为空，跳过');
+                return false;
+            }
+            
+            console.log(`[CryptoDevTools Background] 检查配置：${config.domain} (enabled: ${config.enabled})`);
 
             if (!config.enabled) {
                 console.log('[CryptoDevTools Background] 配置未启用，跳过');
                 return false;
             }
 
-            const configDomain = config.domain.replace(/^www\./, ''); // 移除 www 前缀进行比较
+            // 域名比较前都转为小写并移除 www. 前缀
+            const configDomain = (config.domain || '').toLowerCase().replace(/^www\./, '');
             const requestDomain = hostname.replace(/^www\./, '');
 
-            console.log(`[CryptoDevTools Background] 比较: ${configDomain} vs ${requestDomain}`);
+            console.log(`[CryptoDevTools Background] 比较：${configDomain} vs ${requestDomain}`);
 
-            const isMatch = configDomain === requestDomain || hostname.endsWith('.' + configDomain);
+            // 精确匹配或子域名匹配
+            const isMatch = configDomain === requestDomain || 
+                           (configDomain && requestDomain.endsWith('.' + configDomain));
 
             if (isMatch) {
-                console.log('[CryptoDevTools Background] 找到匹配配置:', config.domain);
+                console.log('[CryptoDevTools Background] ✅ 找到匹配配置:', config.domain);
             }
 
             return isMatch;
