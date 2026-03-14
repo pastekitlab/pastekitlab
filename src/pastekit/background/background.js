@@ -350,7 +350,7 @@ async function handleNetworkData(message, port) {
 
     // 检查是否已处理过此请求（基于指纹）
     if (processedRequestIds.has(fingerprint)) {
-        console.log(`[CryptoDevTools Background] 跳过已处理的请求（指纹匹配）: ${fingerprint.substring(0, 50)}...`);
+        console.log(`[CryptoDevTools Background] 跳过已处理的请求（指纹匹配）: ${fingerprint.substring(0, 100)}...`);
         return;
     }
     

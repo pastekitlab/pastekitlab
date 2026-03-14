@@ -530,7 +530,7 @@ export default function DevToolsPanel() {
         console.log('[CryptoDevTools Panel] 清理所有请求');
         setRequests([]);
         setSelectedRequestId(null);
-        setSearchTerm('');
+        // setSearchTerm('');
     };
 
     // 过滤请求列表
@@ -549,78 +549,80 @@ export default function DevToolsPanel() {
     // 渲染组件
     return (
         <div className="h-screen flex flex-col bg-gray-50">
-            {/* 顶部状态栏 */}
-            <div className="bg-white border-b p-4 shadow-sm">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-800">
+            {/* 顶部吸题状态栏 */}
+            <div className="sticky top-0 z-50 bg-white border-b shadow-sm">
+                <div className="flex items-center justify-between p-3 gap-3">
+                    {/* 左侧：标题和状态 */}
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <h1 className="text-lg font-bold text-gray-800 flex-shrink-0">
                             {t('components.panel.title')}
                         </h1>
-                        <div className="flex items-center gap-4 mt-1">
+                        <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
-                                <div className={`w-3 h-3 rounded-full ${
+                                <div className={`w-2.5 h-2.5 rounded-full ${
                                     connectionStatus === 'connected' ? 'bg-green-500' :
                                         connectionStatus === 'timeout' ? 'bg-yellow-500' :
                                             connectionStatus === 'invalid' ? 'bg-purple-500' : 'bg-red-500'
                                 }`}></div>
-                                <span className="text-sm text-gray-600">
+                                <span className="text-xs text-gray-600 whitespace-nowrap">
                   {connectionStatus === 'connected' ? t('components.panel.status_connected') :
                       connectionStatus === 'timeout' ? t('components.panel.status_timeout') :
                           connectionStatus === 'invalid' ? t('components.panel.status_invalid') : t('components.panel.status_disconnected')}
                 </span>
                             </div>
                             
-                            <span className="text-sm text-gray-600">
+                            <span className="text-xs text-gray-600 whitespace-nowrap">
                 {t('components.panel.requests_count', {count: requests.length})}
               </span>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+                    
+                    {/* 中间：搜索框 */}
+                    <div className="flex-1 max-w-md">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder={t('components.panel.search_placeholder')}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                            />
+                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                                🔍
+                            </div>
+                            {searchTerm && (
+                                <button
+                                    onClick={() => setSearchTerm('')}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {/* 右侧：操作按钮 */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
                             variant="outline"
+                            size="sm"
                             onClick={refreshConfigs}
                             disabled={!isConnected}
+                            className="text-xs px-3 py-1.5 h-auto"
                         >
                             🔄 {t('components.panel.refresh_configs')}
                         </Button>
                         <Button
                             variant="outline"
+                            size="sm"
                             onClick={clearRequests}
                             disabled={requests.length === 0}
+                            className="text-xs px-3 py-1.5 h-auto"
                         >
                             🗑️ {t('components.panel.clear_requests')}
                         </Button>
                     </div>
                 </div>
-            </div>
-                  
-            {/* 搜索区域 */}
-            <div className="bg-white border-b p-3">
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1 max-w-md">
-                  <input
-                    type="text"
-                    placeholder="搜索URL、请求ID或方法..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  />
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    🔍
-                  </div>
-                </div>
-                <div className="text-sm text-gray-600">
-                  {t('components.panel.requests_count', {count: filteredRequests.length})}
-                </div>
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-                  >
-                    ✕ {t('components.panel.clear_search')}
-                  </button>
-                )}
-              </div>
             </div>
                   
             {/* 主要内容区域 */}
@@ -863,9 +865,9 @@ export default function DevToolsPanel() {
                                             <div className="bg-blue-50 border border-blue-200 rounded p-4">
                                                 <h4 className="font-medium mb-2 text-blue-800">{t('components.panel.decryption_config_info')}</h4>
                                                 <div className="text-sm text-blue-700">
-                                                    <div>{t('components.panel.config_name')}: {requests.find(r => r.requestId === selectedRequestId)?.decryptionInfo?.config?.name || t('components.panel.unknown')}</div>
-                                                    <div>{t('components.panel.algorithm')}: {requests.find(r => r.requestId === selectedRequestId)?.decryptionInfo?.config?.algorithm || t('components.panel.unknown')}</div>
-                                                    <div>{t('components.panel.domain')}: {requests.find(r => r.requestId === selectedRequestId)?.decryptionInfo?.domainConfig?.domain || t('components.panel.unknown')}</div>
+                                                    <div>{t('components.panel.config_name')}: {requests.find(r => r.requestId === selectedRequestId)?.requestConfig?.name || t('components.panel.unknown')}</div>
+                                                    <div>{t('components.panel.algorithm')}: {requests.find(r => r.requestId === selectedRequestId)?.requestConfig?.algorithm || t('components.panel.unknown')}</div>
+                                                    <div>{t('components.panel.domain')}: {requests.find(r => r.requestId === selectedRequestId)?.domainConfig?.domain || t('components.panel.unknown')}</div>
                                                 </div>
                                             </div>
                                         </div>
