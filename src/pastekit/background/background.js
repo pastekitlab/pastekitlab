@@ -65,6 +65,17 @@ const devtoolsConnections = new Map();
 // 存储 Options 请求查看器连接
 const optionsViewerConnections = new Map();
 
+// 存储已处理的请求 ID，避免重复处理（最近 1000 个）
+const processedRequestIds = new Set();
+const MAX_PROCESSED_REQUESTS = 1000;
+
+// 生成请求指纹用于去重
+function getRequestFingerprint(request) {
+    const bodyStr = request.requestBody ? JSON.stringify(request.requestBody) : '';
+    const headerStr = request.requestHeaders ? JSON.stringify(request.requestHeaders) : '';
+    return `${request.method}|${request.url}|${bodyStr}|${headerStr}`;
+}
+
 // WebSocket 客户端连接（用于连接代理服务器）
 let wsProxyConnection = null;
 let wsReconnectTimer = null;
@@ -326,6 +337,31 @@ async function handleDevToolsMessage(message, port) {
 // 处理网络数据
 async function handleNetworkData(message, port) {
     const {requestId, url, method, requestBody,requestHeaders, responseBody,responseHeaders, statusCode} = message;
+
+    // 生成请求指纹
+    const fingerprint = getRequestFingerprint({
+        method,
+        url,
+        requestBody,
+        requestHeaders
+    });
+    
+    console.log('[CryptoDevTools Background] 请求指纹:', fingerprint.substring(0, 100) + '...');
+
+    // 检查是否已处理过此请求（基于指纹）
+    if (processedRequestIds.has(fingerprint)) {
+        console.log(`[CryptoDevTools Background] 跳过已处理的请求（指纹匹配）: ${fingerprint.substring(0, 50)}...`);
+        return;
+    }
+    
+    // 添加到已处理集合，并定期清理
+    processedRequestIds.add(fingerprint);
+    if (processedRequestIds.size > MAX_PROCESSED_REQUESTS) {
+        // 转换为数组，删除最旧的 500 个
+        const arr = Array.from(processedRequestIds);
+        processedRequestIds.clear();
+        arr.slice(500).forEach(id => processedRequestIds.add(id));
+    }
 
     // 过滤 OPTIONS 预检请求
     if (method && method.toUpperCase() === 'OPTIONS') {

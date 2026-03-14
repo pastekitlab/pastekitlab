@@ -346,7 +346,7 @@ export default function DevToolsPanel() {
 
     const addRequest = (request) => {
         setRequests(prevRequests => {
-            // 检查是否已存在
+            // 检查是否已存在（通过 requestId）
             const existingIndex = prevRequests.findIndex(req => req.requestId === request.requestId);
             if (existingIndex >= 0) {
                 // 更新现有请求
@@ -354,6 +354,38 @@ export default function DevToolsPanel() {
                 updatedRequests[existingIndex] = request;
                 return updatedRequests.sort((a, b) => a.timestamp - b.timestamp);
             } else {
+                // 生成请求指纹用于去重（URL+Method+Body+Header+1 秒内）
+                const getRequestFingerprint = (req) => {
+                    const bodyStr = req.requestBody ? JSON.stringify(req.requestBody) : '';
+                    const headerStr = req.requestHeaders ? JSON.stringify(req.requestHeaders) : '';
+                    return `${req.method}|${req.url}|${bodyStr}|${headerStr}`;
+                };
+                
+                const currentFingerprint = getRequestFingerprint(request);
+                
+                // 添加新请求前，检查是否是重复的请求
+                const isDuplicate = prevRequests.some(req => {
+                    const fingerprint = getRequestFingerprint(req);
+                    const isSameRequest = fingerprint === currentFingerprint;
+                    const isWithinTimeWindow = Math.abs(req.timestamp - request.timestamp) < 1000; // 1 秒内
+                    return isSameRequest && isWithinTimeWindow;
+                });
+                
+                if (isDuplicate) {
+                    console.warn('[CryptoDevTools Panel] 检测到重复请求，跳过:', {
+                        url: request.url,
+                        method: request.method,
+                        fingerprint: currentFingerprint.substring(0, 100) + '...'
+                    });
+                    return prevRequests; // 不添加
+                }
+                
+                console.log('[CryptoDevTools Panel] 添加新请求:', {
+                    url: request.url,
+                    method: request.method,
+                    timestamp: new Date(request.timestamp).toLocaleTimeString()
+                });
+                
                 // 添加新请求
                 return [...prevRequests, request].sort((a, b) => a.timestamp - b.timestamp);
             }
