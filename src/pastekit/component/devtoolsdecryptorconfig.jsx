@@ -11,12 +11,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AutoPagination } from '@/components/self/AutoPagination';
 import { toast } from 'sonner';
 import { StorageUtils } from '../utils/storageutils.js';
+import { useTranslation } from '../utils/i18n';
 
 /**
  * DevTools 解密器配置组件 - 重构版
  * 支持标准列表展示、搜索、分页、弹窗 CRUD 操作
  */
 export default function DevToolsDecryptorConfig({ configs = [], className = '' }) {
+  const [t] = useTranslation();
+  
   // 列表数据状态
   const [decryptionConfigs, setDecryptionConfigs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,10 +39,10 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
     requestKeyConfigId: '',
     responseKeyConfigId: '',
     enabled: true,
-    decryptionEnabled: true,  // 新增：是否启用解密
+    decryptionEnabled: false,  // 新增：是否启用解密
     description: ''
   });
-  const [useSameKeyForRequestAndResponse, setUseSameKeyForRequestAndResponse] = useState(false);
+  const [useSameKeyForRequestAndResponse, setUseSameKeyForRequestAndResponse] = useState(true);
 
   // 组件挂载时加载配置
   useEffect(() => {
@@ -65,10 +68,10 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       setDecryptionConfigs(loadedConfigs);
       console.log('[DevTools Config] 加载配置:', loadedConfigs);
       console.log('[DevTools Config] 可用的密钥配置:', configs);
-      toast.success('配置加载成功');
+      toast.success(t('devtoolsdecryptor.messages.load_success'));
     } catch (error) {
       console.error('[DevTools Config] 加载配置失败:', error);
-      toast.error(`加载失败：${error.message}`);
+      toast.error(t('devtoolsdecryptor.messages.load_failed', { error: error.message }));
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +83,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       await StorageUtils.setItem('decryptionConfigs', configsToSave);
       setDecryptionConfigs(configsToSave);
       console.log('[DevTools Config] 保存配置成功');
-      toast.success('配置保存成功');
+      toast.success(t('devtoolsdecryptor.messages.save_success'));
       
       // 通知 background.js 更新配置
       chrome.runtime.sendMessage({
@@ -92,7 +95,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       
     } catch (error) {
       console.error('[DevTools Config] 保存配置失败:', error);
-      toast.error(`保存失败：${error.message}`);
+      toast.error(t('devtoolsdecryptor.messages.save_failed', { error: error.message }));
     }
   };
 
@@ -146,26 +149,26 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
   const handleSave = async () => {
     // 验证必填字段
     if (!formData.domain) {
-      toast.error('请输入目标域名');
+      toast.error(t('devtoolsdecryptor.messages.enter_domain'));
       return;
     }
     
     // 仅在启用解密功能时验证密钥配置
     if (formData.decryptionEnabled !== false) {
       if (!formData.requestKeyConfigId) {
-        toast.error('请选择请求密钥配置');
+        toast.error(t('devtoolsdecryptor.messages.select_request_key'));
         return;
       }
 
       if (!useSameKeyForRequestAndResponse && !formData.responseKeyConfigId) {
-        toast.error('请选择响应密钥配置，或启用"请求和响应使用相同密钥"选项');
+        toast.error(t('devtoolsdecryptor.messages.select_response_key'));
         return;
       }
     }
 
     // 验证域名格式
     if (!isValidDomain(formData.domain)) {
-      toast.error('请输入有效的域名格式');
+      toast.error(t('devtoolsdecryptor.messages.invalid_domain'));
       return;
     }
 
@@ -187,7 +190,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
             : config
         );
         await saveDecryptionConfigs(updatedConfigs);
-        toast.success('修改成功');
+        toast.success(t('devtoolsdecryptor.messages.update_success'));
       } else {
         // 新建模式
         const configToAdd = {
@@ -203,7 +206,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
         };
         const updatedConfigs = [...decryptionConfigs, configToAdd];
         await saveDecryptionConfigs(updatedConfigs);
-        toast.success('创建成功');
+        toast.success(t('devtoolsdecryptor.messages.create_success'));
       }
       
       setIsDialogOpen(false);
@@ -218,7 +221,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       });
       setUseSameKeyForRequestAndResponse(false);
     } catch (error) {
-      toast.error(editingConfig ? '修改失败' : '创建失败');
+      toast.error(editingConfig ? t('devtoolsdecryptor.messages.operation_failed') : t('devtoolsdecryptor.messages.operation_failed'));
       console.error(error);
     }
   };
@@ -226,16 +229,17 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
   // 删除数据
   const handleDelete = async (config) => {
     // 显示确认弹窗
-    if (!window.confirm(`确定要删除此解密配置吗？\n\n域名：${config.domain}\n描述：${config.description || '无'}`)) {
+    const description = config.description || t('devtoolsdecryptor.messages.no_description') || '无';
+    if (!window.confirm(t('devtoolsdecryptor.messages.delete_confirm', { domain: config.domain, description }))) {
       return;
     }
     
     try {
       const updatedConfigs = decryptionConfigs.filter(c => c.id !== config.id);
       await saveDecryptionConfigs(updatedConfigs);
-      toast.success('删除成功');
+      toast.success(t('devtoolsdecryptor.messages.delete_success'));
     } catch (error) {
-      toast.error('删除失败');
+      toast.error(t('devtoolsdecryptor.messages.operation_failed'));
       console.error(error);
     }
   };
@@ -250,7 +254,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       );
       await saveDecryptionConfigs(updatedConfigs);
     } catch (error) {
-      toast.error('操作失败');
+      toast.error(t('devtoolsdecryptor.messages.operation_failed'));
       console.error(error);
     }
   };
@@ -322,7 +326,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
     return (
       <div className={`flex items-center justify-center h-64 ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <span className="ml-2">加载配置中...</span>
+        <span className="ml-2">{t('devtoolsdecryptor.loading')}</span>
       </div>
     );
   }
@@ -333,46 +337,47 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       <Card className="flex-shrink-0">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-bold">DevTools 解密器配置</CardTitle>
+            <CardTitle className="text-xl font-bold">{t('devtoolsdecryptor.title')}</CardTitle>
+
+            {/* 搜索区域 */}
+            <div className="mt-4 relative">
+              <Input
+                  type="text"
+                  placeholder={t('devtoolsdecryptor.search_placeholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pr-8"
+              />
+              {searchTerm && (
+                  <button
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                  >
+                    ✕
+                  </button>
+              )}
+            </div>
             <Button onClick={handleCreate} size="sm">
-              ➕ 新增配置
+              {t('devtoolsdecryptor.add_config')}
             </Button>
           </div>
-          
-          {/* 搜索区域 */}
-          <div className="mt-4 relative">
-            <Input
-              type="text"
-              placeholder="搜索域名、描述或密钥配置..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pr-8"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+
         </CardHeader>
       </Card>
 
       {/* 列表内容 */}
       <Card className="flex-1 mt-4 overflow-hidden flex flex-col">
         <CardContent className="flex-1 overflow-auto p-0">
-          <div className="min-w-full max-h-[calc(100vh-400px)] overflow-y-auto">
+          <div className="min-w-full max-h-[calc(100vh-300px)] overflow-y-auto">
             <table className="w-full">
               <thead className="bg-gray-50 sticky top-0 z-10">
                 <tr>
-                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">域名</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">请求算法</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">响应算法</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">描述</th>
-                  <th className="text-center py-3 px-4 font-semibold text-sm border-b">状态</th>
-                  <th className="text-center py-3 px-4 font-semibold text-sm border-b">操作</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('devtoolsdecryptor.domain')}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('devtoolsdecryptor.request_algorithm')}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('devtoolsdecryptor.response_algorithm')}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">{t('devtoolsdecryptor.description')}</th>
+                  <th className="text-center py-3 px-4 font-semibold text-sm border-b">{t('devtoolsdecryptor.status')}</th>
+                  <th className="text-center py-3 px-4 font-semibold text-sm border-b">{t('devtoolsdecryptor.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -403,16 +408,16 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                         <td className="py-3 px-4 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <Badge variant={config.enabled ? "default" : "secondary"}>
-                              {config.enabled ? '启用' : '禁用'}
+                              {config.enabled ? t('devtoolsdecryptor.enabled') : t('devtoolsdecryptor.disabled')}
                             </Badge>
                             {config.enabled && config.decryptionEnabled !== false && (
                               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                🔓 解密
+                                {t('devtoolsdecryptor.decrypt_badge')}
                               </Badge>
                             )}
                             {config.enabled && config.decryptionEnabled === false && (
                               <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200">
-                                👁️ 监听
+                                {t('devtoolsdecryptor.listen_badge')}
                               </Badge>
                             )}
                           </div>
@@ -426,7 +431,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                                 e.stopPropagation();
                                 handleEdit(config);
                               }}
-                              title="编辑"
+                              title={t('devtoolsdecryptor.edit')}
                             >
                               ✏️
                             </Button>
@@ -437,7 +442,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                                 e.stopPropagation();
                                 handleDelete(config);
                               }}
-                              title="删除"
+                              title={t('devtoolsdecryptor.delete')}
                             >
                               🗑️
                             </Button>
@@ -446,6 +451,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                               onCheckedChange={() => handleToggleEnabled(config)}
                               onClick={(e) => e.stopPropagation()}
                               className="ml-1"
+                              title={t('devtoolsdecryptor.toggle_enabled')}
                             />
                           </div>
                         </td>
@@ -455,7 +461,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                 ) : (
                   <tr>
                     <td colSpan={6} className="text-center py-8 text-gray-500">
-                      {searchTerm ? '未找到匹配的配置' : '暂无解密配置'}
+                      {searchTerm ? t('devtoolsdecryptor.no_results') : t('devtoolsdecryptor.no_configs')}
                     </td>
                   </tr>
                 )}
@@ -472,7 +478,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground">
-                  共 {filteredData.length} 个配置 (第 {currentPage}/{totalPages || 1} 页)
+                  {t('devtoolsdecryptor.total_configs', { count: filteredData.length })} ({t('devtoolsdecryptor.page_info', { current: currentPage, total: totalPages || 1 })})
                 </div>
                 {/* 每页数量选择器 */}
                 <Select 
@@ -480,12 +486,12 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                   onValueChange={(value) => setItemsPerPage(Number(value))}
                 >
                   <SelectTrigger className="w-[100px]">
-                    <SelectValue placeholder="每页数量" />
+                    <SelectValue placeholder={t('devtoolsdecryptor.items_per_page')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">5 条/页</SelectItem>
-                    <SelectItem value="10">10 条/页</SelectItem>
-                    <SelectItem value="20">20 条/页</SelectItem>
+                    <SelectItem value="5">5 {t('common.items')}/{t('common.page')}</SelectItem>
+                    <SelectItem value="10">10 {t('common.items')}/{t('common.page')}</SelectItem>
+                    <SelectItem value="20">20 {t('common.items')}/{t('common.page')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -504,23 +510,36 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingConfig ? '编辑解密配置' : '新建解密配置'}
+              {editingConfig ? t('devtoolsdecryptor.edit_config') : t('devtoolsdecryptor.create_config')}
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
             {/* 域名输入 */}
             <div className="space-y-2">
-              <Label htmlFor="domain">目标域名 *</Label>
+              <Label htmlFor="domain">{t('devtoolsdecryptor.domain_label')}</Label>
               <Input
                 id="domain"
-                placeholder="example.com"
+                placeholder={t('devtoolsdecryptor.domain_placeholder')}
                 value={formData.domain}
                 onChange={(e) => handleFormChange('domain', e.target.value)}
               />
               <p className="text-sm text-muted-foreground">
-                支持完整域名，如 api.example.com
+                {t('devtoolsdecryptor.domain_help')}
               </p>
             </div>
+
+            {/* 解密开关 */}
+            <div className="flex items-center space-x-2 pt-2 border-b">
+              <Switch
+                  id="decryptionEnabled"
+                  checked={formData.decryptionEnabled}
+                  onCheckedChange={(checked) => handleFormChange('decryptionEnabled', checked)}
+              />
+              <Label htmlFor="decryptionEnabled">{t('devtoolsdecryptor.decryption_enabled_label')}</Label>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-3">
+              {t('devtoolsdecryptor.decryption_enabled_help')}
+            </p>
 
             {/* 启用状态 */}
             <div className="flex items-center space-x-2 pt-2 border-t">
@@ -529,25 +548,14 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                 checked={formData.enabled}
                 onCheckedChange={(checked) => handleFormChange('enabled', checked)}
               />
-              <Label htmlFor="enabled">启用配置</Label>
+              <Label htmlFor="enabled">{t('devtoolsdecryptor.enabled_label')}</Label>
             </div>
 
-            {/* 解密开关 */}
-            <div className="flex items-center space-x-2 pt-2 border-b">
-              <Switch
-                id="decryptionEnabled"
-                checked={formData.decryptionEnabled}
-                onCheckedChange={(checked) => handleFormChange('decryptionEnabled', checked)}
-              />
-              <Label htmlFor="decryptionEnabled">启用解密功能</Label>
-            </div>
-            <p className="text-xs text-muted-foreground -mt-3">
-              关闭后仅监听请求，不进行加解密操作
-            </p>
+
 
             {/* 密钥配置模式开关 */}
             <div className="space-y-2">
-              <Label>密钥配置模式</Label>
+              <Label>{t('devtoolsdecryptor.key_config_mode')}</Label>
               <div className="flex items-center space-x-2 pt-2">
                 <Switch
                   id="useSameKey"
@@ -559,7 +567,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                     }
                   }}
                 />
-                <Label htmlFor="useSameKey">请求和响应使用相同密钥</Label>
+                <Label htmlFor="useSameKey">{t('devtoolsdecryptor.same_key_for_both')}</Label>
               </div>
             </div>
 
@@ -568,7 +576,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
               <>
                 {/* 请求密钥配置 */}
                 <div className="space-y-2">
-                  <Label htmlFor="requestKeyConfig">请求密钥配置 *</Label>
+                  <Label htmlFor="requestKeyConfig">{t('devtoolsdecryptor.request_key_config')} *</Label>
                   <div className="space-y-1">
                     <Select 
                       value={formData.requestKeyConfigId?.toString() || 'no-selection'} 
@@ -583,7 +591,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="请选择密钥配置" />
+                        <SelectValue placeholder={t('devtoolsdecryptor.select_key_config')} />
                       </SelectTrigger>
                       <SelectContent>
                         {configs && configs.length > 0 ? (
@@ -602,7 +610,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                           }).filter(Boolean)
                         ) : (
                           <SelectItem value="no-configs" disabled>
-                            暂无可用的密钥配置，请先在密钥配置管理中添加
+                            {t('devtoolsdecryptor.no_key_configs')}
                           </SelectItem>
                         )}
                       </SelectContent>
@@ -618,7 +626,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                 {/* 响应密钥配置 */}
                 {!useSameKeyForRequestAndResponse && (
                   <div className="space-y-2">
-                    <Label htmlFor="responseKeyConfig">响应密钥配置 *</Label>
+                    <Label htmlFor="responseKeyConfig">{t('devtoolsdecryptor.response_key_config')} *</Label>
                     <div className="space-y-1">
                       <Select 
                         value={formData.responseKeyConfigId?.toString() || 'no-selection'} 
@@ -629,7 +637,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="请选择密钥配置" />
+                          <SelectValue placeholder={t('devtoolsdecryptor.select_key_config')} />
                         </SelectTrigger>
                         <SelectContent>
                           {configs && configs.length > 0 ? (
@@ -648,7 +656,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                             }).filter(Boolean)
                           ) : (
                             <SelectItem value="no-configs" disabled>
-                              暂无可用的密钥配置
+                              {t('devtoolsdecryptor.no_key_configs')}
                             </SelectItem>
                           )}
                         </SelectContent>
@@ -682,10 +690,10 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
 
             {/* 描述输入 */}
             <div className="space-y-2">
-              <Label htmlFor="description">描述</Label>
+              <Label htmlFor="description">{t('devtoolsdecryptor.description_label')}</Label>
               <Input
                 id="description"
-                placeholder="可选的配置说明"
+                placeholder={t('devtoolsdecryptor.description_placeholder')}
                 value={formData.description}
                 onChange={(e) => handleFormChange('description', e.target.value)}
               />
@@ -693,10 +701,10 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              取消
+              {t('devtoolsdecryptor.cancel')}
             </Button>
             <Button onClick={handleSave}>
-              {editingConfig ? '保存' : '创建'}
+              {editingConfig ? t('common.save') : t('devtoolsdecryptor.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
