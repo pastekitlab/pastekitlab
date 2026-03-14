@@ -6,7 +6,7 @@
       "encryption_test": "加密解密测试",
       "signature_tool": "签名工具",
       "encoding_tool": "编解码工具",
-      "mock_manager": "DNR 管理",
+      "mock_manager": "Mock数据管理",
       "request_list": "请求列表",
       "devtools_decryptor": "DevTools 解密器",
       "ai_prompts": "AI 提示词",

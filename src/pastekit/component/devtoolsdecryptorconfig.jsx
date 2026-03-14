@@ -704,7 +704,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
               {t('devtoolsdecryptor.cancel')}
             </Button>
             <Button onClick={handleSave}>
-              {editingConfig ? t('common.save') : t('devtoolsdecryptor.save')}
+              {editingConfig ? t('save') : t('devtoolsdecryptor.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

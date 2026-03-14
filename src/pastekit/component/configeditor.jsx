@@ -374,7 +374,7 @@ function SymmetricModeEditor({ config, onUpdateConfig, t }) {
           <Input
             value={config.iv?.value || ''}
             onChange={(e) => updateIvValueLocal(e.target.value)}
-            placeholder={`${t('keyconfigmanager.iv')} (${t('common.optional')})`}
+            placeholder={`${t('keyconfigmanager.iv')} (${t('optional')})`}
             className="flex-1"
           />
           <Select 
@@ -443,7 +443,7 @@ function EncodingSettingsEditor({
             {/* 编码选择器 */}
             <Select onValueChange={onAddPlainEncoding}>
               <SelectTrigger>
-                <SelectValue placeholder={t('common.add') + ' ' + t('keyconfigmanager.plaintext_encoding')} />
+                <SelectValue placeholder={t('add') + ' ' + t('keyconfigmanager.plaintext_encoding')} />
               </SelectTrigger>
               <SelectContent>
                 {PLAINTEXT_ENCODING_OPTIONS.map(option => {
@@ -490,7 +490,7 @@ function EncodingSettingsEditor({
             {/* 编码选择器 */}
             <Select onValueChange={onAddCipherEncoding}>
               <SelectTrigger>
-                <SelectValue placeholder={t('common.add') + ' ' + t('keyconfigmanager.ciphertext_encoding')} />
+                <SelectValue placeholder={t('add') + ' ' + t('keyconfigmanager.ciphertext_encoding')} />
               </SelectTrigger>
               <SelectContent>
                 {CIPHERTEXT_ENCODING_OPTIONS.map(option => (
@@ -538,7 +538,7 @@ function ActionButtons({ onDelete, onCancel, onSave, t }) {
       
       <div className="flex gap-2">
         <Button variant="secondary" onClick={onCancel}>
-          {t('common.cancel')}
+          {t('cancel')}
         </Button>
         <Button onClick={onSave}>
           {t('keyconfigmanager.save_config')}

@@ -9,6 +9,24 @@
     "input": "Input Text",
     "input_placeholder": "Please enter text to convert...",
     "output": "Output Result",
-    "output_placeholder": "Conversion result will be displayed here..."
+    "output_placeholder": "Conversion result will be displayed here...",
+    "buttons": {
+      "process_encode": "🔄 Encode",
+      "process_decode": "🔄 Decode",
+      "copy": "📋 Copy Result",
+      "swap": "⇄ Swap Input/Output",
+      "clear": "🗑️ Clear"
+    },
+    "messages": {
+      "input_required": "Please enter text to convert",
+      "convert_success": "{input} → {output} {operation} successful",
+      "copy_success": "Copied to clipboard",
+      "copy_failed": "Copy failed",
+      "no_output": "No output to copy",
+      "clear_success": "All content cleared",
+      "swap_success": "Swapped input/output encoding and text",
+      "encode_failed": "Encoding failed",
+      "decode_failed": "Decoding failed"
+    }
   }
 }

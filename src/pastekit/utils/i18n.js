@@ -376,7 +376,7 @@ async function getTranslations(language) {
       'urltool', 'cronetool', 'dnstool', 'proxydashboard', 'panel',
       'keyconfigmanager', 'ciphertest', 'about', 'cipherutils', 'qrcode',
       'autociphertool', 'signature', 'aiprompts', 'encodingtool', 'requestlist',
-      'devtoolsdecryptor', 'dnrmanager'
+      'devtoolsdecryptor', 'mockmanager'
     ];
     
     for (const file of componentFiles) {

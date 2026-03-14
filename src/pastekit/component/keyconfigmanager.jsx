@@ -279,7 +279,7 @@ export default function KeyConfigManager({
                 <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
                   <DialogHeader className="flex-shrink-0">
                     <DialogTitle>
-                      {editingConfig ? `${t('common.edit')} ${editingConfig.name}` : t('keyconfigmanager.create_config')}
+                      {editingConfig ? `${t('edit')} ${editingConfig.name}` : t('keyconfigmanager.create_config')}
                     </DialogTitle>
                   </DialogHeader>
                   
@@ -304,10 +304,10 @@ export default function KeyConfigManager({
                       </div>
                       <div className="flex justify-end gap-2">
                         <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>
-                          {t('common.cancel')}
+                          {t('cancel')}
                         </Button>
                         <Button onClick={addConfig}>
-                          {t('common.create')}
+                          {t('create')}
                         </Button>
                       </div>
                     </div>
@@ -322,7 +322,7 @@ export default function KeyConfigManager({
             <div className="flex justify-between items-center flex-shrink-0">
               <h3 className="text-lg font-semibold">{t('keyconfigmanager.config_list')}</h3>
               <div className="text-sm text-muted-foreground">
-                {t('keyconfigmanager.total_configs', { count: configs.length })} {totalPages > 1 && `(${t('keyconfigmanager.page_info', { current: currentPage, total: totalPages })})`} {isLoading && `(${t('common.loading')})`}
+                {t('keyconfigmanager.total_configs', { count: configs.length })} {totalPages > 1 && `(${t('keyconfigmanager.page_info', { current: currentPage, total: totalPages })})`} {isLoading && `(${t('loading')})`}
               </div>
             </div>
             

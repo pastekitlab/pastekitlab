@@ -52,7 +52,7 @@ export default function EncodingTool({ className = '' }) {
   // 执行编码转换操作
   const handleProcess = () => {
     if (!inputText.trim()) {
-      toast.error('请输入要转换的文本');
+      toast.error(t('encodingtool.messages.input_required') || '请输入要转换的文本');
       return;
     }
 
@@ -120,11 +120,18 @@ export default function EncodingTool({ className = '' }) {
       setOutputText(result);
       const inputName = encodingNames[inputEncoding];
       const outputName = encodingNames[outputEncoding];
-      const operationText = operation === 'encode' ? '编码转换' : '解码转换';
-      toast.success(`${inputName} → ${outputName} ${operationText}成功`);
+      const operationKey = operation === 'encode' ? 'encode' : 'decode';
+      const successMessage = (t('encodingtool.messages.convert_success') || '{input} → {output} {operation}成功')
+        .replace('{input}', inputName)
+        .replace('{output}', outputName)
+        .replace('{operation}', t(`encodingtool.${operationKey}`) || operationKey);
+      toast.success(successMessage);
     } catch (error) {
       console.error('编码转换失败:', error);
-      toast.error(error.message);
+      const errorMessage = operation === 'encode' 
+        ? (t('encodingtool.messages.encode_failed') || '编码失败')
+        : (t('encodingtool.messages.decode_failed') || '解码失败');
+      toast.error(`${errorMessage}: ${error.message}`);
       setOutputText('');
     }
   };
@@ -163,16 +170,16 @@ export default function EncodingTool({ className = '' }) {
   // 复制结果到剪贴板
   const copyToClipboard = async () => {
     if (!outputText) {
-      toast.error('没有可复制的内容');
+      toast.error(t('encodingtool.messages.no_output') || '没有可复制的内容');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(outputText);
-      toast.success('已复制到剪贴板');
+      toast.success(t('encodingtool.messages.copy_success') || '已复制到剪贴板');
     } catch (error) {
       console.error('复制失败:', error);
-      toast.error('复制失败: ' + error.message);
+      toast.error((t('encodingtool.messages.copy_failed') || '复制失败') + ': ' + error.message);
     }
   };
 
@@ -180,7 +187,7 @@ export default function EncodingTool({ className = '' }) {
   const clearAll = () => {
     setInputText('');
     setOutputText('');
-    toast.info('已清空所有内容');
+    toast.info(t('encodingtool.messages.clear_success') || '已清空所有内容');
   };
 
   // 交换输入输出编码和文本
@@ -193,7 +200,7 @@ export default function EncodingTool({ className = '' }) {
     setInputEncoding(outputEncoding);
     setOutputEncoding(tempEncoding);
     
-    toast.info('已交换输入输出编码和文本');
+    toast.info(t('encodingtool.messages.swap_success') || '已交换输入输出编码和文本');
   };
 
   return (
@@ -270,7 +277,9 @@ export default function EncodingTool({ className = '' }) {
               size="sm"
               onClick={handleProcess}
             >
-              {operation === 'encode' ? '🔄 编码转换' : '🔄 解码转换'}
+              {operation === 'encode' 
+                ? (t('encodingtool.buttons.process_encode') || '🔄 编码转换')
+                : (t('encodingtool.buttons.process_decode') || '🔄 解码转换')}
             </Button>
             <Button 
               variant="outline" 
@@ -278,21 +287,21 @@ export default function EncodingTool({ className = '' }) {
               onClick={copyToClipboard}
               disabled={!outputText}
             >
-              📋 复制结果
+              {t('encodingtool.buttons.copy') || '📋 复制结果'}
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={swapInputOutput}
             >
-              ⇄ 交换输入输出
+              {t('encodingtool.buttons.swap') || '⇄ 交换输入输出'}
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={clearAll}
             >
-              🗑️ 清空
+              {t('encodingtool.buttons.clear') || '🗑️ 清空'}
             </Button>
           </div>
 

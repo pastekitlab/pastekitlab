@@ -114,7 +114,7 @@ function ConfigRow({ config, isSelected, rowIndex, onSelect, onEdit, onDelete, i
               e.stopPropagation();
               onEdit(config.name);
             }}
-            tooltip={t('common.edit')}
+            tooltip={t('edit')}
           />
           <ActionButton 
             icon="🗑️"
@@ -123,7 +123,7 @@ function ConfigRow({ config, isSelected, rowIndex, onSelect, onEdit, onDelete, i
               onDelete(config.name);
             }}
             disabled={!isDeletable}
-            tooltip={isDeletable ? t('common.delete') : t('keyconfigmanager.messages.min_configs')}
+            tooltip={isDeletable ? t('delete') : t('keyconfigmanager.messages.min_configs')}
           />
         </div>
       </td>

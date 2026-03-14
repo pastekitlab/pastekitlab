@@ -488,7 +488,7 @@ export default function PopUp() {
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{t('common.advanced_settings')}</p>
+                            <p>{t('advanced_settings')}</p>
                         </TooltipContent>
                     </Tooltip>
 
@@ -505,7 +505,7 @@ export default function PopUp() {
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{t('common.video_tutorial')}</p>
+                            <p>{t('video_tutorial')}</p>
                         </TooltipContent>
                     </Tooltip>
 
@@ -522,7 +522,7 @@ export default function PopUp() {
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{t('common.documentation')}</p>
+                            <p>{t('documentation')}</p>
                         </TooltipContent>
                     </Tooltip>
 
@@ -539,7 +539,7 @@ export default function PopUp() {
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{t('common.feedback')}</p>
+                            <p>{t('feedback')}</p>
                         </TooltipContent>
                     </Tooltip>
 
@@ -556,7 +556,7 @@ export default function PopUp() {
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{t('common.donate')}</p>
+                            <p>{t('donate')}</p>
                         </TooltipContent>
                     </Tooltip>
 
@@ -573,7 +573,7 @@ export default function PopUp() {
                             </a>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>{t('common.github_repository')}</p>
+                            <p>{t('github_repository')}</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>

@@ -35,7 +35,7 @@ export default function LanguageSwitchPanel() {
           onClick={togglePanel}
           className="bg-secondary hover:bg-secondary/80"
         >
-          🌐 {t('common.language_switch')}
+          🌐 {t('language_switch')}
         </Button>
       </div>
     );
@@ -46,7 +46,7 @@ export default function LanguageSwitchPanel() {
       {/* 面板标题和关闭按钮 */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <span>🌐 {t('common.language_switch')}</span>
+          <span>🌐 {t('language_switch')}</span>
         </h3>
         <Button 
           variant="ghost" 
@@ -62,7 +62,7 @@ export default function LanguageSwitchPanel() {
       <div className="p-4 bg-muted rounded-lg border">
         <div className="space-y-3">
           <div className="text-sm font-medium text-muted-foreground">
-            {t('common.select_language')}
+            {t('select_language')}
           </div>
           <div className="flex flex-wrap gap-2">
             {Object.entries(supportedLanguages).map(([key, langCode]) => (
@@ -78,7 +78,7 @@ export default function LanguageSwitchPanel() {
             ))}
           </div>
           <div className="text-xs text-muted-foreground mt-2">
-            {t('common.current_language')}: {currentLanguage === 'zh' ? '中文' : 'English'}
+            {t('current_language')}: {currentLanguage === 'zh' ? '中文' : 'English'}
           </div>
         </div>
       </div>

@@ -167,7 +167,7 @@ const AutoCipherTool = ({ content = '' }) => {
 
         {error && (
           <div className="p-3 bg-red-100 text-red-800 rounded text-sm">
-            <strong>{t('common.error')}:</strong> {error}
+            <strong>{t('error')}:</strong> {error}
           </div>
         )}
       </div>
@@ -176,7 +176,7 @@ const AutoCipherTool = ({ content = '' }) => {
       {successfulResults.length > 0 && (
         <div className="space-y-4 flex-1">
           <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-            {t('autociphertool.success.title')} ({successfulResults.length} {t('common.items')})
+            {t('autociphertool.success.title')} ({successfulResults.length} {t('items')})
           </div>
           
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -218,7 +218,7 @@ const AutoCipherTool = ({ content = '' }) => {
           <div>• {t('autociphertool.usage.instruction2')}</div>
           <div>• {t('autociphertool.usage.instruction3')}</div>
           <div className="mt-2 pt-2 border-t text-xs">
-            <strong>{t('common.tip')}:</strong> {t('autociphertool.usage.tip')}
+            <strong>{t('tip')}:</strong> {t('autociphertool.usage.tip')}
           </div>
         </div>
       </div>

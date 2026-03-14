@@ -18,7 +18,7 @@ import CipherTestComponent from '../component/ciphertest.jsx';
 import SignatureTool from '../component/signaturetool.jsx';
 import EncodingTool from '../component/encodingtool.jsx';
 import AIPromptManager from '../component/aipromptmanager.jsx';
-import Dnrmanager from '../component/dnrmanager.jsx';
+import Mockmanager from '../component/mockmanager.jsx';
 import AboutComponent from '../component/about.jsx';
 import DevToolsDecryptorConfig from '../component/devtoolsdecryptorconfig.jsx';
 import LanguageSwitcher from '../component/languageswitcher.jsx';
@@ -331,7 +331,7 @@ export default function OptionsPage() {
             {activeSection === 'mock-manager' && (
               <div className="space-y-6 w-full">
                 {isReady ? (
-                  <Dnrmanager t={t} />
+                  <Mockmanager t={t} />
                 ) : (
                   <div className="flex items-center justify-center h-64">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>

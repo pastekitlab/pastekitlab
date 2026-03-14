@@ -9,6 +9,24 @@
     "input": "输入文本",
     "input_placeholder": "请输入要转换的文本...",
     "output": "输出结果",
-    "output_placeholder": "转换结果将显示在这里..."
+    "output_placeholder": "转换结果将显示在这里...",
+    "buttons": {
+      "process_encode": "🔄 编码转换",
+      "process_decode": "🔄 解码转换",
+      "copy": "📋 复制结果",
+      "swap": "⇄ 交换输入输出",
+      "clear": "🗑️ 清空"
+    },
+    "messages": {
+      "input_required": "请输入要转换的文本",
+      "convert_success": "{input} → {output} {operation}成功",
+      "copy_success": "已复制到剪贴板",
+      "copy_failed": "复制失败",
+      "no_output": "没有可复制的内容",
+      "clear_success": "已清空所有内容",
+      "swap_success": "已交换输入输出编码和文本",
+      "encode_failed": "编码失败",
+      "decode_failed": "解码失败"
+    }
   }
 }
