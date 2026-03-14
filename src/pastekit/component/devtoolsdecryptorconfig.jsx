@@ -5,34 +5,56 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Toaster } from '@/components/ui/sonner';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AutoPagination } from '@/components/self/AutoPagination';
 import { toast } from 'sonner';
 import { StorageUtils } from '../utils/storageutils.js';
 
 /**
- * DevTools 解密器配置组件
- * 用于配置需要监听和解密的域名及对应的密钥信息
+ * DevTools 解密器配置组件 - 重构版
+ * 支持标准列表展示、搜索、分页、弹窗 CRUD 操作
  */
 export default function DevToolsDecryptorConfig({ configs = [], className = '' }) {
+  // 列表数据状态
   const [decryptionConfigs, setDecryptionConfigs] = useState([]);
-  const [newConfig, setNewConfig] = useState({
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // 搜索和分页状态
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // 默认每页 10 条
+  
+  // 弹窗状态
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingConfig, setEditingConfig] = useState(null);
+  
+  // 表单状态
+  const [formData, setFormData] = useState({
     domain: '',
-    requestKeyConfigId: '',  // 请求密钥配置
-    responseKeyConfigId: '',  // 响应密钥配置
+    requestKeyConfigId: '',
+    responseKeyConfigId: '',
     enabled: true,
+    decryptionEnabled: true,  // 新增：是否启用解密
     description: ''
   });
-  const [isLoading, setIsLoading] = useState(true);
   const [useSameKeyForRequestAndResponse, setUseSameKeyForRequestAndResponse] = useState(false);
 
   // 组件挂载时加载配置
   useEffect(() => {
-    console.log('[DevTools Config] 组件挂载，传入的configs:', configs);
     loadDecryptionConfigs();
-  }, [configs]);
+  }, []);
+
+  // 重置页码当搜索变化时
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // 重置页码当每页数量变化时
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
 
   // 加载解密配置
   const loadDecryptionConfigs = async () => {
@@ -46,7 +68,7 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       toast.success('配置加载成功');
     } catch (error) {
       console.error('[DevTools Config] 加载配置失败:', error);
-      toast.error(`加载失败: ${error.message}`);
+      toast.error(`加载失败：${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -70,128 +92,186 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       
     } catch (error) {
       console.error('[DevTools Config] 保存配置失败:', error);
-      toast.error(`保存失败: ${error.message}`);
+      toast.error(`保存失败：${error.message}`);
     }
   };
 
-  // 添加新配置
-  const handleAddConfig = async () => {
-    console.log('[DevTools Config] 添加配置，当前表单状态:', newConfig);
-    console.log('[DevTools Config] 可用密钥配置数量:', configs.length);
-    
-    if (!newConfig.domain) {
-      toast.error('请输入目标域名');
-      return;
-    }
-    
-    if (!newConfig.requestKeyConfigId) {
-      toast.error('请选择请求密钥配置');
-      return;
-    }
+  // 过滤数据
+  const filteredData = searchTerm.trim()
+    ? decryptionConfigs.filter(item =>
+        item.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        item.requestKeyConfigName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.responseKeyConfigName.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : decryptionConfigs;
 
-    if (!useSameKeyForRequestAndResponse && !newConfig.responseKeyConfigId) {
-      toast.error('请选择响应密钥配置，或启用"请求和响应使用相同密钥"选项');
-      return;
-    }
+  // 计算分页数据
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
 
-    // 验证域名格式
-    if (!isValidDomain(newConfig.domain)) {
-      toast.error('请输入有效的域名格式');
-      return;
-    }
-
-
-    // 只保存配置名称，不保存完整配置数据
-    const configToAdd = {
-      id: generateId(),
-      domain: newConfig.domain,
-      requestKeyConfigName: newConfig.requestKeyConfigId, // 请求密钥配置名称
-      responseKeyConfigName: useSameKeyForRequestAndResponse ? newConfig.requestKeyConfigId : newConfig.responseKeyConfigId, // 响应密钥配置名称
-      enabled: newConfig.enabled,
-      description: newConfig.description,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-
-    const updatedConfigs = [...decryptionConfigs, configToAdd];
-    saveDecryptionConfigs(updatedConfigs);
-
-    // 重置表单
-    setNewConfig({
+  // 打开新建弹窗
+  const handleCreate = () => {
+    setEditingConfig(null);
+    setFormData({
       domain: '',
       requestKeyConfigId: '',
       responseKeyConfigId: '',
       enabled: true,
+      decryptionEnabled: true,
       description: ''
     });
     setUseSameKeyForRequestAndResponse(false);
-    
-    toast.success(`配置添加成功！已为域名 ${newConfig.domain} 申请并获得权限。`);
+    setIsDialogOpen(true);
   };
 
-  // 删除配置
-  const handleDeleteConfig = (configId) => {
-    const updatedConfigs = decryptionConfigs.filter(config => config.id !== configId);
-    saveDecryptionConfigs(updatedConfigs);
+  // 打开编辑弹窗
+  const handleEdit = (config) => {
+    setEditingConfig(config);
+    setFormData({
+      domain: config.domain,
+      requestKeyConfigId: config.requestKeyConfigName,
+      responseKeyConfigId: config.responseKeyConfigName,
+      enabled: config.enabled,
+      decryptionEnabled: config.decryptionEnabled !== false,  // 默认为 true
+      description: config.description || ''
+    });
+    setUseSameKeyForRequestAndResponse(config.requestKeyConfigName === config.responseKeyConfigName);
+    setIsDialogOpen(true);
   };
 
-  // 切换配置启用状态
-  const handleToggleConfig = (configId) => {
-    const updatedConfigs = decryptionConfigs.map(config => 
-      config.id === configId 
-        ? { ...config, enabled: !config.enabled, updatedAt: Date.now() }
-        : config
-    );
-    saveDecryptionConfigs(updatedConfigs);
-  };
-
-  // 请求域名权限
-  const requestDomainPermission = async (domain) => {
-    try {
-      console.log(`[DevTools Config] 申请域名权限: ${domain}`);
-      
-      // 构造权限origin
-      const origin = `https://${domain}/*`;
-      
-      // 检查是否已有权限
-      const hasPermission = await chrome.permissions.contains({
-        origins: [origin]
-      });
-      
-      if (hasPermission) {
-        console.log(`[DevTools Config] 已拥有域名权限: ${domain}`);
-        return true;
-      }
-      
-      // 请求新权限
-      const granted = await chrome.permissions.request({
-        origins: [origin]
-      });
-      
-      if (granted) {
-        console.log(`[DevTools Config] 成功获得域名权限: ${domain}`);
-        return true;
-      } else {
-        console.log(`[DevTools Config] 用户拒绝了域名权限: ${domain}`);
-        return false;
-      }
-      
-    } catch (error) {
-      console.error(`[DevTools Config] 申请域名权限失败: ${domain}`, error);
-      toast.error(`权限申请失败: ${error.message}`);
-      return false;
+  // 保存数据
+  const handleSave = async () => {
+    // 验证必填字段
+    if (!formData.domain) {
+      toast.error('请输入目标域名');
+      return;
     }
+    
+    // 仅在启用解密功能时验证密钥配置
+    if (formData.decryptionEnabled !== false) {
+      if (!formData.requestKeyConfigId) {
+        toast.error('请选择请求密钥配置');
+        return;
+      }
+
+      if (!useSameKeyForRequestAndResponse && !formData.responseKeyConfigId) {
+        toast.error('请选择响应密钥配置，或启用"请求和响应使用相同密钥"选项');
+        return;
+      }
+    }
+
+    // 验证域名格式
+    if (!isValidDomain(formData.domain)) {
+      toast.error('请输入有效的域名格式');
+      return;
+    }
+
+    try {
+      if (editingConfig) {
+        // 编辑模式
+        const updatedConfigs = decryptionConfigs.map(config => 
+          config.id === editingConfig.id 
+            ? {
+                ...config,
+                domain: formData.domain,
+                requestKeyConfigName: formData.requestKeyConfigId,
+                responseKeyConfigName: useSameKeyForRequestAndResponse ? formData.requestKeyConfigId : formData.responseKeyConfigId,
+                enabled: formData.enabled,
+                decryptionEnabled: formData.decryptionEnabled,
+                description: formData.description,
+                updatedAt: Date.now()
+              }
+            : config
+        );
+        await saveDecryptionConfigs(updatedConfigs);
+        toast.success('修改成功');
+      } else {
+        // 新建模式
+        const configToAdd = {
+          id: generateId(),
+          domain: formData.domain,
+          requestKeyConfigName: formData.requestKeyConfigId,
+          responseKeyConfigName: useSameKeyForRequestAndResponse ? formData.requestKeyConfigId : formData.responseKeyConfigId,
+          enabled: formData.enabled,
+          decryptionEnabled: formData.decryptionEnabled,
+          description: formData.description,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        };
+        const updatedConfigs = [...decryptionConfigs, configToAdd];
+        await saveDecryptionConfigs(updatedConfigs);
+        toast.success('创建成功');
+      }
+      
+      setIsDialogOpen(false);
+      setEditingConfig(null);
+      setFormData({
+        domain: '',
+        requestKeyConfigId: '',
+        responseKeyConfigId: '',
+        enabled: true,
+        decryptionEnabled: true,
+        description: ''
+      });
+      setUseSameKeyForRequestAndResponse(false);
+    } catch (error) {
+      toast.error(editingConfig ? '修改失败' : '创建失败');
+      console.error(error);
+    }
+  };
+
+  // 删除数据
+  const handleDelete = async (config) => {
+    // 显示确认弹窗
+    if (!window.confirm(`确定要删除此解密配置吗？\n\n域名：${config.domain}\n描述：${config.description || '无'}`)) {
+      return;
+    }
+    
+    try {
+      const updatedConfigs = decryptionConfigs.filter(c => c.id !== config.id);
+      await saveDecryptionConfigs(updatedConfigs);
+      toast.success('删除成功');
+    } catch (error) {
+      toast.error('删除失败');
+      console.error(error);
+    }
+  };
+
+  // 切换启用状态
+  const handleToggleEnabled = async (config) => {
+    try {
+      const updatedConfigs = decryptionConfigs.map(c => 
+        c.id === config.id 
+          ? { ...c, enabled: !c.enabled, updatedAt: Date.now() }
+          : c
+      );
+      await saveDecryptionConfigs(updatedConfigs);
+    } catch (error) {
+      toast.error('操作失败');
+      console.error(error);
+    }
+  };
+
+  // 更新表单数据
+  const handleFormChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // 生成唯一 ID
+  const generateId = () => {
+    return `decrypt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
   // 验证域名格式
   const isValidDomain = (domain) => {
     const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/;
     return domainRegex.test(domain.trim());
-  };
-
-  // 生成唯一ID
-  const generateId = () => {
-    return `decrypt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
   // 获取密钥配置（通过名称查找）
@@ -201,17 +281,12 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
 
   // 从密钥配置名称获取算法显示名称
   const getAlgorithmFromKeyConfig = (configName) => {
-    console.log('[DevTools Config] 获取算法信息，configName:', configName);
-    
     const config = getKeyConfigByName(configName);
-    
-    console.log('[DevTools Config] 找到的配置:', config);
     
     if (!config) return '未知配置';
     
     // 增强的算法识别逻辑
     const algorithmType = config.algorithmType || config.type || config.algorithm?.split('/')[0];
-    console.log('[DevTools Config] 算法类型:', algorithmType);
     
     const algorithmMap = {
       'AES': 'AES-CBC (PKCS5)',
@@ -226,8 +301,6 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
       const mainAlgorithm = algorithmParts[0];
       const mode = algorithmParts[1] || '';
       const padding = algorithmParts[2] || '';
-      
-      console.log('[DevTools Config] 算法分解:', { mainAlgorithm, mode, padding });
       
       // 特殊处理各种算法组合
       if (mainAlgorithm === 'RSA') {
@@ -245,19 +318,6 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
     return algorithmMap[algorithmType] || `${algorithmType || '未知'} (默认模式)`;
   };
 
-  // 获取算法显示名称（保持向后兼容）
-  const getAlgorithmDisplayName = (algorithm) => {
-    const algorithmMap = {
-      'AES/CBC/PKCS5Padding': 'AES-CBC (PKCS5)',
-      'AES/ECB/PKCS5Padding': 'AES-ECB (PKCS5)',
-      'RSA/None/OAEPPadding': 'RSA-OAEP',
-      'SM2/None/None': 'SM2',
-      'SM4/CBC/PKCS5Padding': 'SM4-CBC (PKCS5)',
-      'SM4/ECB/PKCS5Padding': 'SM4-ECB (PKCS5)'
-    };
-    return algorithmMap[algorithm] || algorithm;
-  };
-
   if (isLoading) {
     return (
       <div className={`flex items-center justify-center h-64 ${className}`}>
@@ -268,27 +328,224 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* 添加新配置卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>添加解密配置</CardTitle>
+    <div className={`w-full h-full flex flex-col overflow-hidden ${className}`}>
+      {/* 顶部操作栏 */}
+      <Card className="flex-shrink-0">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl font-bold">DevTools 解密器配置</CardTitle>
+            <Button onClick={handleCreate} size="sm">
+              ➕ 新增配置
+            </Button>
+          </div>
+          
+          {/* 搜索区域 */}
+          <div className="mt-4 relative">
+            <Input
+              type="text"
+              placeholder="搜索域名、描述或密钥配置..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pr-8"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      </Card>
+
+      {/* 列表内容 */}
+      <Card className="flex-1 mt-4 overflow-hidden flex flex-col">
+        <CardContent className="flex-1 overflow-auto p-0">
+          <div className="min-w-full max-h-[calc(100vh-400px)] overflow-y-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">域名</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">请求算法</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">响应算法</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm border-b">描述</th>
+                  <th className="text-center py-3 px-4 font-semibold text-sm border-b">状态</th>
+                  <th className="text-center py-3 px-4 font-semibold text-sm border-b">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.length > 0 ? (
+                  currentData.map((config, index) => {
+                    const actualIndex = startIndex + index;
+                    return (
+                      <tr 
+                        key={config.id}
+                        className={`border-b cursor-pointer transition-colors duration-200 ease-out ${
+                          actualIndex % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'
+                        }`}
+                      >
+                        <td className="py-3 px-4 font-medium">{config.domain}</td>
+                        <td className="py-3 px-4">
+                          <span className="font-medium">
+                            {getAlgorithmFromKeyConfig(config.requestKeyConfigName)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-medium">
+                            {getAlgorithmFromKeyConfig(config.responseKeyConfigName)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                          {config.description || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Badge variant={config.enabled ? "default" : "secondary"}>
+                              {config.enabled ? '启用' : '禁用'}
+                            </Badge>
+                            {config.enabled && config.decryptionEnabled !== false && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                🔓 解密
+                              </Badge>
+                            )}
+                            {config.enabled && config.decryptionEnabled === false && (
+                              <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200">
+                                👁️ 监听
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex justify-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(config);
+                              }}
+                              title="编辑"
+                            >
+                              ✏️
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(config);
+                              }}
+                              title="删除"
+                            >
+                              🗑️
+                            </Button>
+                            <Switch
+                              checked={config.enabled}
+                              onCheckedChange={() => handleToggleEnabled(config)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="ml-1"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-gray-500">
+                      {searchTerm ? '未找到匹配的配置' : '暂无解密配置'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 底部分页 */}
+      {filteredData.length > 0 && (
+        <Card className="mt-4 flex-shrink-0">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-muted-foreground">
+                  共 {filteredData.length} 个配置 (第 {currentPage}/{totalPages || 1} 页)
+                </div>
+                {/* 每页数量选择器 */}
+                <Select 
+                  value={itemsPerPage.toString()} 
+                  onValueChange={(value) => setItemsPerPage(Number(value))}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder="每页数量" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 条/页</SelectItem>
+                    <SelectItem value="10">10 条/页</SelectItem>
+                    <SelectItem value="20">20 条/页</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <AutoPagination
+                totalPage={totalPages || 1}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 编辑/新建弹窗 */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingConfig ? '编辑解密配置' : '新建解密配置'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {/* 域名输入 */}
             <div className="space-y-2">
               <Label htmlFor="domain">目标域名 *</Label>
               <Input
                 id="domain"
                 placeholder="example.com"
-                value={newConfig.domain}
-                onChange={(e) => setNewConfig({...newConfig, domain: e.target.value})}
+                value={formData.domain}
+                onChange={(e) => handleFormChange('domain', e.target.value)}
               />
               <p className="text-sm text-muted-foreground">
                 支持完整域名，如 api.example.com
               </p>
             </div>
-            
+
+            {/* 启用状态 */}
+            <div className="flex items-center space-x-2 pt-2 border-t">
+              <Switch
+                id="enabled"
+                checked={formData.enabled}
+                onCheckedChange={(checked) => handleFormChange('enabled', checked)}
+              />
+              <Label htmlFor="enabled">启用配置</Label>
+            </div>
+
+            {/* 解密开关 */}
+            <div className="flex items-center space-x-2 pt-2 border-b">
+              <Switch
+                id="decryptionEnabled"
+                checked={formData.decryptionEnabled}
+                onCheckedChange={(checked) => handleFormChange('decryptionEnabled', checked)}
+              />
+              <Label htmlFor="decryptionEnabled">启用解密功能</Label>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-3">
+              关闭后仅监听请求，不进行加解密操作
+            </p>
+
+            {/* 密钥配置模式开关 */}
             <div className="space-y-2">
               <Label>密钥配置模式</Label>
               <div className="flex items-center space-x-2 pt-2">
@@ -298,259 +555,152 @@ export default function DevToolsDecryptorConfig({ configs = [], className = '' }
                   onCheckedChange={(checked) => {
                     setUseSameKeyForRequestAndResponse(checked);
                     if (checked) {
-                      setNewConfig({...newConfig, responseKeyConfigId: newConfig.requestKeyConfigId});
+                      setFormData({...formData, responseKeyConfigId: formData.requestKeyConfigId});
                     }
                   }}
                 />
                 <Label htmlFor="useSameKey">请求和响应使用相同密钥</Label>
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="requestKeyConfig">请求密钥配置 *</Label>
-              <div className="space-y-1">
-                <Select 
-                  value={newConfig.requestKeyConfigId?.toString() || 'no-selection'} 
-                  onValueChange={(value) => {
-                    console.log('[DevTools Config] 选择请求密钥配置:', value);
-                    if (value && value !== 'no-selection' && value !== 'no-configs') {
-                      const updateData = {...newConfig, requestKeyConfigId: value};
-                      if (useSameKeyForRequestAndResponse) {
-                        updateData.responseKeyConfigId = value;
-                      }
-                      setNewConfig(updateData);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="请选择密钥配置" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {configs && configs.length > 0 ? (
-                      configs.map((config) => {
-                        const configId = (config.id || config.name)?.toString();
-                        const algorithmType = config.type || config.algorithmType || '';
-                        const displayText = algorithmType 
-                          ? `${config.name} (${algorithmType})`
-                          : config.name;
-                        
-                        return (
-                          <SelectItem key={configId} value={configId}>
-                            {displayText}
-                          </SelectItem>
-                        );
-                      }).filter(Boolean)
-                    ) : (
-                      <SelectItem value="no-configs" disabled>
-                        暂无可用的密钥配置，请先在密钥配置管理中添加
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  当前选择：{newConfig.requestKeyConfigId || '未选择'}
-                </p>
-                {newConfig.requestKeyConfigId && (
-                  <p className="text-xs text-blue-600">
-                    识别算法：{getAlgorithmFromKeyConfig(newConfig.requestKeyConfigId)}
-                  </p>
-                )}
-              </div>
-            </div>
 
-            {!useSameKeyForRequestAndResponse && (
-              <div className="space-y-2">
-                <Label htmlFor="responseKeyConfig">响应密钥配置 *</Label>
-                <div className="space-y-1">
-                  <Select 
-                    value={newConfig.responseKeyConfigId?.toString() || 'no-selection'} 
-                    onValueChange={(value) => {
-                      console.log('[DevTools Config] 选择响应密钥配置:', value);
-                      if (value && value !== 'no-selection' && value !== 'no-configs') {
-                        setNewConfig({...newConfig, responseKeyConfigId: value});
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="请选择密钥配置" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {configs && configs.length > 0 ? (
-                        configs.map((config) => {
-                          const configId = (config.id || config.name)?.toString();
-                          const algorithmType = config.type || config.algorithmType || '';
-                          const displayText = algorithmType 
-                            ? `${config.name} (${algorithmType})`
-                            : config.name;
-                          
-                          return (
-                            <SelectItem key={configId} value={configId}>
-                              {displayText}
+            {/* 仅在启用解密功能时显示密钥配置 */}
+            {formData.decryptionEnabled !== false && (
+              <>
+                {/* 请求密钥配置 */}
+                <div className="space-y-2">
+                  <Label htmlFor="requestKeyConfig">请求密钥配置 *</Label>
+                  <div className="space-y-1">
+                    <Select 
+                      value={formData.requestKeyConfigId?.toString() || 'no-selection'} 
+                      onValueChange={(value) => {
+                        if (value && value !== 'no-selection' && value !== 'no-configs') {
+                          const updateData = {...formData, requestKeyConfigId: value};
+                          if (useSameKeyForRequestAndResponse) {
+                            updateData.responseKeyConfigId = value;
+                          }
+                          setFormData(updateData);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="请选择密钥配置" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {configs && configs.length > 0 ? (
+                          configs.map((config) => {
+                            const configId = (config.id || config.name)?.toString();
+                            const algorithmType = config.type || config.algorithmType || '';
+                            const displayText = algorithmType 
+                              ? `${config.name} (${algorithmType})`
+                              : config.name;
+                            
+                            return (
+                              <SelectItem key={configId} value={configId}>
+                                {displayText}
+                              </SelectItem>
+                            );
+                          }).filter(Boolean)
+                        ) : (
+                          <SelectItem value="no-configs" disabled>
+                            暂无可用的密钥配置，请先在密钥配置管理中添加
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {formData.requestKeyConfigId && (
+                      <p className="text-xs text-blue-600">
+                        识别算法：{getAlgorithmFromKeyConfig(formData.requestKeyConfigId)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 响应密钥配置 */}
+                {!useSameKeyForRequestAndResponse && (
+                  <div className="space-y-2">
+                    <Label htmlFor="responseKeyConfig">响应密钥配置 *</Label>
+                    <div className="space-y-1">
+                      <Select 
+                        value={formData.responseKeyConfigId?.toString() || 'no-selection'} 
+                        onValueChange={(value) => {
+                          if (value && value !== 'no-selection' && value !== 'no-configs') {
+                            setFormData({...formData, responseKeyConfigId: value});
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="请选择密钥配置" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {configs && configs.length > 0 ? (
+                            configs.map((config) => {
+                              const configId = (config.id || config.name)?.toString();
+                              const algorithmType = config.type || config.algorithmType || '';
+                              const displayText = algorithmType 
+                                ? `${config.name} (${algorithmType})`
+                                : config.name;
+                              
+                              return (
+                                <SelectItem key={configId} value={configId}>
+                                  {displayText}
+                                </SelectItem>
+                              );
+                            }).filter(Boolean)
+                          ) : (
+                            <SelectItem value="no-configs" disabled>
+                              暂无可用的密钥配置
                             </SelectItem>
-                          );
-                        }).filter(Boolean)
-                      ) : (
-                        <SelectItem value="no-configs" disabled>
-                          暂无可用的密钥配置
-                        </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      {formData.responseKeyConfigId && (
+                        <p className="text-xs text-blue-600">
+                          识别算法：{getAlgorithmFromKeyConfig(formData.responseKeyConfigId)}
+                        </p>
                       )}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    当前选择：{newConfig.responseKeyConfigId || '未选择'}
-                  </p>
-                  {newConfig.responseKeyConfigId && (
-                    <p className="text-xs text-blue-600">
-                      识别算法：{getAlgorithmFromKeyConfig(newConfig.responseKeyConfigId)}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 未启用解密功能时的提示 */}
+            {formData.decryptionEnabled === false && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <span className="text-xl">ℹ️</span>
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">监听模式</p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      当前已关闭解密功能，系统将仅监听网络请求，不会进行加解密操作。
+                      <br/>如需配置密钥，请先启用上方的"启用解密功能"开关。
                     </p>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
-            
-            <div className="space-y-2 md:col-span-2">
+
+            {/* 描述输入 */}
+            <div className="space-y-2">
               <Label htmlFor="description">描述</Label>
               <Input
                 id="description"
                 placeholder="可选的配置说明"
-                value={newConfig.description}
-                onChange={(e) => setNewConfig({...newConfig, description: e.target.value})}
+                value={formData.description}
+                onChange={(e) => handleFormChange('description', e.target.value)}
               />
             </div>
           </div>
-          
-          <div className="flex items-center justify-between pt-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="enabled"
-                checked={newConfig.enabled}
-                onCheckedChange={(checked) => setNewConfig({...newConfig, enabled: checked})}
-              />
-              <Label htmlFor="enabled">启用配置</Label>
-            </div>
-            <Button onClick={handleAddConfig}>
-              添加配置
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              取消
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 配置列表卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>现有解密配置 ({decryptionConfigs.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {decryptionConfigs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>暂无解密配置</p>
-              <p className="text-sm mt-2">添加配置后即可在 DevTools 中监控和解密对应域名的网络请求</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {decryptionConfigs.map((config) => (
-                <div key={config.id} className="border rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={config.enabled ? "default" : "secondary"}>
-                          {config.enabled ? '启用' : '禁用'}
-                        </Badge>
-                        <span className="font-medium">{config.domain}</span>
-                        {config.description && (
-                          <span className="text-sm text-muted-foreground">- {config.description}</span>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">请求算法:</span>{' '}
-                          <span className="font-medium">
-                            {getAlgorithmFromKeyConfig(config.requestKeyConfigName)}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">响应算法:</span>{' '}
-                          <span className="font-medium">
-                            {getAlgorithmFromKeyConfig(config.responseKeyConfigName)}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">创建时间:</span>{' '}
-                          <span>{new Date(config.createdAt).toLocaleString()}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="text-xs text-muted-foreground mt-1">
-                        <span>请求密钥:{config.requestKeyConfigName}</span>
-                        {config.requestKeyConfigName !== config.responseKeyConfigName && (
-                          <span className="ml-2">| 响应密钥:{config.responseKeyConfigName}</span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 ml-4">
-                      <Switch
-                        checked={config.enabled}
-                        onCheckedChange={() => handleToggleConfig(config.id)}
-                      />
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteConfig(config.id)}
-                      >
-                        删除
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {!config.enabled && (
-                    <div className="mt-2 text-sm text-yellow-600 bg-yellow-50 p-2 rounded">
-                      ⚠️ 此配置已禁用，不会对网络请求进行监控和解密
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 使用说明卡片 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>使用说明</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div>
-            <h4 className="font-medium mb-2">如何使用:</h4>
-            <ol className="list-decimal list-inside space-y-1 text-sm">
-              <li>在此页面添加需要监控的域名和对应的密钥配置</li>
-              <li>可以分别为请求和响应配置不同的密钥</li>
-              <li>打开目标网站并按 F12 打开开发者工具</li>
-              <li>切换到 "PasteKit Decryptor" 面板</li>
-              <li>点击 "连接后台" 开始监控网络请求</li>
-              <li>系统会自动拦截并解密匹配域名的请求</li>
-            </ol>
-          </div>
-          
-          <Separator />
-          
-          <div>
-            <h4 className="font-medium mb-2">注意事项:</h4>
-            <ul className="list-disc list-inside space-y-1 text-sm">
-              <li>域名支持子域名匹配，如配置 example.com 会匹配 api.example.com</li>
-              <li>可以分别为请求和响应配置不同的密钥配置</li>
-              <li>如果请求和响应使用相同密钥，可以开启"请求和响应使用相同密钥"开关</li>
-              <li>建议只对必要的域名启用监控以提高性能</li>
-              <li>解密功能依赖于正确的密钥配置，请确保密钥信息准确</li>
-              <li>某些网站的安全策略可能会阻止扩展的网络监控功能</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Toaster />
+            <Button onClick={handleSave}>
+              {editingConfig ? '保存' : '创建'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -23,7 +23,7 @@ import AboutComponent from '../component/about.jsx';
 import DevToolsDecryptorConfig from '../component/devtoolsdecryptorconfig.jsx';
 import LanguageSwitcher from '../component/languageswitcher.jsx';
 import RequestListViewer from '../component/requestlistviewer.jsx';
-import { useTranslation, preloadTranslations } from '../utils/i18n';
+import { useTranslation, preloadTranslations, useLanguage } from '../utils/i18n';
 
 // Menu items configuration (will be translated dynamically)
 const getMenuItems = (t) => [
@@ -40,6 +40,7 @@ const getMenuItems = (t) => [
 
 export default function OptionsPage() {
   const [t, currentLanguage, isReady] = useTranslation();
+  const { switchLanguage } = useLanguage(); // 使用 useLanguage hook 获取 switchLanguage
   const [activeSection, setActiveSection] = useState('key-config');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // 侧边栏折叠状态
   const [showLanguageDialog, setShowLanguageDialog] = useState(false); // 语言选择弹窗
@@ -383,19 +384,25 @@ export default function OptionsPage() {
           <div className="py-4">
             <RadioGroup 
               value={currentLanguage} 
-              onValueChange={(value) => {
-                switchLanguage(value);
+              onValueChange={async (value) => {
+                await switchLanguage(value);
                 closeLanguageDialog();
               }}
               className="flex flex-col space-y-3"
             >
-              <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer" onClick={() => switchLanguage('en')}>
+              <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer" onClick={async () => {
+                await switchLanguage('en');
+                closeLanguageDialog();
+              }}>
                 <input type="radio" checked={currentLanguage === 'en'} readOnly className="w-4 h-4" />
                 <Label htmlFor="lang-en-dialog" className="cursor-pointer text-base font-medium">
                   English
                 </Label>
               </div>
-              <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer" onClick={() => switchLanguage('zh')}>
+              <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer" onClick={async () => {
+                await switchLanguage('zh');
+                closeLanguageDialog();
+              }}>
                 <input type="radio" checked={currentLanguage === 'zh'} readOnly className="w-4 h-4" />
                 <Label htmlFor="lang-zh-dialog" className="cursor-pointer text-base font-medium">
                   中文

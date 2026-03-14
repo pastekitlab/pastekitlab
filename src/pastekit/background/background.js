@@ -393,68 +393,71 @@ async function handleNetworkData(message, port) {
 
     console.log(`[CryptoDevTools Background] 发现匹配配置：${JSON.stringify(matchedConfig)}`);
 
+    // 检查是否启用了该域名的解密功能
+    if (matchedConfig.decryptionEnabled === false) {
+        console.log(`[CryptoDevTools Background] ⚠️ 域名 ${matchedConfig.domain} 未启用解密功能，仅监听`);
+        // 发送跳过解密的消息，但仍然推送请求数据到 Panel
+        try {
+            if (port && !port.error) {
+                port.postMessage({
+                    type: "DECRYPTION_SKIPPED",
+                    requestId,
+                    reason: "decryption_disabled",
+                    message: `域名 ${matchedConfig.domain} 未启用解密功能`,
+                    request: {
+                        url,
+                        method,
+                        statusCode,
+                        requestBody,
+                        responseBody,
+                        requestHeaders,
+                        responseHeaders,
+                        domainConfig: matchedConfig
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('[CryptoDevTools Background] 发送跳过消息失败:', error);
+        }
+        // 不 return，继续后续处理以推送到 WS
+    }
+    
+    if (matchedConfig.decryptionEnabled !== false) {
+        console.log(`[CryptoDevTools Background] ✅ 域名 ${matchedConfig.domain} 已启用解密功能`);
+    }
+
     // 根据匹配配置中的 keyConfigName 查找实际的密钥配置
     // 区分请求密钥配置和响应密钥配置
     const requestKeyConfig = findKeyConfigById(matchedConfig.requestKeyConfigName);
     const responseKeyConfig = findKeyConfigById(matchedConfig.responseKeyConfigName);
     
-    if (!requestKeyConfig) {
-        console.warn(`[CryptoDevTools Background] 未找到请求密钥配置：${matchedConfig.requestKeyConfigName}`);
-        // 发送错误消息，添加错误处理
-        try {
-            if (port && !port.error) {
-                port.postMessage({
-                    type: "DECRYPTION_RESULT",
-                    requestId,
-                    error: `未找到对应的请求密钥配置：${matchedConfig.requestKeyConfigName}`,
-                    request: {
-                        url,
-                        method,
-                        statusCode,
-                        requestBody,
-                        responseBody
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('[CryptoDevTools Background] 发送错误消息失败:', error);
-        }
-        return;
-    }
+    let plainRequestBody = null;
+    let plainResponseBody = null;
+    let decryptError = null;
     
-    if (!responseKeyConfig) {
-        console.warn(`[CryptoDevTools Background] 未找到响应密钥配置：${matchedConfig.responseKeyConfigName}`);
-        // 发送错误消息，添加错误处理
-        try {
-            if (port && !port.error) {
-                port.postMessage({
-                    type: "DECRYPTION_RESULT",
-                    requestId,
-                    error: `未找到对应的响应密钥配置：${matchedConfig.responseKeyConfigName}`,
-                    request: {
-                        url,
-                        method,
-                        statusCode,
-                        requestBody,
-                        responseBody
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('[CryptoDevTools Background] 发送错误消息失败:', error);
+    // 只有在启用解密功能且找到密钥配置时才执行解密
+    if (matchedConfig.decryptionEnabled !== false) {
+        if (!requestKeyConfig) {
+            console.warn(`[CryptoDevTools Background] 未找到请求密钥配置：${matchedConfig.requestKeyConfigName}`);
+            decryptError = `未找到对应的请求密钥配置：${matchedConfig.requestKeyConfigName}`;
+        } else if (!responseKeyConfig) {
+            console.warn(`[CryptoDevTools Background] 未找到响应密钥配置：${matchedConfig.responseKeyConfigName}`);
+            decryptError = `未找到对应的响应密钥配置：${matchedConfig.responseKeyConfigName}`;
+        } else {
+            console.log(`[CryptoDevTools Background] 使用请求密钥配置：${requestKeyConfig.name}, 响应密钥配置：${responseKeyConfig.name}`);
+            
+            // 使用工具类执行解密
+            const result = await performDecryption({
+                requestBody,
+                responseBody,
+                requestKeyConfig,
+                responseKeyConfig
+            });
+            plainRequestBody = result.plainRequestBody;
+            plainResponseBody = result.plainResponseBody;
+            decryptError = result.error;
         }
-        return;
     }
-
-    console.log(`[CryptoDevTools Background] 使用请求密钥配置：${requestKeyConfig.name}, 响应密钥配置：${responseKeyConfig.name}`);
-
-    // 使用工具类执行解密
-    const { plainRequestBody, plainResponseBody, error } = await performDecryption({
-        requestBody,
-        responseBody,
-        requestKeyConfig,
-        responseKeyConfig
-    });
 
     const decryptMessage = {
         type: "DECRYPTION_RESULT",
@@ -462,7 +465,7 @@ async function handleNetworkData(message, port) {
         request: {
             url,
             method,
-            error:error,
+            error: decryptError,
             statusCode,
             requestBody,
             requestHeaders,
@@ -476,7 +479,7 @@ async function handleNetworkData(message, port) {
         }
     }
     
-    // 发送解密结果，添加错误处理
+    // 发送解密结果（或监听模式下的原始数据），添加错误处理
     try {
         if (port && !port.error) {
             port.postMessage(decryptMessage);
@@ -525,7 +528,7 @@ function findMatchingConfig(url) {
                 return false;
             }
             
-            console.log(`[CryptoDevTools Background] 检查配置：${config.domain} (enabled: ${config.enabled})`);
+            console.log(`[CryptoDevTools Background] 检查配置：${config.domain} (enabled: ${config.enabled}, decryptionEnabled: ${config.decryptionEnabled})`);
 
             if (!config.enabled) {
                 console.log('[CryptoDevTools Background] 配置未启用，跳过');
@@ -578,13 +581,13 @@ function sendDomainConfig() {
     }
     
     try {
-        // 提取所有启用的域名
+        // 提取所有启用且解密功能开启的域名
        const enabledDomains = decryptionConfigs
-            .filter(config => config.enabled)
+            .filter(config => config.enabled )
             .map(config => config.domain)
             .filter(domain => domain); // 过滤掉空值
         
-       console.log('[Background Domain Config] 发送域名配置:', enabledDomains);
+       console.log('[Background Domain Config] 发送域名配置（仅解密启用的）:', enabledDomains);
         
         // 发送域名配置消息
        proxyWSClient.send('domain', {
@@ -661,25 +664,37 @@ async function handleProxyRequest(requestData) {
         return;
     }
     
-    // 查找密钥配置
-    const requestKeyConfig = findKeyConfigById(matchedConfig.requestKeyConfigName);
-    const responseKeyConfig = findKeyConfigById(matchedConfig.responseKeyConfigName);
+    let plainRequestBody = null;
+    let plainResponseBody = null;
+    let decryptError = null;
+    let requestKeyConfig = null;
+    let responseKeyConfig = null;
     
-    if (!requestKeyConfig || !responseKeyConfig) {
-        console.warn('[Background Proxy] 未找到匹配的密钥配置');
-        return;
+    // 只有在启用解密功能时才尝试查找密钥并解密
+    if (matchedConfig.decryptionEnabled !== false) {
+        // 查找密钥配置
+        requestKeyConfig = findKeyConfigById(matchedConfig.requestKeyConfigName);
+        responseKeyConfig = findKeyConfigById(matchedConfig.responseKeyConfigName);
+        
+        if (!requestKeyConfig || !responseKeyConfig) {
+            console.warn('[Background Proxy] 未找到匹配的密钥配置');
+            decryptError = '未找到匹配的密钥配置';
+        } else {
+            // 加载 CipherUtils（由工具类内部使用）
+            const cipherUtils = loadCipherUtils();
+            
+            // 使用工具类执行解密
+            const result = await performDecryption({
+                requestBody: requestData.requestBody || requestData.body,
+                responseBody: requestData.responseBody || requestData.body,
+                requestKeyConfig,
+                responseKeyConfig
+            });
+            plainRequestBody = result.plainRequestBody;
+            plainResponseBody = result.plainResponseBody;
+            decryptError = result.error;
+        }
     }
-    
-    // 加载 CipherUtils（由工具类内部使用）
-    const cipherUtils = loadCipherUtils();
-    
-    // 使用工具类执行解密
-    const { plainRequestBody, plainResponseBody, error } = await performDecryption({
-        requestBody: requestData.requestBody || requestData.body,
-        responseBody: requestData.responseBody || requestData.body,
-        requestKeyConfig,
-        responseKeyConfig
-    });
     
     // 构建完整的请求对象（包含 requestId 用于关联）
     const fullRequest = {
@@ -696,7 +711,8 @@ async function handleProxyRequest(requestData) {
         timestamp: requestData.timestamp || Date.now(),
         requestConfig: requestKeyConfig,
         responseConfig: responseKeyConfig,
-        domainConfig: matchedConfig
+        domainConfig: matchedConfig,
+        decryptionSkipped: matchedConfig.decryptionEnabled === false
     };
     
     // 发送到所有连接的 DevTools Panel（Options 看板）
